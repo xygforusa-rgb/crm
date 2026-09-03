@@ -1,195 +1,11 @@
-<!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>客户管理助手 V5.2</title>
-<meta name="theme-color" content="#172033">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="客户管理助手">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icon-192.png">
-<style>
-:root {
-  --bg:#f5f7fb; --card:#fff; --text:#172033; --muted:#6d7890;
-  --primary:#1f6feb; --border:#dfe5ef; --ok:#15803d;
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--text)}
-.wrap{max-width:760px;margin:0 auto;padding:18px 14px 90px}
-h1{font-size:24px;margin:8px 0 4px}
-.sub{color:var(--muted);font-size:14px;margin-bottom:16px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:0 4px 18px rgba(20,36,70,.05)}
-.step{font-size:13px;color:var(--primary);font-weight:700;margin-bottom:8px}
-.question{font-size:22px;font-weight:750;margin-bottom:16px}
-input,textarea,select{width:100%;font-size:18px;padding:14px;border:1px solid var(--border);border-radius:12px;background:#fff;outline:none}
-textarea{min-height:150px;resize:vertical}
-input:focus,textarea:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(31,111,235,.10)}
-.row{display:flex;gap:10px;margin-top:16px}
-button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:700;cursor:pointer}
-.primary{background:var(--primary);color:white;flex:1}
-.secondary{background:#eef3fa;color:#25324a}
-.small{padding:10px 12px;font-size:14px}
-.hidden{display:none}
-.progress{height:6px;background:#e8edf5;border-radius:99px;margin:0 0 14px;overflow:hidden}
-.bar{height:100%;background:var(--primary);width:0;transition:width .2s}
-.done{text-align:center;padding:20px 6px}
-.done .check{font-size:48px}
-.done h2{margin:8px 0}
-.tabs{display:flex;gap:8px;margin:14px 0}
-.tab{flex:1;background:#e9eef6;color:#33415c}
-.tab.active{background:#172033;color:#fff}
-.customer{background:white;border:1px solid var(--border);border-radius:14px;padding:14px;margin:10px 0}
-.customer h3{margin:0 0 8px;font-size:18px}
-.meta{font-size:14px;color:var(--muted);line-height:1.6}
-.hist{font-size:14px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);white-space:pre-wrap}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-.notice{background:#fff7d6;border:1px solid #f0df9a;border-radius:12px;padding:10px 12px;font-size:13px;color:#66571b;margin-bottom:14px}
-.badge{display:inline-block;background:#edf4ff;color:#1756a9;border-radius:999px;padding:4px 8px;font-size:12px;margin:2px 4px 2px 0}
 
-.matchbox{margin-top:12px;padding:12px;border:1px solid #cfe0fb;background:#f5f9ff;border-radius:12px}
-.matchtitle{font-size:13px;font-weight:700;color:#1f6feb;margin-bottom:8px}
-.matchitem{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px dashed #dce6f5}
-.matchitem:first-of-type{border-top:0}
-.matchname{font-size:15px;font-weight:650}
-.matchmeta{font-size:12px;color:var(--muted);margin-top:3px}
-.usebtn{background:#e8f1ff;color:#1756a9;padding:8px 10px;font-size:13px;white-space:nowrap}
-.hint{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
-.selectednotice{margin-top:10px;padding:10px 12px;border-radius:10px;background:#ecfdf3;border:1px solid #b7ebc6;color:#166534;font-size:14px;font-weight:700}
-.datastatus{background:#eef8f0;border:1px solid #c7e5ce;border-radius:12px;padding:10px 12px;font-size:13px;color:#245b31;margin-bottom:14px;line-height:1.55}
-.datastatus b{color:#174d24}
-
-.historypreview{margin-top:12px;border:1px solid #cfe0f7;background:#f7fbff;border-radius:12px;padding:12px}
-.historypreview .htitle{font-size:14px;font-weight:800;color:#1756a9;margin-bottom:8px}
-.historypreview .hitem{padding:9px 0;border-top:1px dashed #d9e5f3;font-size:14px;line-height:1.55}
-.historypreview .hitem:first-of-type{border-top:0}
-.historypreview .hdate{font-weight:700;color:#33415c}
-.historypreview .hempty{font-size:13px;color:var(--muted)}
-
-.dashboard-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 0}
-.kpi{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px}
-.kpi b{display:block;font-size:26px;margin-top:4px}
-.task{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;margin:10px 0}
-.task.overdue{border-left:5px solid #dc2626}.task.today{border-left:5px solid #f59e0b}.task.future{border-left:5px solid #2563eb}
-.tasktop{display:flex;justify-content:space-between;gap:8px;align-items:center}
-.pri{font-size:12px;font-weight:800;border-radius:999px;padding:4px 8px;background:#eef3fa}
-.voicebox{background:#fff;border:1px solid var(--border);border-radius:18px;padding:18px}
-.mic{width:100%;font-size:20px;background:#172033;color:#fff;margin:10px 0}
-.transcript{min-height:110px}
-.confirmgrid{display:grid;gap:10px;margin-top:12px}
-.confirmitem{background:#f7f9fc;border:1px solid var(--border);border-radius:12px;padding:10px}
-.warn{background:#fff7d6;border-color:#f0df9a}
-.choicebar{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.choicebar button{padding:8px 10px;font-size:13px}
-.sectiontitle{font-size:19px;font-weight:800;margin:18px 0 8px}
-@media(min-width:700px){.dashboard-grid{grid-template-columns:repeat(4,1fr)}}
-
-
-.candidatebox{margin-top:8px}.candidate{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-top:1px dashed var(--border)}.candidate:first-child{border-top:0}.confhigh{color:#166534}.confmid{color:#92400e}.conflow{color:#991b1b}.confidence{font-size:12px;font-weight:800}
-
-.dbactions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-.editbtn{background:#e8f1ff;color:#1756a9;padding:8px 10px;font-size:13px}
-.delbtn{background:#fee2e2;color:#991b1b;padding:8px 10px;font-size:13px}
-.contactrow{border:1px solid var(--border);border-radius:10px;padding:10px;margin:8px 0;background:#fafcff}
-.histactions{display:flex;gap:6px;margin-top:8px}
-
-.attachbox{margin-top:10px;padding:10px;border:1px solid var(--border);border-radius:12px;background:#f8fafc}
-.attachitem{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px dashed var(--border)}
-.attachitem:first-child{border-top:0}.attachmeta{min-width:0;flex:1}.attachname{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.linkinput{width:100%;margin-top:6px}
-
-.fieldline{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px dashed var(--border)}
-.fieldline:first-child{border-top:0}.fieldmain{min-width:0;flex:1}.fieldlabel{font-size:12px;color:var(--muted);margin-bottom:3px}.fieldvalue{white-space:pre-wrap;word-break:break-word;line-height:1.55}.fieldactions{display:flex;gap:5px;flex-shrink:0}.fieldactions button{padding:7px 9px;font-size:12px}
-
-.dbnav{display:flex;align-items:center;gap:8px;margin:8px 0 12px;flex-wrap:wrap}
-.dbcrumb{font-size:13px;color:var(--muted)}
-.customerSummary,.entityCard,.reportCard{border:1px solid var(--border);border-radius:14px;padding:14px;margin:10px 0;background:#fff}
-.customerSummary h3,.entityCard h3{margin:0 0 8px}.countRow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}.countBox{border:1px solid var(--border);background:#f8fafc;border-radius:12px;padding:10px;text-align:center}.countBox b{display:block;font-size:22px;margin-top:2px}.recentTitle{font-size:13px;font-weight:800;color:#33415c;margin-top:10px}.miniReport{padding:9px 0;border-top:1px dashed var(--border)}.miniReport:first-child{border-top:0}.miniDate{font-size:12px;color:var(--muted);margin-bottom:3px}.miniContent{font-size:14px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.entityTop,.reportTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.pill{display:inline-block;background:#eef4ff;border-radius:999px;padding:4px 8px;font-size:12px;color:#33415c}.detailTitle{font-size:19px;font-weight:900;margin:8px 0}.reportCard{cursor:pointer}.reportCard:active{transform:scale(.995)}
-
-.previewOverlay{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}.previewCard{width:min(900px,100%);max-height:92vh;background:#fff;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}.previewHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)}.previewTitle{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.previewBody{padding:12px;overflow:auto;min-height:160px}.previewBody img{display:block;max-width:100%;height:auto;margin:auto}.previewBody iframe{width:100%;height:72vh;border:0}.previewBody video{max-width:100%;max-height:72vh}.previewBody audio{width:100%}.previewText{white-space:pre-wrap;word-break:break-word;font-size:14px}.previewActions{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border);flex-wrap:wrap}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <h1>客户管理助手</h1>
-  <div class="sub">PWA V5.1 · 本地智能识别 · 分层客户视图 · 本机附件</div>
-
-  <div class="tabs">
-    <button class="tab active" id="tabDash" onclick="showTab('dash')">看板</button>
-    <button class="tab" id="tabVoice" onclick="showTab('voice')">语音录入</button>
-    <button class="tab" id="tabDB" onclick="showTab('db')">客户库</button>
-  </div>
-
-  <section id="dashPanel">
-    <div class="dashboard-grid">
-      <div class="kpi">已逾期<b id="kOverdue">0</b></div>
-      <div class="kpi">今天<b id="kToday">0</b></div>
-      <div class="kpi">未来7天<b id="kWeek">0</b></div>
-      <div class="kpi">等待客户<b id="kWaiting">0</b></div>
-    </div>
-    <div class="sectiontitle">今天最该处理</div>
-    <div id="taskList"></div>
-  </section>
-
-  <section id="voicePanel" class="hidden">
-    <div class="voicebox">
-      <div class="question">🎙️ 说一次拜访</div><div class="notice"><b>新增只走语音：</b>识别后所有字段都可以在确认页修改；确认无误后再保存。</div>
-      <div class="meta">例如：今天拜访西开电气王经理，聊了550项目，下周三上午十点跟进，比较重要。</div>
-      <button class="mic" id="micBtn" onclick="toggleVoice()">开始说话</button>
-      <textarea id="voiceText" class="transcript" placeholder="识别结果会出现在这里；也可以直接粘贴或手动输入。"></textarea>
-      <div class="row"><button class="primary" onclick="extractVoice()">提取关键信息</button></div>
-      <div id="voiceConfirm"></div>
-    </div>
-  </section>
-
-  <section id="formPanel" class="hidden" style="display:none!important">
-    <div class="notice"><b>数据安全：</b>新打开的网页初始数据库为空。每次“仅保存”都会立即写入本机浏览器；当天最后一次拜访建议点“保存并导出数据”，再把 JSON 存到“文件”App / iCloud Drive。浏览器数据用于日常工作，JSON 文件作为长期备份。</div>
-    <div class="datastatus" id="dataStatus">正在检查主数据状态…</div>
-    <div class="progress"><div class="bar" id="bar"></div></div>
-    <div class="card" id="formCard">
-      <div class="step" id="stepLabel"></div>
-      <div class="question" id="question"></div>
-      <div id="field"></div>
-      <div class="row">
-        <button class="secondary" id="backBtn" onclick="prevStep()">上一步</button>
-        <button class="primary" id="nextBtn" onclick="nextStep()">下一步</button>
-      </div>
-    </div>
-
-    <div class="card hidden" id="doneCard">
-      <div class="done">
-        <div class="check">✅</div>
-        <h2>已保存</h2>
-        <div class="meta" id="doneText"></div>
-        <div class="row">
-          <button class="primary" onclick="showTab('voice')">继续语音录入</button>
-          <button class="secondary" onclick="showTab('db')">查看客户库</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="dbPanel" class="hidden">
-    <div class="toolbar">
-      <button class="primary small" onclick="saveAndExportData()">备份当前数据库</button>
-      <button class="secondary small" onclick="document.getElementById('importFile').click()">导入主数据 JSON</button>
-      <button class="secondary small" onclick="exportCSV()">导出 CSV 查看</button>
-      <input id="importFile" type="file" accept=".json" class="hidden" onchange="importJSON(event)">
-    </div>
-    <input id="search" placeholder="搜索客户 / 联系人 / 电话" oninput="renderDB()" style="margin:8px 0 12px">
-    <div id="dbList"></div>
-  </section>
-</div>
-
-<script>
-const SEED = [];
+const SEED = [{"name": "北京双杰", "contacts": [], "history": [{"date": "", "contact": "", "office": "北京", "content": "现在想要做126gis，拿的泰山的图纸，三工位导体直径58mm，用cudd。做完再做252，还没定方案。充气柜主要做1250以下，弹簧就够了。也找天津平高做过代工，快速接地用的刀闸", "todo": ""}], "defaultOffice": "北京"}, {"name": "北京科锐", "contacts": [], "history": [{"date": "", "contact": "", "office": "北京", "content": "变压器，环网柜，箱变为主，充气柜几乎没有。刚装了一台3150充气柜，做组装，买江苏森源的开关", "todo": ""}], "defaultOffice": "北京"}, {"name": "北京合纵", "contacts": [], "history": [{"date": "", "contact": "", "office": "北京", "content": "几乎破产，不到50人，能中标，贴牌", "todo": ""}], "defaultOffice": "北京"}, {"name": "北京搏世因", "contacts": [], "history": [{"date": "", "contact": "", "office": "北京", "content": "套管弹簧用的多，表带cud一点点", "todo": ""}, {"date": "", "contact": "", "office": "北京", "content": "建新厂没有时间入新供方，得到2027年", "todo": ""}], "defaultOffice": "北京"}, {"name": "常州洛凯高压", "contacts": [], "history": [{"date": "", "contact": "", "office": "常州", "content": "做充气柜，弹簧多，3150A100直径2条弹簧能过实验，4000A没过实验", "todo": ""}, {"date": "", "contact": "", "office": "常州", "content": "4000A的装在轴上，用的mc的cudd。还没做实验。mc今年要出新表带", "todo": ""}], "defaultOffice": "常州"}, {"name": "天津平高", "contacts": [], "history": [{"date": "", "contact": "", "office": "天津", "content": "充气柜要国产化，计划更换三工位cux和侧并cud", "todo": ""}, {"date": "", "contact": "", "office": "天津", "content": "4000A轴120mm 壁厚22.5mm，给了LSS方案98pian", "todo": ""}, {"date": "", "contact": "", "office": "天津", "content": "环网柜快速接地40mm 25kA/4s，用线径2的弹簧，8月做实验", "todo": ""}, {"date": "", "contact": "", "office": "天津", "content": "柱上开关还没有量产", "todo": ""}], "defaultOffice": "天津"}, {"name": "上海天灵", "contacts": [{"name": "张明", "phone": "13621826507", "office": "上海", "note": "采购"}, {"name": "秦小燕", "phone": "15021012985", "office": "上海", "note": "采购"}, {"name": "徐齐齐", "phone": "18918272673", "office": "上海", "note": "副总工"}], "history": [{"date": "", "contact": "", "office": "上海", "content": "跟天津配网搞技术统一，从普莱威特采购lss做样机", "todo": ""}, {"date": "", "contact": "", "office": "上海", "content": "4000A的还没开始做，主要考虑内阻问题，温度升高后差异比较大", "todo": ""}], "defaultOffice": "上海"}, {"name": "西安德华瑞尔", "contacts": [], "history": [{"date": "", "contact": "", "office": "西安", "content": "做铁路隔离开关，用lse，120mm导体", "todo": ""}], "defaultOffice": "西安"}, {"name": "天津突破", "contacts": [], "history": [], "defaultOffice": "天津"}, {"name": "衡阳特变高压", "contacts": [], "history": [{"date": "", "contact": "", "office": "衡阳", "content": "做550以上，用cu，有计划换成国产", "todo": ""}], "defaultOffice": "衡阳"}, {"name": "衡阳特变中压", "contacts": [], "history": [], "defaultOffice": "衡阳"}, {"name": "如高中压", "contacts": [], "history": [{"date": "", "contact": "", "office": "如皋", "content": "有用cu，寻过国产", "todo": ""}], "defaultOffice": "如皋"}, {"name": "上海西门子开关", "contacts": [], "history": [{"date": "", "contact": "", "office": "上海", "content": "主要做空气柜，想了解3150断路器出线的成本和方案。快接地用刀闸式，41kA/4s", "todo": ""}], "defaultOffice": "上海"}, {"name": "上海巴佩", "contacts": [], "history": [{"date": "", "contact": "", "office": "上海", "content": "做充气柜，用弹簧为主，3150的用两条弹簧", "todo": ""}], "defaultOffice": "上海"}, {"name": "信一电力", "contacts": [], "history": [{"date": "", "contact": "", "office": "宁波", "content": "做充气柜，最大4000A，用过mc表带，现在都是弹簧", "todo": ""}], "defaultOffice": "宁波"}, {"name": "库柏 宁波", "contacts": [], "history": [{"date": "", "contact": "", "office": "宁波", "content": "充气柜 用表带和弹簧，表带用的维通利，环保气体还在做", "todo": ""}], "defaultOffice": "宁波"}, {"name": "江苏大全", "contacts": [], "history": [{"date": "", "contact": "", "office": "镇江", "content": "充气柜说是全国领先，天津平高抄他们的，4000A的目前在用弹簧验证。充气柜不用快速接地", "todo": ""}, {"date": "", "contact": "", "office": "镇江", "content": "已经国产化，采购需要投标，要走供应商流程", "todo": ""}], "defaultOffice": "镇江"}, {"name": "平高泰事达 泰州", "contacts": [], "history": [{"date": "", "contact": "", "office": "泰州", "content": "目前充气柜都外购开关本体，2027年要自产", "todo": ""}], "defaultOffice": "泰州"}, {"name": "正泰", "contacts": [{"name": "刘涛", "phone": "13889847880", "office": "上海", "note": "研发"}, {"name": "郭建火", "phone": "15902111631", "office": "上海", "note": "研发经理"}, {"name": "白刚", "phone": "18659263860", "office": "上海", "note": "研发"}], "history": [], "defaultOffice": "上海"}, {"name": "浙江聚弘凯", "contacts": [], "history": [{"date": "", "contact": "", "office": "杭州", "content": "做充气柜，用的弹簧", "todo": ""}], "defaultOffice": "杭州"}, {"name": "西门子能源高压 杭州", "contacts": [], "history": [{"date": "", "contact": "", "office": "杭州", "content": "做gis，好像之前联系过，有机会", "todo": ""}], "defaultOffice": "杭州"}, {"name": "江苏安靠", "contacts": [], "history": [{"date": "", "contact": "", "office": "常州", "content": "gil  cux", "todo": ""}], "defaultOffice": "常州"}, {"name": "施耐德中压", "contacts": [], "history": [{"date": "", "contact": "", "office": "北京", "content": "充气柜 2500A", "todo": ""}], "defaultOffice": "北京"}, {"name": "山东龙马电气", "contacts": [], "history": [{"date": "", "contact": "", "office": "青州", "content": "252  用的cud  75mm和40mm直径", "todo": ""}], "defaultOffice": "青州"}, {"name": "上海思源高压", "contacts": [], "history": [{"date": "", "contact": "", "office": "上海", "content": "低电压的快接地好像是用的MC的cud，两条", "todo": ""}], "defaultOffice": "上海"}, {"name": "西安豪特", "contacts": [], "history": [{"date": "", "contact": "", "office": "西安", "content": "40.5kv gis 母线 2500A 99mm 需求cud 120st  但是看图纸推测应该为107st", "todo": ""}], "defaultOffice": "西安"}, {"name": "石家庄科林", "contacts": [], "history": [{"date": "", "contact": "", "office": "石家庄", "content": "ZW68国网几乎没招标", "todo": ""}], "defaultOffice": "石家庄"}, {"name": "香江集团", "contacts": [], "history": [{"date": "", "contact": "", "office": "镇江", "content": "10kv 四工位旋转连接器，20A，盲插，sst连接", "todo": ""}], "defaultOffice": "镇江"}, {"name": "江苏太平洋", "contacts": [], "history": [{"date": "", "contact": "", "office": "常州", "content": "做电网和铁路，同一种结构，六氟化硫的全是刀闸，环保气体2500A用一条维科瑞cud，3150A打算用两条，准备开始设计", "todo": ""}], "defaultOffice": "常州"}, {"name": "常州伊顿", "contacts": [], "history": [{"date": "", "contact": "", "office": "常州", "content": "原来是常州森源，国内最好的中压开关，后来被伊顿收购，和库柏合资，宁波库柏做充气柜，平顶山伊顿做环网柜，上海伊顿做sst", "todo": ""}], "defaultOffice": "常州"}, {"name": "江苏森源", "contacts": [], "history": [{"date": "", "contact": "", "office": "昆山", "content": "3150用表带，量很小，有可能用MC的", "todo": ""}], "defaultOffice": "昆山"}, {"name": "特锐德 成都", "contacts": [], "history": [{"date": "", "contact": "", "office": "成都", "content": "做中压充气柜，全部用刀闸，4000A也用，锥形套管用神电的，cu", "todo": ""}], "defaultOffice": "成都"}, {"name": "西开电气", "contacts": [], "history": [{"date": "", "contact": "", "office": "西安", "content": "550，母线用的cud/126，初步认可我们的表带，等国产化需求", "todo": ""}, {"date": "", "contact": "", "office": "西安", "content": "管母用的HM触指，主要要求允许3度斜角，15000次45mm华东距离", "todo": ""}, {"date": "", "contact": "", "office": "西安", "content": "真空断路器用的cud和cudd。和西高所的方案没关系。", "todo": ""}, {"date": "", "contact": "", "office": "西安", "content": "发断说流程卡在供应链", "todo": ""}], "defaultOffice": "西安"}, {"name": "西开有限", "contacts": [], "history": [{"date": "", "contact": "", "office": "西安", "content": "126母线用的cux，之前用国产的测试通过了，装配力太大，不能用", "todo": ""}], "defaultOffice": "西安"}, {"name": "纵横机电", "contacts": [{"name": "董海鹏", "phone": "18610094287", "office": "", "note": "供应商管理"}, {"name": "岳领峰", "phone": "13561533748", "office": "", "note": "牵引计划经理"}, {"name": "刘阳", "phone": "18910257201", "office": "", "note": "交流传动开发部  机械工程师"}, {"name": "赵红利", "phone": "18001133610", "office": "", "note": "交流传动开发部 高级电气工程师"}, {"name": "李晨", "phone": "13301055651", "office": "", "note": "采购工程师"}], "history": []}, {"name": "中兴创元", "contacts": [{"name": "李明杰", "phone": "13951332686", "office": "", "note": "技术部长"}, {"name": "胡伟", "phone": "13912899927", "office": "", "note": "技术部副部长"}, {"name": "姜春花", "phone": "13862493603", "office": "", "note": "采购工程师"}], "history": []}, {"name": "安靠", "contacts": [{"name": "李松伟", "phone": "17637506270", "office": "", "note": "研发工程师"}, {"name": "王明杰", "phone": "18915810570", "office": "", "note": "质量工程师"}], "history": []}, {"name": "南京电气高压套管", "contacts": [{"name": "孙荣升", "phone": "13505149580", "office": "", "note": "技术部"}], "history": []}, {"name": "苏州兰姆达", "contacts": [{"name": "马天柱", "phone": "18061538296", "office": "", "note": "总工程师"}], "history": []}, {"name": "江苏思源中压", "contacts": [{"name": "刘海乐", "phone": "18964506658", "office": "", "note": "采购科长"}, {"name": "陈加明", "phone": "13817176546", "office": "", "note": "副总工"}], "history": []}, {"name": "阿尔斯通", "contacts": [{"name": "赵杨", "phone": "18121587603", "office": "", "note": "采购"}, {"name": "裴军", "phone": "16121587759", "office": "", "note": "技术总监"}], "history": []}, {"name": "厦门华电开关", "contacts": [{"name": "张兴朗", "phone": "13591185265", "office": "", "note": "研发工程师"}], "history": []}, {"name": "杭州西门子高压", "contacts": [{"name": "吴权峰", "phone": "15957119258", "office": "", "note": "220-550隔离开关"}], "history": []}, {"name": "上海大华", "contacts": [{"name": "陈迅煜", "phone": "13817615019", "office": "", "note": "采购"}, {"name": "蔡长胜", "phone": "15216844928", "office": "", "note": "技术工程师"}, {"name": "顾晓东", "phone": "13501935136", "office": "", "note": "技术经理"}, {"name": "朱晓东", "phone": "13651818543", "office": "", "note": "总工"}], "history": []}, {"name": "上海思源高压开关", "contacts": [{"name": "董源清", "phone": "18017518637", "office": "", "note": "研发工程师"}, {"name": "李海强", "phone": "15861122852", "office": "", "note": "220GIL 研发"}, {"name": "崔杰", "phone": "18117452790", "office": "", "note": "550 GIL 研发"}], "history": []}, {"name": "特变云集", "contacts": [{"name": "赵永福", "phone": "18573411627", "office": "", "note": "研发"}, {"name": "殷福昱", "phone": "18573410832", "office": "", "note": "研发 550"}, {"name": "汤伟", "phone": "18573410661", "office": "", "note": "研发"}], "history": []}, {"name": "上海金盘", "contacts": [{"name": "陈", "phone": "18698581919", "office": "", "note": "研发"}], "history": []}, {"name": "上海西开", "contacts": [{"name": "罗睿康", "phone": "13786664693", "office": "", "note": "研发"}], "history": []}, {"name": "现代重工", "contacts": [{"name": "翁", "phone": "17209646865", "office": "", "note": "研发"}], "history": []}, {"name": "江苏新纪元", "contacts": [{"name": "汤智", "phone": "13773382368", "office": "", "note": "研发工程师"}], "history": []}];
 const KEY = 'mobile_crm_v1_data';
 const META_KEY = 'mobile_crm_v1_meta';
 const ALIAS_KEY = 'mobile_crm_v5_aliases';
 let learnedAliases = JSON.parse(localStorage.getItem(ALIAS_KEY) || '{}');
 let data = JSON.parse(localStorage.getItem(KEY) || 'null') || SEED;
-let meta = JSON.parse(localStorage.getItem(META_KEY) || 'null') || {source:'空白数据库', fileName:'', importedAt:'', exportedAt:''};
+let meta = JSON.parse(localStorage.getItem(META_KEY) || 'null') || {source:'内置初始数据', fileName:'', importedAt:'', exportedAt:''};
 let step = 0;
 let answers = {
   customer:'', contact:'', phone:'', office:'',
@@ -534,10 +350,11 @@ function commit() {
     attachments:answers.attachments||[]
   });
   saveStore();
+  exportJSON(true);
   document.getElementById('formCard').classList.add('hidden');
   document.getElementById('doneCard').classList.remove('hidden');
   document.getElementById('doneText').innerHTML =
-    `${esc(answers.customer)} · ${esc(answers.contact)} · ${esc(answers.date)}<br><b>已保存到本机；需要备份时点“保存并导出数据”</b>`;
+    `${esc(answers.customer)} · ${esc(answers.contact)} · ${esc(answers.date)}<br><b>已生成最新 JSON 主数据文件</b>`;
   renderDB();
   updateDataStatus();
 }
@@ -785,48 +602,14 @@ function download(name, text, type) {
   setTimeout(()=>URL.revokeObjectURL(a.href),500);
 }
 
-async function requestPersistentStorage(){
-  try{
-    if(navigator.storage && navigator.storage.persist){
-      const already = navigator.storage.persisted ? await navigator.storage.persisted() : false;
-      if(!already) await navigator.storage.persist();
-    }
-  }catch(e){}
-}
-async function saveAndExportData() {
-  saveStore();
-  await requestPersistentStorage();
-  await exportJSON(false);
-}
-
-async function exportJSON(auto=false) {
-  const filename='CRM数据库备份_'+safeStamp()+'.json';
+function exportJSON(auto=false) {
+  const filename='CRM主数据_'+safeStamp()+'.json';
   meta.exportedAt=nowText();
   meta.source='JSON主数据 / 浏览器临时副本同步';
   saveStore();
-  await requestPersistentStorage();
-  const text=JSON.stringify(data,null,2);
-  const file=new File([text],filename,{type:'application/json'});
-  let method='download';
-  try{
-    if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
-      await navigator.share({files:[file],title:'CRM 数据库备份',text:'请选择“存储到文件”来保存这份 CRM 数据库备份。'});
-      method='share';
-    }else{
-      download(filename,text,'application/json');
-    }
-  }catch(e){
-    if(e && e.name==='AbortError'){ updateDataStatus(); return false; }
-    download(filename,text,'application/json');
-  }
+  download(filename,JSON.stringify(data,null,2),'application/json');
   updateDataStatus();
-  if(!auto){
-    const msg=method==='share'
-      ? '浏览器数据已保存，数据库文件已生成。\n文件名：'+filename+'\n如果刚才选择“存储到文件”，文件就在你选择的位置。'
-      : '浏览器数据已保存，数据库文件已生成。\n文件名：'+filename+'\n当前浏览器不支持直接选择位置，文件已进入浏览器下载项目。';
-    setTimeout(()=>alert(msg),80);
-  }
-  return true;
+  if(!auto) setTimeout(()=>alert('已生成最新 JSON 主数据文件。以后恢复或换新版 HTML 时，导入最新这份 JSON 即可。'),80);
 }
 
 function csvCell(v) {
@@ -861,7 +644,7 @@ function importJSON(e) {
       renderDB();
       resetForm();
       updateDataStatus();
-      alert('主数据 JSON 已导入。现在可以继续录入；需要备份时点“保存并导出数据”。');
+      alert('主数据 JSON 已导入。现在可以继续录入；每次保存都会自动生成新的最新 JSON。');
     } catch { alert('JSON 主数据文件格式不正确'); }
   };
   r.readAsText(file);
@@ -1133,7 +916,7 @@ function renderVoiceConfirm(customers=window.voiceCustomerCandidates||[],contact
     <input id="voiceFileInput" type="file" multiple style="display:none" onchange="addVoiceFiles(this.files)">
     <div id="voiceAttachments"></div>
   </div>
-  </div><div class="row save-actions"><button class="secondary" onclick="saveVoiceDraft(false)">仅保存</button><button class="primary" onclick="saveVoiceDraft(true)">保存并导出数据</button></div><div class="meta" style="margin-top:8px">仅保存：写入本机浏览器，不生成文件。保存并导出：先保存本次拜访，再生成完整 JSON 备份，并在手机支持时调出系统分享/存储界面。</div>`;
+  </div><div class="row"><button class="primary" onclick="saveVoiceDraft()">确认并保存</button></div>`;
   setTimeout(renderVoiceAttachments,0);
 }
 function learnCustomerAlias(value){
@@ -1269,19 +1052,13 @@ function addHistoryLink(ci,hi){
   h.attachments=h.attachments||[];h.attachments.push({id:newId(),kind:'link',name:name.trim(),url:url.trim(),note:''});
   saveStore();renderDB();
 }
-async function saveVoiceDraft(withExport=false){
+function saveVoiceDraft(){
   const d=window.voiceDraft;if(!d)return;
   d.date=vcDate.value;d.content=vcContent.value.trim();d.todo=vcTodo.value.trim();d.followUpAt=vcFollow.value;d.priority=vcPri.value;d.status=vcStatus.value;
   if(!d.customer||!d.contact||!d.content)return alert('客户、联系人和沟通内容需要确认');
   answers={customer:d.customer,contact:d.contact,phone:'',office:'',date:d.date,content:d.content,todo:d.todo,followUpAt:d.followUpAt,priority:d.priority,status:d.status,attachments:d.attachments||[]};
-  commit();
-  await requestPersistentStorage();
-  if(withExport) await exportJSON(false);
-  else alert('本次拜访已保存到浏览器本地数据库。未生成备份文件。');
-  voiceText.value=''; voiceConfirm.innerHTML=''; showTab('dash'); renderDashboard();
+  commit(); voiceText.value=''; voiceConfirm.innerHTML=''; showTab('dash'); renderDashboard();
 }
-
-requestPersistentStorage();
 
 if('serviceWorker' in navigator && location.protocol!=='file:'){
   const hadController = !!navigator.serviceWorker.controller;
@@ -1304,6 +1081,3 @@ renderDB();
 renderDashboard();
 updateDataStatus();
 showTab('dash');
-</script>
-</body>
-</html>
