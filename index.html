@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>客户管理助手</title>
+<meta name="theme-color" content="#172033">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="客户管理助手">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root {
+  --bg:#f5f7fb; --card:#fff; --text:#172033; --muted:#6d7890;
+  --primary:#1f6feb; --border:#dfe5ef; --ok:#15803d;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--text)}
+.wrap{max-width:760px;margin:0 auto;padding:18px 14px 90px}
+h1{font-size:24px;margin:8px 0 4px}
+.sub{color:var(--muted);font-size:14px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:0 4px 18px rgba(20,36,70,.05)}
+.step{font-size:13px;color:var(--primary);font-weight:700;margin-bottom:8px}
+.question{font-size:22px;font-weight:750;margin-bottom:16px}
+input,textarea,select{width:100%;font-size:18px;padding:14px;border:1px solid var(--border);border-radius:12px;background:#fff;outline:none}
+textarea{min-height:150px;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(31,111,235,.10)}
+.row{display:flex;gap:10px;margin-top:16px}
+button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:700;cursor:pointer}
+.primary{background:var(--primary);color:white;flex:1}
+.secondary{background:#eef3fa;color:#25324a}
+.small{padding:10px 12px;font-size:14px}
+.hidden{display:none}
+.progress{height:6px;background:#e8edf5;border-radius:99px;margin:0 0 14px;overflow:hidden}
+.bar{height:100%;background:var(--primary);width:0;transition:width .2s}
+.done{text-align:center;padding:20px 6px}
+.done .check{font-size:48px}
+.done h2{margin:8px 0}
+.tabs{display:flex;gap:8px;margin:14px 0}
+.tab{flex:1;background:#e9eef6;color:#33415c}
+.tab.active{background:#172033;color:#fff}
+.customer{background:white;border:1px solid var(--border);border-radius:14px;padding:14px;margin:10px 0}
+.customer h3{margin:0 0 8px;font-size:18px}
+.meta{font-size:14px;color:var(--muted);line-height:1.6}
+.hist{font-size:14px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);white-space:pre-wrap}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.notice{background:#fff7d6;border:1px solid #f0df9a;border-radius:12px;padding:10px 12px;font-size:13px;color:#66571b;margin-bottom:14px}
+.badge{display:inline-block;background:#edf4ff;color:#1756a9;border-radius:999px;padding:4px 8px;font-size:12px;margin:2px 4px 2px 0}
+
+.matchbox{margin-top:12px;padding:12px;border:1px solid #cfe0fb;background:#f5f9ff;border-radius:12px}
+.matchtitle{font-size:13px;font-weight:700;color:#1f6feb;margin-bottom:8px}
+.matchitem{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px dashed #dce6f5}
+.matchitem:first-of-type{border-top:0}
+.matchname{font-size:15px;font-weight:650}
+.matchmeta{font-size:12px;color:var(--muted);margin-top:3px}
+.usebtn{background:#e8f1ff;color:#1756a9;padding:8px 10px;font-size:13px;white-space:nowrap}
+.hint{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
+.selectednotice{margin-top:10px;padding:10px 12px;border-radius:10px;background:#ecfdf3;border:1px solid #b7ebc6;color:#166534;font-size:14px;font-weight:700}
+.datastatus{background:#eef8f0;border:1px solid #c7e5ce;border-radius:12px;padding:10px 12px;font-size:13px;color:#245b31;margin-bottom:14px;line-height:1.55}
+.datastatus b{color:#174d24}
+
+.historypreview{margin-top:12px;border:1px solid #cfe0f7;background:#f7fbff;border-radius:12px;padding:12px}
+.historypreview .htitle{font-size:14px;font-weight:800;color:#1756a9;margin-bottom:8px}
+.historypreview .hitem{padding:9px 0;border-top:1px dashed #d9e5f3;font-size:14px;line-height:1.55}
+.historypreview .hitem:first-of-type{border-top:0}
+.historypreview .hdate{font-weight:700;color:#33415c}
+.historypreview .hempty{font-size:13px;color:var(--muted)}
+
+.dashboard-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 0}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px}
+.kpi b{display:block;font-size:26px;margin-top:4px}
+.task{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;margin:10px 0}
+.task.overdue{border-left:5px solid #dc2626}.task.today{border-left:5px solid #f59e0b}.task.future{border-left:5px solid #2563eb}
+.tasktop{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.pri{font-size:12px;font-weight:800;border-radius:999px;padding:4px 8px;background:#eef3fa}
+.voicebox{background:#fff;border:1px solid var(--border);border-radius:18px;padding:18px}
+.mic{width:100%;font-size:20px;background:#172033;color:#fff;margin:10px 0}
+.transcript{min-height:110px}
+.confirmgrid{display:grid;gap:10px;margin-top:12px}
+.confirmitem{background:#f7f9fc;border:1px solid var(--border);border-radius:12px;padding:10px}
+.warn{background:#fff7d6;border-color:#f0df9a}
+.choicebar{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.choicebar button{padding:8px 10px;font-size:13px}
+.sectiontitle{font-size:19px;font-weight:800;margin:18px 0 8px}
+@media(min-width:700px){.dashboard-grid{grid-template-columns:repeat(4,1fr)}}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>客户管理助手</h1>
+  <div class="sub">逐题填写 · 保存后自动归到对应客户</div>
+
+  <div class="tabs">
+    <button class="tab active" id="tabDash" onclick="showTab('dash')">看板</button>
+    <button class="tab" id="tabVoice" onclick="showTab('voice')">语音</button>
+    <button class="tab" id="tabForm" onclick="showTab('form')">录入</button>
+    <button class="tab" id="tabDB" onclick="showTab('db')">客户库</button>
+  </div>
+
+  <section id="dashPanel">
+    <div class="dashboard-grid">
+      <div class="kpi">已逾期<b id="kOverdue">0</b></div>
+      <div class="kpi">今天<b id="kToday">0</b></div>
+      <div class="kpi">未来7天<b id="kWeek">0</b></div>
+      <div class="kpi">等待客户<b id="kWaiting">0</b></div>
+    </div>
+    <div class="sectiontitle">今天最该处理</div>
+    <div id="taskList"></div>
+  </section>
+
+  <section id="voicePanel" class="hidden">
+    <div class="voicebox">
+      <div class="question">🎙️ 说一次拜访</div>
+      <div class="meta">例如：今天拜访西开电气王经理，聊了550项目，下周三上午十点跟进，比较重要。</div>
+      <button class="mic" id="micBtn" onclick="toggleVoice()">开始说话</button>
+      <textarea id="voiceText" class="transcript" placeholder="识别结果会出现在这里；也可以直接粘贴或手动输入。"></textarea>
+      <div class="row"><button class="primary" onclick="extractVoice()">提取关键信息</button></div>
+      <div id="voiceConfirm"></div>
+    </div>
+  </section>
+
+  <section id="formPanel" class="hidden">
+    <div class="notice"><b>主数据规则：</b>JSON 文件是正式主数据；浏览器中的数据只作为临时工作副本。每次保存一条记录后，会自动生成一份最新 JSON 主数据文件。</div>
+    <div class="datastatus" id="dataStatus">正在检查主数据状态…</div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div class="card" id="formCard">
+      <div class="step" id="stepLabel"></div>
+      <div class="question" id="question"></div>
+      <div id="field"></div>
+      <div class="row">
+        <button class="secondary" id="backBtn" onclick="prevStep()">上一步</button>
+        <button class="primary" id="nextBtn" onclick="nextStep()">下一步</button>
+      </div>
+    </div>
+
+    <div class="card hidden" id="doneCard">
+      <div class="done">
+        <div class="check">✅</div>
+        <h2>已保存</h2>
+        <div class="meta" id="doneText"></div>
+        <div class="row">
+          <button class="primary" onclick="resetForm()">继续录入</button>
+          <button class="secondary" onclick="showTab('db')">查看客户库</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="dbPanel" class="hidden">
+    <div class="toolbar">
+      <button class="secondary small" onclick="exportJSON(false)">导出主数据 JSON</button>
+      <button class="secondary small" onclick="document.getElementById('importFile').click()">导入主数据 JSON</button>
+      <button class="secondary small" onclick="exportCSV()">导出 CSV 查看</button>
+      <input id="importFile" type="file" accept=".json" class="hidden" onchange="importJSON(event)">
+    </div>
+    <input id="search" placeholder="搜索客户 / 联系人 / 电话" oninput="renderDB()" style="margin:8px 0 12px">
+    <div id="dbList"></div>
+  </section>
+</div>
+
+<script>
+const SEED = [{"name": "北京双杰", "contacts": [], "history": [{"date": "", "contact": "", "office": "北京", "content": "现在想要做126gis，拿的泰山的图纸，三工位导体直径58mm，用cudd。做完再做252，还没定方案。充气柜主要做1250以下，弹簧就够了。也找天津平高做过代工，快速接地用的刀闸", "todo": ""}], "defaultOffice": "北京"}, {"name": "北京科锐", "contacts": [], "history": [{"date": "", "contact": "", "office": "北京", "content": "变压器，环网柜，箱变为主，充气柜几乎没有。刚装了一台3150充气柜，做组装，买江苏森源的开关", "todo": ""}], "defaultOffice": "北京"}, {"name": "北京合纵", "contacts": [], "history": [{"date": "", "contact": "", "office": "北京", "content": "几乎破产，不到50人，能中标，贴牌", "todo": ""}], "defaultOffice": "北京"}, {"name": "北京搏世因", "contacts": [], "history": [{"date": "", "contact": "", "office": "北京", "content": "套管弹簧用的多，表带cud一点点", "todo": ""}, {"date": "", "contact": "", "office": "北京", "content": "建新厂没有时间入新供方，得到2027年", "todo": ""}], "defaultOffice": "北京"}, {"name": "常州洛凯高压", "contacts": [], "history": [{"date": "", "contact": "", "office": "常州", "content": "做充气柜，弹簧多，3150A100直径2条弹簧能过实验，4000A没过实验", "todo": ""}, {"date": "", "contact": "", "office": "常州", "content": "4000A的装在轴上，用的mc的cudd。还没做实验。mc今年要出新表带", "todo": ""}], "defaultOffice": "常州"}, {"name": "天津平高", "contacts": [], "history": [{"date": "", "contact": "", "office": "天津", "content": "充气柜要国产化，计划更换三工位cux和侧并cud", "todo": ""}, {"date": "", "contact": "", "office": "天津", "content": "4000A轴120mm 壁厚22.5mm，给了LSS方案98pian", "todo": ""}, {"date": "", "contact": "", "office": "天津", "content": "环网柜快速接地40mm 25kA/4s，用线径2的弹簧，8月做实验", "todo": ""}, {"date": "", "contact": "", "office": "天津", "content": "柱上开关还没有量产", "todo": ""}], "defaultOffice": "天津"}, {"name": "上海天灵", "contacts": [{"name": "张明", "phone": "13621826507", "office": "上海", "note": "采购"}, {"name": "秦小燕", "phone": "15021012985", "office": "上海", "note": "采购"}, {"name": "徐齐齐", "phone": "18918272673", "office": "上海", "note": "副总工"}], "history": [{"date": "", "contact": "", "office": "上海", "content": "跟天津配网搞技术统一，从普莱威特采购lss做样机", "todo": ""}, {"date": "", "contact": "", "office": "上海", "content": "4000A的还没开始做，主要考虑内阻问题，温度升高后差异比较大", "todo": ""}], "defaultOffice": "上海"}, {"name": "西安德华瑞尔", "contacts": [], "history": [{"date": "", "contact": "", "office": "西安", "content": "做铁路隔离开关，用lse，120mm导体", "todo": ""}], "defaultOffice": "西安"}, {"name": "天津突破", "contacts": [], "history": [], "defaultOffice": "天津"}, {"name": "衡阳特变高压", "contacts": [], "history": [{"date": "", "contact": "", "office": "衡阳", "content": "做550以上，用cu，有计划换成国产", "todo": ""}], "defaultOffice": "衡阳"}, {"name": "衡阳特变中压", "contacts": [], "history": [], "defaultOffice": "衡阳"}, {"name": "如高中压", "contacts": [], "history": [{"date": "", "contact": "", "office": "如皋", "content": "有用cu，寻过国产", "todo": ""}], "defaultOffice": "如皋"}, {"name": "上海西门子开关", "contacts": [], "history": [{"date": "", "contact": "", "office": "上海", "content": "主要做空气柜，想了解3150断路器出线的成本和方案。快接地用刀闸式，41kA/4s", "todo": ""}], "defaultOffice": "上海"}, {"name": "上海巴佩", "contacts": [], "history": [{"date": "", "contact": "", "office": "上海", "content": "做充气柜，用弹簧为主，3150的用两条弹簧", "todo": ""}], "defaultOffice": "上海"}, {"name": "信一电力", "contacts": [], "history": [{"date": "", "contact": "", "office": "宁波", "content": "做充气柜，最大4000A，用过mc表带，现在都是弹簧", "todo": ""}], "defaultOffice": "宁波"}, {"name": "库柏 宁波", "contacts": [], "history": [{"date": "", "contact": "", "office": "宁波", "content": "充气柜 用表带和弹簧，表带用的维通利，环保气体还在做", "todo": ""}], "defaultOffice": "宁波"}, {"name": "江苏大全", "contacts": [], "history": [{"date": "", "contact": "", "office": "镇江", "content": "充气柜说是全国领先，天津平高抄他们的，4000A的目前在用弹簧验证。充气柜不用快速接地", "todo": ""}, {"date": "", "contact": "", "office": "镇江", "content": "已经国产化，采购需要投标，要走供应商流程", "todo": ""}], "defaultOffice": "镇江"}, {"name": "平高泰事达 泰州", "contacts": [], "history": [{"date": "", "contact": "", "office": "泰州", "content": "目前充气柜都外购开关本体，2027年要自产", "todo": ""}], "defaultOffice": "泰州"}, {"name": "正泰", "contacts": [{"name": "刘涛", "phone": "13889847880", "office": "上海", "note": "研发"}, {"name": "郭建火", "phone": "15902111631", "office": "上海", "note": "研发经理"}, {"name": "白刚", "phone": "18659263860", "office": "上海", "note": "研发"}], "history": [], "defaultOffice": "上海"}, {"name": "浙江聚弘凯", "contacts": [], "history": [{"date": "", "contact": "", "office": "杭州", "content": "做充气柜，用的弹簧", "todo": ""}], "defaultOffice": "杭州"}, {"name": "西门子能源高压 杭州", "contacts": [], "history": [{"date": "", "contact": "", "office": "杭州", "content": "做gis，好像之前联系过，有机会", "todo": ""}], "defaultOffice": "杭州"}, {"name": "江苏安靠", "contacts": [], "history": [{"date": "", "contact": "", "office": "常州", "content": "gil  cux", "todo": ""}], "defaultOffice": "常州"}, {"name": "施耐德中压", "contacts": [], "history": [{"date": "", "contact": "", "office": "北京", "content": "充气柜 2500A", "todo": ""}], "defaultOffice": "北京"}, {"name": "山东龙马电气", "contacts": [], "history": [{"date": "", "contact": "", "office": "青州", "content": "252  用的cud  75mm和40mm直径", "todo": ""}], "defaultOffice": "青州"}, {"name": "上海思源高压", "contacts": [], "history": [{"date": "", "contact": "", "office": "上海", "content": "低电压的快接地好像是用的MC的cud，两条", "todo": ""}], "defaultOffice": "上海"}, {"name": "西安豪特", "contacts": [], "history": [{"date": "", "contact": "", "office": "西安", "content": "40.5kv gis 母线 2500A 99mm 需求cud 120st  但是看图纸推测应该为107st", "todo": ""}], "defaultOffice": "西安"}, {"name": "石家庄科林", "contacts": [], "history": [{"date": "", "contact": "", "office": "石家庄", "content": "ZW68国网几乎没招标", "todo": ""}], "defaultOffice": "石家庄"}, {"name": "香江集团", "contacts": [], "history": [{"date": "", "contact": "", "office": "镇江", "content": "10kv 四工位旋转连接器，20A，盲插，sst连接", "todo": ""}], "defaultOffice": "镇江"}, {"name": "江苏太平洋", "contacts": [], "history": [{"date": "", "contact": "", "office": "常州", "content": "做电网和铁路，同一种结构，六氟化硫的全是刀闸，环保气体2500A用一条维科瑞cud，3150A打算用两条，准备开始设计", "todo": ""}], "defaultOffice": "常州"}, {"name": "常州伊顿", "contacts": [], "history": [{"date": "", "contact": "", "office": "常州", "content": "原来是常州森源，国内最好的中压开关，后来被伊顿收购，和库柏合资，宁波库柏做充气柜，平顶山伊顿做环网柜，上海伊顿做sst", "todo": ""}], "defaultOffice": "常州"}, {"name": "江苏森源", "contacts": [], "history": [{"date": "", "contact": "", "office": "昆山", "content": "3150用表带，量很小，有可能用MC的", "todo": ""}], "defaultOffice": "昆山"}, {"name": "特锐德 成都", "contacts": [], "history": [{"date": "", "contact": "", "office": "成都", "content": "做中压充气柜，全部用刀闸，4000A也用，锥形套管用神电的，cu", "todo": ""}], "defaultOffice": "成都"}, {"name": "西开电气", "contacts": [], "history": [{"date": "", "contact": "", "office": "西安", "content": "550，母线用的cud/126，初步认可我们的表带，等国产化需求", "todo": ""}, {"date": "", "contact": "", "office": "西安", "content": "管母用的HM触指，主要要求允许3度斜角，15000次45mm华东距离", "todo": ""}, {"date": "", "contact": "", "office": "西安", "content": "真空断路器用的cud和cudd。和西高所的方案没关系。", "todo": ""}, {"date": "", "contact": "", "office": "西安", "content": "发断说流程卡在供应链", "todo": ""}], "defaultOffice": "西安"}, {"name": "西开有限", "contacts": [], "history": [{"date": "", "contact": "", "office": "西安", "content": "126母线用的cux，之前用国产的测试通过了，装配力太大，不能用", "todo": ""}], "defaultOffice": "西安"}, {"name": "纵横机电", "contacts": [{"name": "董海鹏", "phone": "18610094287", "office": "", "note": "供应商管理"}, {"name": "岳领峰", "phone": "13561533748", "office": "", "note": "牵引计划经理"}, {"name": "刘阳", "phone": "18910257201", "office": "", "note": "交流传动开发部  机械工程师"}, {"name": "赵红利", "phone": "18001133610", "office": "", "note": "交流传动开发部 高级电气工程师"}, {"name": "李晨", "phone": "13301055651", "office": "", "note": "采购工程师"}], "history": []}, {"name": "中兴创元", "contacts": [{"name": "李明杰", "phone": "13951332686", "office": "", "note": "技术部长"}, {"name": "胡伟", "phone": "13912899927", "office": "", "note": "技术部副部长"}, {"name": "姜春花", "phone": "13862493603", "office": "", "note": "采购工程师"}], "history": []}, {"name": "安靠", "contacts": [{"name": "李松伟", "phone": "17637506270", "office": "", "note": "研发工程师"}, {"name": "王明杰", "phone": "18915810570", "office": "", "note": "质量工程师"}], "history": []}, {"name": "南京电气高压套管", "contacts": [{"name": "孙荣升", "phone": "13505149580", "office": "", "note": "技术部"}], "history": []}, {"name": "苏州兰姆达", "contacts": [{"name": "马天柱", "phone": "18061538296", "office": "", "note": "总工程师"}], "history": []}, {"name": "江苏思源中压", "contacts": [{"name": "刘海乐", "phone": "18964506658", "office": "", "note": "采购科长"}, {"name": "陈加明", "phone": "13817176546", "office": "", "note": "副总工"}], "history": []}, {"name": "阿尔斯通", "contacts": [{"name": "赵杨", "phone": "18121587603", "office": "", "note": "采购"}, {"name": "裴军", "phone": "16121587759", "office": "", "note": "技术总监"}], "history": []}, {"name": "厦门华电开关", "contacts": [{"name": "张兴朗", "phone": "13591185265", "office": "", "note": "研发工程师"}], "history": []}, {"name": "杭州西门子高压", "contacts": [{"name": "吴权峰", "phone": "15957119258", "office": "", "note": "220-550隔离开关"}], "history": []}, {"name": "上海大华", "contacts": [{"name": "陈迅煜", "phone": "13817615019", "office": "", "note": "采购"}, {"name": "蔡长胜", "phone": "15216844928", "office": "", "note": "技术工程师"}, {"name": "顾晓东", "phone": "13501935136", "office": "", "note": "技术经理"}, {"name": "朱晓东", "phone": "13651818543", "office": "", "note": "总工"}], "history": []}, {"name": "上海思源高压开关", "contacts": [{"name": "董源清", "phone": "18017518637", "office": "", "note": "研发工程师"}, {"name": "李海强", "phone": "15861122852", "office": "", "note": "220GIL 研发"}, {"name": "崔杰", "phone": "18117452790", "office": "", "note": "550 GIL 研发"}], "history": []}, {"name": "特变云集", "contacts": [{"name": "赵永福", "phone": "18573411627", "office": "", "note": "研发"}, {"name": "殷福昱", "phone": "18573410832", "office": "", "note": "研发 550"}, {"name": "汤伟", "phone": "18573410661", "office": "", "note": "研发"}], "history": []}, {"name": "上海金盘", "contacts": [{"name": "陈", "phone": "18698581919", "office": "", "note": "研发"}], "history": []}, {"name": "上海西开", "contacts": [{"name": "罗睿康", "phone": "13786664693", "office": "", "note": "研发"}], "history": []}, {"name": "现代重工", "contacts": [{"name": "翁", "phone": "17209646865", "office": "", "note": "研发"}], "history": []}, {"name": "江苏新纪元", "contacts": [{"name": "汤智", "phone": "13773382368", "office": "", "note": "研发工程师"}], "history": []}];
+const KEY = 'mobile_crm_v1_data';
+const META_KEY = 'mobile_crm_v1_meta';
+let data = JSON.parse(localStorage.getItem(KEY) || 'null') || SEED;
+let meta = JSON.parse(localStorage.getItem(META_KEY) || 'null') || {source:'内置初始数据', fileName:'', importedAt:'', exportedAt:''};
+let step = 0;
+let answers = {
+  customer:'', contact:'', phone:'', office:'',
+  date:new Date().toISOString().slice(0,10), content:'', todo:'', followUpAt:'', priority:'B', status:'待跟进'
+};
+
+const steps = [
+  {key:'customer', q:'客户名称？', type:'customer'},
+  {key:'contact', q:'联系人？', type:'contact'},
+  {key:'phone', q:'电话（可以不填）', type:'tel'},
+  {key:'office', q:'办公地？', type:'text'},
+  {key:'date', q:'日期？', type:'date'},
+  {key:'content', q:'本次更新内容？', type:'textarea'},
+  {key:'todo', q:'备注 / 待办（可以不填）', type:'textarea'},
+  {key:'followUpAt', q:'下次跟进时间（可以不填）', type:'datetime-local'},
+  {key:'priority', q:'重要程度？', type:'priority'},
+  {key:'status', q:'当前状态？', type:'status'}
+];
+
+function saveStore() {
+  localStorage.setItem(KEY, JSON.stringify(data));
+  localStorage.setItem(META_KEY, JSON.stringify(meta));
+}
+
+function nowText() {
+  const d=new Date();
+  const p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+
+function safeStamp() {
+  const d=new Date();
+  const p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+}
+
+function updateDataStatus() {
+  const el=document.getElementById('dataStatus');
+  if(!el) return;
+  const source=meta.fileName ? `已导入：${esc(meta.fileName)}` : esc(meta.source||'浏览器临时副本');
+  const imported=meta.importedAt ? `<br>导入时间：${esc(meta.importedAt)}` : '';
+  const exported=meta.exportedAt ? `<br>最近生成 JSON：${esc(meta.exportedAt)}` : '<br>最近生成 JSON：尚未生成';
+  el.innerHTML=`<b>当前主数据状态</b><br>${source}${imported}${exported}`;
+}
+
+function normalizeName(s) {
+  return String(s||'')
+    .toLowerCase()
+    .replace(/（.*?）|\(.*?\)/g,'')
+    .replace(/[\s·•・_.，,。;；:：\-—_]/g,'')
+    .replace(/有限责任公司|股份有限公司|有限公司|集团有限公司|集团|公司/g,'')
+    .replace(/电气设备|电气|开关设备|开关|高压电器|高压|中压/g,'');
+}
+
+function similarity(a,b) {
+  a=normalizeName(a); b=normalizeName(b);
+  if(!a || !b) return 0;
+  if(a===b) return 1;
+  if(a.includes(b) || b.includes(a)) return Math.min(a.length,b.length)/Math.max(a.length,b.length)+0.18;
+  const A=new Set(a), B=new Set(b);
+  let inter=0; A.forEach(x=>{if(B.has(x)) inter++});
+  return inter / Math.max(A.size,B.size);
+}
+
+function customerMatches(name) {
+  const n=normalizeName(name);
+  if(!n) return [];
+  return data.map(c=>({c,score:similarity(name,c.name)}))
+    .filter(x=>x.score>=0.45)
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,5);
+}
+
+function getCustomer(name) {
+  const exact=data.find(c => c.name === name);
+  if(exact) return exact;
+  const n=normalizeName(name);
+  return data.find(c=>normalizeName(c.name)===n);
+}
+
+function contactMatches(customer,name) {
+  if(!customer || !name) return [];
+  return (customer.contacts||[]).map(ct=>({ct,score:similarity(name,ct.name)}))
+    .filter(x=>x.score>=0.5)
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,5);
+}
+
+function getContact(customer,name) {
+  if(!customer) return null;
+  const exact=(customer.contacts||[]).find(x=>x.name===name);
+  if(exact) return exact;
+  const n=normalizeName(name);
+  return (customer.contacts||[]).find(x=>normalizeName(x.name)===n) || null;
+}
+
+function showSelectedNotice(text) {
+  const f=document.getElementById('field');
+  if(!f) return;
+  let n=document.getElementById('selectedNotice');
+  if(!n) {
+    n=document.createElement('div');
+    n.id='selectedNotice';
+    n.className='selectednotice';
+    f.appendChild(n);
+  }
+  n.textContent=text;
+}
+
+function clearSelectedNotice() {
+  document.getElementById('selectedNotice')?.remove();
+}
+
+function useCustomer(name) {
+  answers.customer=name;
+  answers.contact=''; answers.phone='';
+  const c=getCustomer(name);
+  if(c?.defaultOffice) answers.office=c.defaultOffice;
+  const input=document.getElementById('currentField');
+  if(input) input.value=name;
+  const box=document.getElementById('matchBox');
+  if(box) { box.innerHTML=''; box.classList.add('hidden'); }
+  showSelectedNotice('✓ 已归入已有客户：'+name);
+}
+
+function useContact(name) {
+  answers.contact=name;
+  const input=document.getElementById('currentField');
+  if(input) input.value=name;
+  const c=getCustomer(answers.customer);
+  const ct=getContact(c,name);
+  if(ct) {
+    answers.phone=ct.phone||answers.phone||'';
+    answers.office=ct.office||c?.defaultOffice||answers.office||'';
+  }
+  const box=document.getElementById('matchBox');
+  if(box) { box.innerHTML=''; box.classList.add('hidden'); }
+  showSelectedNotice('✓ 已使用已有联系人：'+name+'；本次拜访会追加到此联系人名下');
+  renderContactHistoryPreview();
+}
+
+function renderCustomerMatches() {
+  const box=document.getElementById('matchBox');
+  const input=document.getElementById('currentField');
+  if(!box || !input) return;
+  const q=input.value.trim();
+  const matches=customerMatches(q);
+  if(!q || !matches.length) { box.innerHTML=''; box.classList.add('hidden'); return; }
+  box.innerHTML='';
+  box.classList.remove('hidden');
+  const title=document.createElement('div');
+  title.className='matchtitle';
+  title.textContent='数据库里可能已经有这个客户：';
+  box.appendChild(title);
+  matches.forEach(x=>{
+    const row=document.createElement('div'); row.className='matchitem';
+    const left=document.createElement('div');
+    const nm=document.createElement('div'); nm.className='matchname'; nm.textContent=x.c.name;
+    const meta=document.createElement('div'); meta.className='matchmeta'; meta.textContent=`${(x.c.contacts||[]).length} 个联系人 · ${(x.c.history||[]).length} 条拜访记录`;
+    left.appendChild(nm); left.appendChild(meta);
+    const btn=document.createElement('button'); btn.type='button'; btn.className='usebtn'; btn.textContent='归到这里';
+    btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();useCustomer(x.c.name);});
+    row.appendChild(left); row.appendChild(btn); box.appendChild(row);
+  });
+  const hint=document.createElement('div'); hint.className='hint'; hint.textContent='如果都不是同一个客户，继续输入原名称，保存时会新建客户。'; box.appendChild(hint);
+}
+
+function renderContactMatches() {
+  const box=document.getElementById('matchBox');
+  const input=document.getElementById('currentField');
+  if(!box || !input) return;
+  const c=getCustomer(answers.customer);
+  const q=input.value.trim();
+  const matches=contactMatches(c,q);
+  if(!q || !matches.length) { box.innerHTML=''; box.classList.add('hidden'); return; }
+  box.innerHTML=''; box.classList.remove('hidden');
+  const title=document.createElement('div'); title.className='matchtitle'; title.textContent='这个客户下面可能已经有这个联系人：'; box.appendChild(title);
+  matches.forEach(x=>{
+    const row=document.createElement('div'); row.className='matchitem';
+    const left=document.createElement('div');
+    const nm=document.createElement('div'); nm.className='matchname'; nm.textContent=x.ct.name;
+    const meta=document.createElement('div'); meta.className='matchmeta'; meta.textContent=(x.ct.phone||'无电话')+(x.ct.note?' · '+x.ct.note:'');
+    left.appendChild(nm); left.appendChild(meta);
+    const btn=document.createElement('button'); btn.type='button'; btn.className='usebtn'; btn.textContent='使用此联系人';
+    btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();useContact(x.ct.name);});
+    row.appendChild(left); row.appendChild(btn); box.appendChild(row);
+  });
+  const hint=document.createElement('div'); hint.className='hint'; hint.textContent='选择已有联系人后，本次内容只会追加为一条新的拜访记录，不会重复创建联系人。'; box.appendChild(hint);
+}
+
+
+function contactHistory(customer, contactName) {
+  if(!customer || !contactName) return [];
+  const n=normalizeName(contactName);
+  return (customer.history||[])
+    .filter(h=>normalizeName(h.contact||'')===n)
+    .slice()
+    .sort((a,b)=>(b.date||'').localeCompare(a.date||''))
+    .slice(0,3);
+}
+
+function renderContactHistoryPreview() {
+  const box=document.getElementById('historyPreview');
+  const input=document.getElementById('currentField');
+  if(!box || !input) return;
+  const c=getCustomer(answers.customer);
+  const typed=(input.value||'').trim();
+  const ct=getContact(c,typed);
+  if(!c || !ct) { box.innerHTML=''; box.classList.add('hidden'); return; }
+  const hist=contactHistory(c,ct.name);
+  box.classList.remove('hidden');
+  if(!hist.length) {
+    box.innerHTML=`<div class="htitle">${esc(ct.name)} · 最近拜访</div><div class="hempty">暂无这个联系人的历史拜访记录。</div>`;
+    return;
+  }
+  box.innerHTML=`<div class="htitle">${esc(ct.name)} · 最近 ${hist.length} 次拜访</div>` + hist.map(h=>`
+    <div class="hitem">
+      <div class="hdate">${esc(h.date||'未填写日期')}</div>
+      <div>${esc(h.content||'')}</div>
+      ${h.todo?`<div class="meta">待办：${esc(h.todo)}</div>`:''}
+    </div>`).join('');
+}
+
+function renderStep() {
+  const s = steps[step];
+  document.getElementById('stepLabel').textContent = `第 ${step+1} / ${steps.length} 项`;
+  document.getElementById('question').textContent = s.q;
+  document.getElementById('bar').style.width = `${(step+1)/steps.length*100}%`;
+  document.getElementById('backBtn').style.visibility = step===0 ? 'hidden':'visible';
+  document.getElementById('nextBtn').textContent = step===steps.length-1 ? '保存' : '下一步';
+
+  const f = document.getElementById('field');
+  f.innerHTML = '';
+
+  if (s.type === 'customer') {
+    const input = document.createElement('input');
+    input.setAttribute('list','customerList');
+    input.placeholder='输入或选择客户';
+    input.value=answers.customer;
+    input.id='currentField';
+    const dl=document.createElement('datalist'); dl.id='customerList';
+    data.forEach(c=>{const o=document.createElement('option');o.value=c.name;dl.appendChild(o)});
+    f.appendChild(input); f.appendChild(dl);
+    const box=document.createElement('div'); box.id='matchBox'; box.className='matchbox hidden'; f.appendChild(box);
+    input.addEventListener('input',()=>{clearSelectedNotice();renderCustomerMatches();});
+    setTimeout(renderCustomerMatches,0);
+  } else if (s.type === 'contact') {
+    const input = document.createElement('input');
+    input.setAttribute('list','contactList');
+    input.placeholder='输入或选择联系人';
+    input.value=answers.contact;
+    input.id='currentField';
+    const dl=document.createElement('datalist'); dl.id='contactList';
+    const c=getCustomer(answers.customer);
+    (c?.contacts||[]).forEach(x=>{const o=document.createElement('option');o.value=x.name;dl.appendChild(o)});
+    f.appendChild(input); f.appendChild(dl);
+    const box=document.createElement('div'); box.id='matchBox'; box.className='matchbox hidden'; f.appendChild(box);
+    const hp=document.createElement('div'); hp.id='historyPreview'; hp.className='historypreview hidden'; f.appendChild(hp);
+    input.addEventListener('input',()=>{clearSelectedNotice();renderContactMatches();renderContactHistoryPreview();});
+    setTimeout(()=>{renderContactMatches();renderContactHistoryPreview();},0);
+  } else if (s.type === 'textarea') {
+    const ta=document.createElement('textarea'); ta.id='currentField'; ta.value=answers[s.key]||'';
+    ta.placeholder=s.key==='content'?'例如：沟通了4000A方案，对方计划下周做实验':'例如：下周三回访';
+    f.appendChild(ta);
+  } else if (s.type === 'priority') {
+    const sel=document.createElement('select'); sel.id='currentField';
+    ['S','A','B','C'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v+({'S':' 重点','A':' 重要','B':' 常规','C':' 低优先'}[v]);if((answers.priority||'B')===v)o.selected=true;sel.appendChild(o)});
+    f.appendChild(sel);
+  } else if (s.type === 'status') {
+    const sel=document.createElement('select'); sel.id='currentField';
+    ['待跟进','等待客户','已完成'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;if((answers.status||'待跟进')===v)o.selected=true;sel.appendChild(o)});
+    f.appendChild(sel);
+  } else {
+    const input=document.createElement('input'); input.id='currentField'; input.type=s.type; input.value=answers[s.key]||'';
+    if(s.type==='tel') input.inputMode='tel';
+    f.appendChild(input);
+  }
+  setTimeout(()=>document.getElementById('currentField')?.focus(),60);
+}
+
+function capture() {
+  const el=document.getElementById('currentField');
+  if(!el) return;
+  answers[steps[step].key]=(el.value||'').trim();
+  // autofill known contact details
+  if(steps[step].key==='contact') {
+    const c=getCustomer(answers.customer);
+    const ct=getContact(c,answers.contact);
+    if(ct) {
+      if(!answers.phone) answers.phone=ct.phone||'';
+      if(!answers.office) answers.office=ct.office||c.defaultOffice||'';
+    }
+  }
+}
+
+function nextStep() {
+  capture();
+  const key=steps[step].key;
+  if(key==='customer' && !answers.customer) return alert('请填写客户名称');
+  if(key==='contact' && !answers.contact) return alert('请填写联系人');
+  if(key==='content' && !answers.content) return alert('请填写本次更新内容');
+  if(step < steps.length-1) {
+    step++; renderStep();
+  } else {
+    commit();
+  }
+}
+function prevStep() { capture(); if(step>0){step--;renderStep();} }
+
+function commit() {
+  let c=getCustomer(answers.customer);
+  if(!c) {
+    c={name:answers.customer,contacts:[],history:[],defaultOffice:answers.office||''};
+    data.push(c);
+  } else {
+    // 归入已有客户后，统一使用数据库里的标准客户名称
+    answers.customer=c.name;
+    if(answers.office && !c.defaultOffice) c.defaultOffice=answers.office;
+  }
+  let ct=getContact(c,answers.contact);
+  if(!ct) {
+    ct={name:answers.contact,phone:answers.phone||'',office:answers.office||'',note:''};
+    c.contacts=c.contacts||[]; c.contacts.push(ct);
+  } else {
+    // 归入已有联系人后，统一使用数据库里的联系人名称
+    answers.contact=ct.name;
+    if(answers.phone) ct.phone=answers.phone;
+    if(answers.office) ct.office=answers.office;
+  }
+  c.history=c.history||[];
+  c.history.push({
+    date:answers.date,
+    contact:answers.contact,
+    office:answers.office||ct.office||c.defaultOffice||'',
+    content:answers.content,
+    todo:answers.todo,
+    followUpAt:answers.followUpAt||'',
+    priority:answers.priority||'B',
+    status:answers.status||'待跟进',
+    completedAt:''
+  });
+  saveStore();
+  exportJSON(true);
+  document.getElementById('formCard').classList.add('hidden');
+  document.getElementById('doneCard').classList.remove('hidden');
+  document.getElementById('doneText').innerHTML =
+    `${esc(answers.customer)} · ${esc(answers.contact)} · ${esc(answers.date)}<br><b>已生成最新 JSON 主数据文件</b>`;
+  renderDB();
+  updateDataStatus();
+}
+
+function resetForm() {
+  step=0;
+  answers={customer:'',contact:'',phone:'',office:'',date:new Date().toISOString().slice(0,10),content:'',todo:'',followUpAt:'',priority:'B',status:'待跟进'};
+  document.getElementById('doneCard').classList.add('hidden');
+  document.getElementById('formCard').classList.remove('hidden');
+  renderStep();
+}
+
+function showTab(t) {
+  ['dash','voice','form','db'].forEach(x=>{
+    document.getElementById(x+'Panel')?.classList.toggle('hidden',x!==t);
+    const id='tab'+x.charAt(0).toUpperCase()+x.slice(1);
+    document.getElementById(id)?.classList.toggle('active',x===t);
+  });
+  if(t==='db') renderDB();
+  if(t==='dash') renderDashboard();
+}
+
+function esc(s) {
+  return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function renderDB() {
+  const q=(document.getElementById('search')?.value||'').toLowerCase();
+  const list=document.getElementById('dbList'); if(!list)return;
+  const filtered=data.filter(c=>{
+    const blob=[c.name,...(c.contacts||[]).flatMap(x=>[x.name,x.phone,x.office]),...(c.history||[]).flatMap(h=>[h.content,h.todo])].join(' ').toLowerCase();
+    return !q || blob.includes(q);
+  });
+  list.innerHTML = filtered.map(c=>`
+    <div class="customer">
+      <h3>${esc(c.name)}</h3>
+      <div>${(c.contacts||[]).map(x=>`<span class="badge">${esc(x.name)}${x.phone?' · '+esc(x.phone):''}${x.office?' · '+esc(x.office):''}</span>`).join('') || '<span class="meta">暂无联系人</span>'}</div>
+      ${(c.history||[]).slice().reverse().slice(0,5).map(h=>`
+        <div class="hist"><b>${esc(h.date||'历史记录')}</b>${h.contact?' · '+esc(h.contact):''}<br>${esc(h.content)}${h.todo?'<br><span class="meta">待办：'+esc(h.todo)+'</span>':''}</div>
+      `).join('')}
+    </div>`).join('') || '<div class="meta">没有找到结果</div>';
+}
+
+function download(name, text, type) {
+  const blob=new Blob([text],{type});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),500);
+}
+
+function exportJSON(auto=false) {
+  const filename='CRM主数据_'+safeStamp()+'.json';
+  meta.exportedAt=nowText();
+  meta.source='JSON主数据 / 浏览器临时副本同步';
+  saveStore();
+  download(filename,JSON.stringify(data,null,2),'application/json');
+  updateDataStatus();
+  if(!auto) setTimeout(()=>alert('已生成最新 JSON 主数据文件。以后恢复或换新版 HTML 时，导入最新这份 JSON 即可。'),80);
+}
+
+function csvCell(v) {
+  const s=String(v??'').replace(/"/g,'""');
+  return `"${s}"`;
+}
+function exportCSV() {
+  const rows=[['客户名称','联系人','电话','办公地','日期','更新内容','备注/待办','跟进时间','重要程度','状态']];
+  data.forEach(c=>{
+    const hist=c.history||[];
+    if(hist.length) hist.forEach(h=>{
+      const ct=(c.contacts||[]).find(x=>x.name===h.contact)||{};
+      rows.push([c.name,h.contact||'',ct.phone||'',h.office||ct.office||'',h.date||'',h.content||'',h.todo||'',h.followUpAt||'',h.priority||'B',h.status||'待跟进']);
+    });
+    else (c.contacts||[]).forEach(ct=>rows.push([c.name,ct.name,ct.phone,ct.office,'','','','','','']));
+  });
+  download('CRM数据_'+new Date().toISOString().slice(0,10)+'.csv','\ufeff'+rows.map(r=>r.map(csvCell).join(',')).join('\n'),'text/csv;charset=utf-8');
+}
+
+function importJSON(e) {
+  const file=e.target.files[0]; if(!file)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try {
+      const x=JSON.parse(r.result);
+      if(!Array.isArray(x)) throw new Error();
+      const ok=confirm(`将“${file.name}”作为当前 CRM 主数据导入。\n\n导入后会替换浏览器里的临时数据。是否继续？`);
+      if(!ok) { e.target.value=''; return; }
+      data=x;
+      meta={source:'JSON主数据',fileName:file.name,importedAt:nowText(),exportedAt:meta.exportedAt||''};
+      saveStore();
+      renderDB();
+      resetForm();
+      updateDataStatus();
+      alert('主数据 JSON 已导入。现在可以继续录入；每次保存都会自动生成新的最新 JSON。');
+    } catch { alert('JSON 主数据文件格式不正确'); }
+  };
+  r.readAsText(file);
+  e.target.value='';
+}
+
+
+function allTasks(){
+  const out=[];
+  data.forEach(c=>(c.history||[]).forEach((h,i)=>{
+    // 旧数据库兼容：旧记录没有新字段时，不修改原内容，只给运行时默认值
+    const priority=h.priority||'B', status=h.status||'待跟进';
+    if(h.followUpAt) out.push({c,h,i,priority,status});
+  }));
+  return out;
+}
+function taskScore(t){
+  const base={S:400,A:300,B:200,C:100}[t.priority]||200;
+  const now=Date.now(), due=new Date(t.h.followUpAt).getTime(), diff=due-now;
+  return base+(diff<0?260:diff<=86400000?180:diff<=7*86400000?80:0);
+}
+function renderDashboard(){
+  const now=new Date(), end=new Date(); end.setHours(23,59,59,999);
+  const week=Date.now()+7*86400000;
+  const tasks=allTasks().filter(t=>t.status!=='已完成');
+  let overdue=0,today=0,future=0,waiting=0;
+  tasks.forEach(t=>{
+    const due=new Date(t.h.followUpAt).getTime();
+    if(t.status==='等待客户') waiting++;
+    if(due<Date.now()) overdue++; else if(due<=end.getTime()) today++; else if(due<=week) future++;
+  });
+  kOverdue.textContent=overdue;kToday.textContent=today;kWeek.textContent=future;kWaiting.textContent=waiting;
+  tasks.sort((a,b)=>taskScore(b)-taskScore(a));
+  taskList.innerHTML=tasks.slice(0,12).map(t=>{
+    const due=new Date(t.h.followUpAt), cls=due.getTime()<Date.now()?'overdue':due<=end?'today':'future';
+    return `<div class="task ${cls}">
+      <div class="tasktop"><b>${esc(t.c.name)}${t.h.contact?' · '+esc(t.h.contact):''}</b><span class="pri">${esc(t.priority)} · ${esc(t.status)}</span></div>
+      <div style="margin-top:8px">${esc(t.h.todo||t.h.content||'跟进')}</div>
+      <div class="meta">${esc(t.h.followUpAt.replace('T',' '))}</div>
+      <div class="choicebar">
+        <button class="secondary" onclick="setTaskStatus('${encodeURIComponent(t.c.name)}',${t.i},'已完成')">完成</button>
+        <button class="secondary" onclick="snoozeTask('${encodeURIComponent(t.c.name)}',${t.i},1)">1小时后</button>
+        <button class="secondary" onclick="setTaskStatus('${encodeURIComponent(t.c.name)}',${t.i},'等待客户')">等待客户</button>
+      </div>
+    </div>`;
+  }).join('')||'<div class="meta">还没有设置跟进时间的事项。</div>';
+}
+function setTaskStatus(cn,i,status){
+  const c=data.find(x=>x.name===decodeURIComponent(cn)); if(!c||!c.history?.[i])return;
+  c.history[i].status=status;c.history[i].completedAt=status==='已完成'?nowText():'';
+  saveStore();renderDashboard();
+}
+function snoozeTask(cn,i,hours){
+  const c=data.find(x=>x.name===decodeURIComponent(cn)); if(!c||!c.history?.[i])return;
+  const d=new Date(Date.now()+hours*3600000); c.history[i].followUpAt=localDateTimeValue(d);
+  c.history[i].status='待跟进';saveStore();renderDashboard();
+}
+function localDateTimeValue(d){
+  const p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+let recognition=null, listening=false;
+function toggleVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){alert('当前浏览器没有开放网页语音识别。你仍可以使用 iPhone 键盘上的麦克风，把文字说进文本框。');return;}
+  if(listening){recognition?.stop();return;}
+  recognition=new SR(); recognition.lang='zh-CN'; recognition.continuous=false; recognition.interimResults=true;
+  recognition.onstart=()=>{listening=true;micBtn.textContent='正在听… 点这里停止';};
+  recognition.onend=()=>{listening=false;micBtn.textContent='开始说话';};
+  recognition.onerror=e=>{listening=false;micBtn.textContent='开始说话';alert('语音识别没有成功：'+e.error+'。也可以直接用 iPhone 键盘麦克风输入。');};
+  recognition.onresult=e=>{
+    let s=''; for(let i=e.resultIndex;i<e.results.length;i++) s+=e.results[i][0].transcript;
+    voiceText.value=s;
+  };
+  recognition.start();
+}
+function parseRelativeDate(text){
+  const now=new Date(), d=new Date(now);
+  if(/明天/.test(text)) d.setDate(d.getDate()+1);
+  else if(/后天/.test(text)) d.setDate(d.getDate()+2);
+  else {
+    const m=text.match(/下周([一二三四五六日天])/);
+    if(m){const map={'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'日':0,'天':0};let add=(7-now.getDay()+map[m[1]])%7;if(add<2)add+=7;d.setDate(d.getDate()+add);}
+  }
+  let h=9,min=0;
+  const tm=text.match(/(?:上午|下午|晚上)?\s*(\d{1,2})[点时](?:(\d{1,2})分?)?/);
+  if(tm){h=+tm[1];min=+(tm[2]||0);if(/下午|晚上/.test(tm[0])&&h<12)h+=12;}
+  d.setHours(h,min,0,0); return localDateTimeValue(d);
+}
+function extractVoice(){
+  const text=voiceText.value.trim(); if(!text)return alert('请先说一段话或输入文字');
+  const customerCandidates=data.map(c=>({c,score:similarity(text,c.name)})).filter(x=>text.includes(x.c.name)||x.score>.35).sort((a,b)=>b.score-a.score).slice(0,4);
+  const chosen=customerCandidates[0]?.c||null;
+  let contactCandidates=(chosen?.contacts||[]).filter(ct=>text.includes(ct.name)||text.includes(ct.name.slice(0,1)+'经理')||text.includes(ct.name.slice(0,1)+'工')).slice(0,4);
+  const follow=/下周|明天|后天|上午|下午|晚上|\d{1,2}[点时]/.test(text)?parseRelativeDate(text):'';
+  const pri=/非常重要|重点|必须/.test(text)?'S':/比较重要|重要/.test(text)?'A':'B';
+  window.voiceDraft={customer:chosen?.name||'',contact:contactCandidates[0]?.name||'',date:new Date().toISOString().slice(0,10),content:text,todo:'',followUpAt:follow,priority:pri,status:'待跟进'};
+  renderVoiceConfirm(customerCandidates,contactCandidates);
+}
+function renderVoiceConfirm(customers=[],contacts=[]){
+  const d=window.voiceDraft;
+  const choices=(arr,field,key)=>arr.length?`<div class="choicebar">${arr.map(x=>{const v=x[key].name;return `<button class="secondary" onclick="voicePick('${field}','${encodeURIComponent(v)}')">${esc(v)}</button>`}).join('')}<button class="secondary" onclick="voiceManual('${field}')">手动输入</button></div>`:`<div class="choicebar"><button class="secondary" onclick="voiceManual('${field}')">手动输入</button></div>`;
+  voiceConfirm.innerHTML=`<div class="confirmgrid">
+    <div class="confirmitem ${d.customer?'':'warn'}"><b>客户</b><div>${esc(d.customer||'未确定')}</div>${choices(customers,'customer','c')}</div>
+    <div class="confirmitem ${d.contact?'':'warn'}"><b>联系人</b><div>${esc(d.contact||'未确定')}</div>${choices(contacts,'contact','ct')}</div>
+    <div class="confirmitem"><b>拜访日期</b><input id="vcDate" type="date" value="${esc(d.date)}"></div>
+    <div class="confirmitem"><b>沟通内容</b><textarea id="vcContent">${esc(d.content)}</textarea></div>
+    <div class="confirmitem"><b>待办</b><textarea id="vcTodo" placeholder="例如：发送报价、确认样品">${esc(d.todo)}</textarea></div>
+    <div class="confirmitem ${d.followUpAt?'':'warn'}"><b>跟进时间</b><input id="vcFollow" type="datetime-local" value="${esc(d.followUpAt)}"></div>
+    <div class="confirmitem"><b>重要程度</b><select id="vcPri">${['S','A','B','C'].map(x=>`<option ${d.priority===x?'selected':''}>${x}</option>`).join('')}</select></div>
+    <div class="confirmitem"><b>状态</b><select id="vcStatus">${['待跟进','等待客户','已完成'].map(x=>`<option ${d.status===x?'selected':''}>${x}</option>`).join('')}</select></div>
+  </div><div class="row"><button class="primary" onclick="saveVoiceDraft()">确认并保存</button></div>`;
+}
+function voicePick(field,val){window.voiceDraft[field]=decodeURIComponent(val);renderVoiceConfirm();}
+function voiceManual(field){const v=prompt('请输入'+(field==='customer'?'客户全称':'联系人'));if(v){window.voiceDraft[field]=v;renderVoiceConfirm();}}
+function saveVoiceDraft(){
+  const d=window.voiceDraft;if(!d)return;
+  d.date=vcDate.value;d.content=vcContent.value.trim();d.todo=vcTodo.value.trim();d.followUpAt=vcFollow.value;d.priority=vcPri.value;d.status=vcStatus.value;
+  if(!d.customer||!d.contact||!d.content)return alert('客户、联系人和沟通内容需要确认');
+  answers={customer:d.customer,contact:d.contact,phone:'',office:'',date:d.date,content:d.content,todo:d.todo,followUpAt:d.followUpAt,priority:d.priority,status:d.status};
+  commit(); voiceText.value=''; voiceConfirm.innerHTML=''; showTab('dash'); renderDashboard();
+}
+
+if('serviceWorker' in navigator && location.protocol!=='file:'){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
+renderStep();
+renderDB();
+renderDashboard();
+updateDataStatus();
+showTab('dash');
+</script>
+</body>
+</html>
