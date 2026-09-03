@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>客户管理助手 V5.2</title>
+<title>客户管理助手 V5.7</title>
 <meta name="theme-color" content="#172033">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -113,7 +113,7 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
 <body>
 <div class="wrap">
   <h1>客户管理助手</h1>
-  <div class="sub">PWA V5.6 · 本地智能识别 · 分层客户视图 · 本机附件 · 旧数据库兼容</div>
+  <div class="sub">PWA V5.7 · 个性语音学习 · 本地智能识别 · 分层客户视图 · 本机附件 · 旧数据库兼容</div>
 
   <div class="tabs">
     <button class="tab active" id="tabDash" onclick="showTab('dash')">看板</button>
@@ -136,6 +136,7 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
     <div class="voicebox">
       <div class="question">🎙️ 说一次拜访</div><div class="notice"><b>新增只走语音：</b>识别后所有字段都可以在确认页修改；确认无误后再保存。</div>
       <div class="meta">例如：今天拜访某某电气王经理，聊了550项目，下周三上午十点跟进，比较重要。</div>
+      <div class="datastatus" id="voiceLearnStatus" style="margin-top:10px;margin-bottom:6px">个性语音学习：准备中…</div>
       <button class="mic" id="micBtn" onclick="toggleVoice()">开始说话</button>
       <textarea id="voiceText" class="transcript" placeholder="识别结果会出现在这里；也可以直接粘贴或手动输入。"></textarea>
       <div class="row"><button class="primary" onclick="extractVoice()">提取关键信息</button></div>
@@ -187,7 +188,11 @@ const SEED = [];
 const KEY = 'mobile_crm_v1_data';
 const META_KEY = 'mobile_crm_v1_meta';
 const ALIAS_KEY = 'mobile_crm_v5_aliases';
+const VOICE_LEARN_KEY = 'mobile_crm_v57_voice_learning';
 let learnedAliases = JSON.parse(localStorage.getItem(ALIAS_KEY) || '{}');
+let voiceLearning = JSON.parse(localStorage.getItem(VOICE_LEARN_KEY) || 'null') || {corrections:{},contactAliases:{}};
+if(!voiceLearning.corrections || typeof voiceLearning.corrections!=='object') voiceLearning.corrections={};
+if(!voiceLearning.contactAliases || typeof voiceLearning.contactAliases!=='object') voiceLearning.contactAliases={};
 let data = JSON.parse(localStorage.getItem(KEY) || 'null') || SEED;
 let meta = JSON.parse(localStorage.getItem(META_KEY) || 'null') || {source:'空白数据库', fileName:'', importedAt:'', exportedAt:''};
 let step = 0;
@@ -213,6 +218,8 @@ function saveStore() {
   localStorage.setItem(KEY, JSON.stringify(data));
   localStorage.setItem(META_KEY, JSON.stringify(meta));
   localStorage.setItem(ALIAS_KEY, JSON.stringify(learnedAliases));
+  localStorage.setItem(VOICE_LEARN_KEY, JSON.stringify(voiceLearning));
+  updateVoiceLearnStatus();
 }
 
 function nowText() {
@@ -544,7 +551,7 @@ function commit() {
 
 function resetForm() {
   step=0;
-  answers={customer:'',contact:'',phone:'',office:'',date:new Date().toISOString().slice(0,10),content:'',todo:'',followUpAt:'',priority:'B',status:'待跟进',attachments:[]};
+  answers={customer:'',contact:'',phone:'',office:'',date:new Date().toISOString().slice(0,10),content:'',todo:'',followUpAt:'',priority:'B',status:'待跟进',attachments:[],_initialContent:text,_spokenContact:spokenContact};
   document.getElementById('doneCard').classList.add('hidden');
   document.getElementById('formCard').classList.remove('hidden');
   renderStep();
@@ -929,7 +936,7 @@ function importJSON(e) {
       updateDataStatus();
       alert(`导入成功：${migrated.length} 个客户、${totalContacts} 个联系人、${totalVisits} 条拜访报告。`);
     } catch(err) {
-      alert('无法导入这个 JSON：'+(err?.message||'格式无法识别')+'。\n\nV5.6 支持 V4/V5 主数据、V4/V5 完整备份，以及 customers/customerList/clients/records 等常见结构。');
+      alert('无法导入这个 JSON：'+(err?.message||'格式无法识别')+'。\n\nV5.7 支持 V4/V5 主数据、V4/V5 完整备份，以及 customers/customerList/clients/records 等常见结构。');
     }
   };
   r.readAsText(file);
@@ -992,6 +999,59 @@ function localDateTimeValue(d){
   return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
+
+function escapeRegExp(s){return String(s).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+function builtInVoiceNormalize(text){
+  let t=String(text||'');
+  const reps=[
+    [/\bc\s*u\s*d\s*d\b/ig,'CUDD'],[/\bc\s*u\s*d\b/ig,'CUD'],[/\bc\s*u\s*x\b/ig,'CUX'],
+    [/\bl\s*s\s*s\b/ig,'LSS'],[/\bg\s*i\s*s\b/ig,'GIS'],[/\bg\s*i\s*l\b/ig,'GIL'],[/\bs\s*s\s*t\b/ig,'SST'],[/\bm\s*c\b/ig,'MC']
+  ];
+  reps.forEach(([re,to])=>{t=t.replace(re,to)});
+  return t;
+}
+function applyVoiceLearning(text){
+  let t=builtInVoiceNormalize(text);
+  const entries=Object.entries(voiceLearning.corrections||{}).sort((a,b)=>b[0].length-a[0].length);
+  for(const [from,info] of entries){
+    const to=typeof info==='string'?info:info?.to;
+    if(!from||!to)continue;
+    try{t=t.replace(new RegExp(escapeRegExp(from),'g'),to)}catch(e){}
+  }
+  return t;
+}
+function rememberVoiceCorrection(from,to){
+  from=String(from||'').trim();to=String(to||'').trim();
+  if(!from||!to||from===to||from.length>24||to.length>24)return false;
+  if(!/[\u4e00-\u9fa5A-Za-z0-9]/.test(from)||!/[\u4e00-\u9fa5A-Za-z0-9]/.test(to))return false;
+  const old=voiceLearning.corrections[from];
+  voiceLearning.corrections[from]={to,count:(old?.count||0)+1,updatedAt:new Date().toISOString()};
+  localStorage.setItem(VOICE_LEARN_KEY,JSON.stringify(voiceLearning));updateVoiceLearnStatus();return true;
+}
+function learnSmallVoiceEdit(before,after){
+  before=String(before||'').trim();after=String(after||'').trim();
+  if(!before||!after||before===after)return;
+  let p=0;while(p<before.length&&p<after.length&&before[p]===after[p])p++;
+  let sb=before.length-1,sa=after.length-1;
+  while(sb>=p&&sa>=p&&before[sb]===after[sa]){sb--;sa--;}
+  let from=before.slice(p,sb+1).replace(/^[，。！？、；：,.!?;:\s]+|[，。！？、；：,.!?;:\s]+$/g,'').trim();
+  let to=after.slice(p,sa+1).replace(/^[，。！？、；：,.!?;:\s]+|[，。！？、；：,.!?;:\s]+$/g,'').trim();
+  if(from&&to&&from.length<=24&&to.length<=24) rememberVoiceCorrection(from,to);
+}
+function contactAliasKey(customer,alias){return normalizeForSpeech(customer)+'::'+normalizeForSpeech(alias);}
+function rememberContactAlias(customer,alias,target){
+  alias=String(alias||'').trim();target=String(target||'').trim();
+  if(!customer||!alias||!target||normalizeForSpeech(alias)===normalizeForSpeech(target))return;
+  voiceLearning.contactAliases[contactAliasKey(customer,alias)]={to:target,count:(voiceLearning.contactAliases[contactAliasKey(customer,alias)]?.count||0)+1,updatedAt:new Date().toISOString()};
+  localStorage.setItem(VOICE_LEARN_KEY,JSON.stringify(voiceLearning));updateVoiceLearnStatus();
+}
+function voiceLearnCount(){return Object.keys(learnedAliases||{}).length+Object.keys(voiceLearning.corrections||{}).length+Object.keys(voiceLearning.contactAliases||{}).length;}
+function updateVoiceLearnStatus(){
+  const el=document.getElementById('voiceLearnStatus');if(!el)return;
+  el.innerHTML=`<b>个性语音学习：</b>已记住 ${voiceLearnCount()} 条习惯。你在确认页修正客户、联系人或识别错词后，下次会优先按你的改法处理。`;
+}
+
+let voiceAutoText='';
 let recognition=null, listening=false, voiceWanted=false, voiceRestartTimer=null;
 let voiceBaseText='', voiceFinalText='', voiceCycleFinal='';
 function joinVoiceParts(...parts){
@@ -1020,12 +1080,12 @@ function startVoiceCycle(SR){
     recognition.onresult=e=>{
       let interim='';
       for(let i=e.resultIndex;i<e.results.length;i++){
-        const t=(e.results[i][0]?.transcript||'').trim();
+        const t=applyVoiceLearning((e.results[i][0]?.transcript||'').trim());
         if(!t)continue;
         if(e.results[i].isFinal) voiceCycleFinal=joinVoiceParts(voiceCycleFinal,t);
         else interim=joinVoiceParts(interim,t);
       }
-      voiceText.value=joinVoiceParts(voiceBaseText,voiceFinalText,voiceCycleFinal,interim);
+      voiceText.value=joinVoiceParts(voiceBaseText,voiceFinalText,voiceCycleFinal,interim);voiceAutoText=voiceText.value;
     };
     recognition.onerror=e=>{
       const code=e?.error||'';
@@ -1043,7 +1103,7 @@ function startVoiceCycle(SR){
     };
     recognition.onend=()=>{
       if(voiceCycleFinal){voiceFinalText=joinVoiceParts(voiceFinalText,voiceCycleFinal);voiceCycleFinal='';}
-      voiceText.value=joinVoiceParts(voiceBaseText,voiceFinalText);
+      voiceText.value=joinVoiceParts(voiceBaseText,voiceFinalText);voiceAutoText=voiceText.value;
       if(!voiceWanted){setMicState(false);return;}
       setMicState(true,'正在续听… 点这里停止');
       voiceRestartTimer=setTimeout(()=>startVoiceCycle(SR),300);
@@ -1059,7 +1119,7 @@ function toggleVoice(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){alert('当前浏览器没有开放网页语音识别。你仍可以使用 iPhone 键盘上的麦克风，把文字说进文本框。');return;}
   if(voiceWanted||listening){stopVoiceListening();return;}
-  voiceBaseText=(voiceText?.value||'').trim();
+  voiceBaseText=applyVoiceLearning((voiceText?.value||'').trim());voiceAutoText=voiceBaseText;
   voiceFinalText='';voiceCycleFinal='';voiceWanted=true;
   startVoiceCycle(SR);
 }
@@ -1145,6 +1205,11 @@ function contactSpeechCandidates(customer,text){
     const surname=ct.name.slice(0,1);
     if(surname&&new RegExp(surname+'(?:经理|总|工|主任|老师)').test(text)){s+=.65;reasons.push('姓氏+称呼')}
     if(ct.note&&text.includes(ct.note)){s+=.25;reasons.push('职位命中')}
+    for(const [k,info] of Object.entries(voiceLearning.contactAliases||{})){
+      const [custKey,aliasKey]=k.split('::');
+      const target=typeof info==='string'?info:info?.to;
+      if(custKey===normalizeForSpeech(customer.name)&&target===ct.name&&aliasKey&&normalizeForSpeech(text).includes(aliasKey)){s+=1.35;reasons.push('已学习的联系人叫法/误识别')}
+    }
     return {ct,score:s,reasons};
   }).filter(x=>x.score>.15).sort((a,b)=>b.score-a.score).slice(0,6);
 }
@@ -1165,7 +1230,9 @@ function inferPriority(text){
   return 'B';
 }
 function extractVoice(){
-  const text=voiceText.value.trim(); if(!text)return alert('请先说一段话或输入文字');
+  const entered=voiceText.value.trim(); if(!entered)return alert('请先说一段话或输入文字');
+  if(voiceAutoText && entered!==voiceAutoText) learnSmallVoiceEdit(voiceAutoText,entered);
+  const text=applyVoiceLearning(entered);voiceText.value=text;voiceAutoText=text;
   const customerCandidates=customerSpeechCandidates(text);
   const chosen=customerCandidates[0]?.score>=.58?customerCandidates[0].c:null;
   const contactCandidates=contactSpeechCandidates(chosen,text);
@@ -1211,13 +1278,15 @@ function learnCustomerAlias(value){
   }
 }
 function voicePick(field,val){
-  const value=decodeURIComponent(val);window.voiceDraft[field]=value;
+  const value=decodeURIComponent(val);const oldValue=window.voiceDraft?.[field]||'';window.voiceDraft[field]=value;
   if(field==='customer'){learnCustomerAlias(value);const c=getCustomer(value);window.voiceContactCandidates=contactSpeechCandidates(c,voiceText.value.trim());window.voiceDraft.contact=window.voiceContactCandidates[0]?.score>=.58?window.voiceContactCandidates[0].ct.name:(window.voiceDraft.contact||'');}
+  if(field==='contact'&&window.voiceDraft?.customer) rememberContactAlias(window.voiceDraft.customer,window.voiceDraft._spokenContact||oldValue,value);
   renderVoiceConfirm();
 }
 function voiceManual(field){
-  const v=prompt('请输入'+(field==='customer'?'客户全称':'联系人'));
-  if(v){window.voiceDraft[field]=v;if(field==='customer'){learnCustomerAlias(v);window.voiceContactCandidates=contactSpeechCandidates(getCustomer(v),voiceText.value.trim());}renderVoiceConfirm();}
+  const oldValue=window.voiceDraft?.[field]||'';
+  const v=prompt('请输入'+(field==='customer'?'客户全称':'联系人'),oldValue);
+  if(v){window.voiceDraft[field]=v;if(field==='customer'){learnCustomerAlias(v);window.voiceContactCandidates=contactSpeechCandidates(getCustomer(v),voiceText.value.trim());}if(field==='contact'&&window.voiceDraft?.customer)rememberContactAlias(window.voiceDraft.customer,window.voiceDraft._spokenContact||oldValue,v);renderVoiceConfirm();}
 }
 
 function newId(){return 'a_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);}
@@ -1339,7 +1408,9 @@ function addHistoryLink(ci,hi){
 }
 async function saveVoiceDraft(withExport=false){
   const d=window.voiceDraft;if(!d)return;
-  d.date=vcDate.value;d.content=vcContent.value.trim();d.todo=vcTodo.value.trim();d.followUpAt=vcFollow.value;d.priority=vcPri.value;d.status=vcStatus.value;
+  const editedContent=vcContent.value.trim();
+  if(d._initialContent&&editedContent!==d._initialContent)learnSmallVoiceEdit(d._initialContent,editedContent);
+  d.date=vcDate.value;d.content=applyVoiceLearning(editedContent);d.todo=applyVoiceLearning(vcTodo.value.trim());d.followUpAt=vcFollow.value;d.priority=vcPri.value;d.status=vcStatus.value;
   if(!d.customer||!d.contact||!d.content)return alert('客户、联系人和沟通内容需要确认');
   answers={customer:d.customer,contact:d.contact,phone:'',office:'',date:d.date,content:d.content,todo:d.todo,followUpAt:d.followUpAt,priority:d.priority,status:d.status,attachments:d.attachments||[]};
   commit();
@@ -1371,6 +1442,7 @@ renderStep();
 renderDB();
 renderDashboard();
 updateDataStatus();
+updateVoiceLearnStatus();
 showTab('dash');
 </script>
 </body>

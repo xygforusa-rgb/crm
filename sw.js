@@ -1,4 +1,4 @@
-const CACHE = 'crm-pwa-v5.6-db-compat';
+const CACHE = 'crm-pwa-v5.7-voice-learning';
 const APP_SHELL = [
   './', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'
 ];
