@@ -113,7 +113,7 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
 <body>
 <div class="wrap">
   <h1>客户管理助手</h1>
-  <div class="sub">PWA V5.1 · 本地智能识别 · 分层客户视图 · 本机附件</div>
+  <div class="sub">PWA V5.6 · 本地智能识别 · 分层客户视图 · 本机附件 · 旧数据库兼容</div>
 
   <div class="tabs">
     <button class="tab active" id="tabDash" onclick="showTab('dash')">看板</button>
@@ -135,7 +135,7 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
   <section id="voicePanel" class="hidden">
     <div class="voicebox">
       <div class="question">🎙️ 说一次拜访</div><div class="notice"><b>新增只走语音：</b>识别后所有字段都可以在确认页修改；确认无误后再保存。</div>
-      <div class="meta">例如：今天拜访西开电气王经理，聊了550项目，下周三上午十点跟进，比较重要。</div>
+      <div class="meta">例如：今天拜访某某电气王经理，聊了550项目，下周三上午十点跟进，比较重要。</div>
       <button class="mic" id="micBtn" onclick="toggleVoice()">开始说话</button>
       <textarea id="voiceText" class="transcript" placeholder="识别结果会出现在这里；也可以直接粘贴或手动输入。"></textarea>
       <div class="row"><button class="primary" onclick="extractVoice()">提取关键信息</button></div>
@@ -846,23 +846,91 @@ function exportCSV() {
   download('CRM数据_'+new Date().toISOString().slice(0,10)+'.csv','\ufeff'+rows.map(r=>r.map(csvCell).join(',')).join('\n'),'text/csv;charset=utf-8');
 }
 
+function normalizeImportedCustomer(c) {
+  if(!c || typeof c!=='object') return null;
+  const name=String(c.name ?? c.customer ?? c.customerName ?? c.company ?? c.companyName ?? '').trim();
+  if(!name) return null;
+
+  let contacts=Array.isArray(c.contacts) ? c.contacts : (Array.isArray(c.contactList) ? c.contactList : []);
+  contacts=contacts.map(ct=>{
+    if(typeof ct==='string') return {name:ct.trim(),phone:'',office:'',note:''};
+    if(!ct || typeof ct!=='object') return null;
+    const n=String(ct.name ?? ct.contact ?? ct.contactName ?? '').trim();
+    if(!n) return null;
+    return {
+      name:n,
+      phone:String(ct.phone ?? ct.mobile ?? ct.tel ?? '').trim(),
+      office:String(ct.office ?? ct.location ?? '').trim(),
+      note:String(ct.note ?? ct.title ?? ct.position ?? '').trim()
+    };
+  }).filter(Boolean);
+
+  let history=Array.isArray(c.history) ? c.history : (Array.isArray(c.visits) ? c.visits : (Array.isArray(c.reports) ? c.reports : []));
+  history=history.map(h=>{
+    if(typeof h==='string') return {date:'',contact:'',office:'',content:h,todo:'',followUpAt:'',priority:'B',status:'待跟进',attachments:[]};
+    if(!h || typeof h!=='object') return null;
+    return {
+      date:String(h.date ?? h.visitDate ?? '').trim(),
+      contact:String(h.contact ?? h.contactName ?? '').trim(),
+      office:String(h.office ?? h.location ?? '').trim(),
+      content:String(h.content ?? h.update ?? h.note ?? h.report ?? '').trim(),
+      todo:String(h.todo ?? h.remark ?? h.nextAction ?? '').trim(),
+      followUpAt:String(h.followUpAt ?? h.followUp ?? h.nextFollowUp ?? '').trim(),
+      priority:String(h.priority ?? 'B').trim() || 'B',
+      status:String(h.status ?? '待跟进').trim() || '待跟进',
+      attachments:Array.isArray(h.attachments) ? h.attachments : []
+    };
+  }).filter(Boolean);
+
+  return {
+    name,
+    contacts,
+    history,
+    defaultOffice:String(c.defaultOffice ?? c.office ?? c.location ?? '').trim()
+  };
+}
+
+function extractImportedData(x) {
+  // V4/V5 主数据：直接数组
+  if(Array.isArray(x)) return {rows:x, kind:'主数据数组'};
+  if(!x || typeof x!=='object') throw new Error('JSON 根节点不是对象或数组');
+
+  // V4/V5 完整备份：{format:'crm-full-backup-v1', data:[...], files:[...]}
+  if(Array.isArray(x.data)) return {rows:x.data, kind:x.format||'完整备份'};
+
+  // 兼容常见旧字段名/人工整理的主数据
+  for(const key of ['customers','customerList','clients','records']) {
+    if(Array.isArray(x[key])) return {rows:x[key], kind:key};
+  }
+  if(x.crm && Array.isArray(x.crm.data)) return {rows:x.crm.data, kind:'crm.data'};
+  throw new Error('没有找到客户数组');
+}
+
 function importJSON(e) {
   const file=e.target.files[0]; if(!file)return;
   const r=new FileReader();
   r.onload=()=>{
     try {
-      const x=JSON.parse(r.result);
-      if(!Array.isArray(x)) throw new Error();
-      const ok=confirm(`将“${file.name}”作为当前 CRM 主数据导入。\n\n导入后会替换浏览器里的临时数据。是否继续？`);
+      const raw=JSON.parse(r.result);
+      const extracted=extractImportedData(raw);
+      const migrated=extracted.rows.map(normalizeImportedCustomer).filter(Boolean);
+      if(extracted.rows.length>0 && migrated.length===0) throw new Error('没有识别到有效客户记录');
+
+      const totalContacts=migrated.reduce((n,c)=>n+(c.contacts?.length||0),0);
+      const totalVisits=migrated.reduce((n,c)=>n+(c.history?.length||0),0);
+      const ok=confirm(`已识别“${file.name}”\n\n客户：${migrated.length}\n联系人：${totalContacts}\n拜访报告：${totalVisits}\n来源格式：${extracted.kind}\n\n导入后会替换当前浏览器数据库。是否继续？`);
       if(!ok) { e.target.value=''; return; }
-      data=x;
-      meta={source:'JSON主数据',fileName:file.name,importedAt:nowText(),exportedAt:meta.exportedAt||''};
+
+      data=migrated;
+      meta={source:'JSON主数据（已兼容迁移）',fileName:file.name,importedAt:nowText(),exportedAt:meta.exportedAt||''};
       saveStore();
       renderDB();
       resetForm();
       updateDataStatus();
-      alert('主数据 JSON 已导入。现在可以继续录入；需要备份时点“保存并导出数据”。');
-    } catch { alert('JSON 主数据文件格式不正确'); }
+      alert(`导入成功：${migrated.length} 个客户、${totalContacts} 个联系人、${totalVisits} 条拜访报告。`);
+    } catch(err) {
+      alert('无法导入这个 JSON：'+(err?.message||'格式无法识别')+'。\n\nV5.6 支持 V4/V5 主数据、V4/V5 完整备份，以及 customers/customerList/clients/records 等常见结构。');
+    }
   };
   r.readAsText(file);
   e.target.value='';
