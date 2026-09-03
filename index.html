@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>客户管理助手 V5.7</title>
+<title>客户管理助手 V5.8</title>
 <meta name="theme-color" content="#172033">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -113,7 +113,7 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
 <body>
 <div class="wrap">
   <h1>客户管理助手</h1>
-  <div class="sub">PWA V5.7 · 个性语音学习 · 本地智能识别 · 分层客户视图 · 本机附件 · 旧数据库兼容</div>
+  <div class="sub">PWA V5.9 · 语音页面生命周期 · 保存后选择 · 可交互跟进看板 · 个性语音学习 · 本地智能识别 · 分层客户视图 · 本机附件 · 旧数据库兼容</div>
 
   <div class="tabs">
     <button class="tab active" id="tabDash" onclick="showTab('dash')">看板</button>
@@ -123,13 +123,22 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
 
   <section id="dashPanel">
     <div class="dashboard-grid">
-      <div class="kpi">已逾期<b id="kOverdue">0</b></div>
-      <div class="kpi">今天<b id="kToday">0</b></div>
-      <div class="kpi">未来7天<b id="kWeek">0</b></div>
-      <div class="kpi">等待客户<b id="kWaiting">0</b></div>
+      <div class="kpi" role="button" tabindex="0" onclick="openTaskFilter('overdue')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTaskFilter('overdue')}">已逾期<b id="kOverdue">0</b></div>
+      <div class="kpi" role="button" tabindex="0" onclick="openTaskFilter('today')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTaskFilter('today')}">今天<b id="kToday">0</b></div>
+      <div class="kpi" role="button" tabindex="0" onclick="openTaskFilter('week')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTaskFilter('week')}">未来7天<b id="kWeek">0</b></div>
+      <div class="kpi" role="button" tabindex="0" onclick="openTaskFilter('waiting')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTaskFilter('waiting')}">等待客户<b id="kWaiting">0</b></div>
     </div>
     <div class="sectiontitle">今天最该处理</div>
     <div id="taskList"></div>
+  </section>
+
+  <section id="taskFilterPanel" class="hidden">
+    <div class="toolbar" style="margin-bottom:10px">
+      <button class="secondary small" onclick="backToDashboard()">← 返回看板</button>
+    </div>
+    <div class="sectiontitle" id="taskFilterTitle">跟进事项</div>
+    <div class="meta" id="taskFilterMeta" style="margin-bottom:10px"></div>
+    <div id="taskFilterList"></div>
   </section>
 
   <section id="voicePanel" class="hidden">
@@ -141,6 +150,18 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
       <textarea id="voiceText" class="transcript" placeholder="识别结果会出现在这里；也可以直接粘贴或手动输入。"></textarea>
       <div class="row"><button class="primary" onclick="extractVoice()">提取关键信息</button></div>
       <div id="voiceConfirm"></div>
+      <div class="card hidden" id="voiceDoneCard" style="margin-top:14px">
+        <div class="done">
+          <div class="check">✅</div>
+          <h2>本次拜访已保存</h2>
+          <div class="meta" id="voiceDoneText"></div>
+          <div class="row" style="margin-top:14px">
+            <button class="primary" onclick="newVoiceVisit()">新增一条拜访</button>
+            <button class="secondary" onclick="openLastVoiceCustomer()">查看刚保存的客户</button>
+            <button class="secondary" onclick="showTab('dash')">返回跟进看板</button>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -551,19 +572,22 @@ function commit() {
 
 function resetForm() {
   step=0;
-  answers={customer:'',contact:'',phone:'',office:'',date:new Date().toISOString().slice(0,10),content:'',todo:'',followUpAt:'',priority:'B',status:'待跟进',attachments:[],_initialContent:text,_spokenContact:spokenContact};
+  answers={customer:'',contact:'',phone:'',office:'',date:new Date().toISOString().slice(0,10),content:'',todo:'',followUpAt:'',priority:'B',status:'待跟进',attachments:[]};
   document.getElementById('doneCard').classList.add('hidden');
   document.getElementById('formCard').classList.remove('hidden');
   renderStep();
 }
 
 function showTab(t) {
+  if(t!=='voice') stopVoiceListening();
+  if(t==='voice') document.getElementById('voiceDoneCard')?.classList.add('hidden');
   ['dash','voice','db'].forEach(x=>{
     document.getElementById(x+'Panel')?.classList.toggle('hidden',x!==t);
     const id='tab'+x.charAt(0).toUpperCase()+x.slice(1);
     document.getElementById(id)?.classList.toggle('active',x===t);
   });
   document.getElementById('formPanel')?.classList.add('hidden');
+  document.getElementById('taskFilterPanel')?.classList.add('hidden');
   if(t==='db') renderDB();
   if(t==='dash') renderDashboard();
 }
@@ -577,7 +601,9 @@ function fieldLine(label,value,editCall,clearCall,allowClear=true){
 }
 
 let dbView={type:'search',ci:null,xi:null,hi:null};
+let dbReturnToTaskFilter=false;
 function dbBack(){
+  if(dbReturnToTaskFilter && dbView.type==='visit'){dbReturnToTaskFilter=false;document.getElementById('dbPanel')?.classList.add('hidden');document.getElementById('taskFilterPanel')?.classList.remove('hidden');renderTaskFilter();return;}
   if(dbView.type==='visit') dbView={type:'customer',ci:dbView.ci};
   else if(dbView.type==='contact') dbView={type:'contacts',ci:dbView.ci};
   else if(dbView.type==='reports'||dbView.type==='contacts') dbView={type:'customer',ci:dbView.ci};
@@ -936,7 +962,7 @@ function importJSON(e) {
       updateDataStatus();
       alert(`导入成功：${migrated.length} 个客户、${totalContacts} 个联系人、${totalVisits} 条拜访报告。`);
     } catch(err) {
-      alert('无法导入这个 JSON：'+(err?.message||'格式无法识别')+'。\n\nV5.7 支持 V4/V5 主数据、V4/V5 完整备份，以及 customers/customerList/clients/records 等常见结构。');
+      alert('无法导入这个 JSON：'+(err?.message||'格式无法识别')+'。\n\nV5.8 支持 V4/V5 主数据、V4/V5 完整备份，以及 customers/customerList/clients/records 等常见结构。');
     }
   };
   r.readAsText(file);
@@ -946,10 +972,10 @@ function importJSON(e) {
 
 function allTasks(){
   const out=[];
-  data.forEach(c=>(c.history||[]).forEach((h,i)=>{
+  data.forEach((c,ci)=>(c.history||[]).forEach((h,i)=>{
     // 旧数据库兼容：旧记录没有新字段时，不修改原内容，只给运行时默认值
     const priority=h.priority||'B', status=h.status||'待跟进';
-    if(h.followUpAt) out.push({c,h,i,priority,status});
+    if(h.followUpAt) out.push({c,ci,h,i,priority,status});
   }));
   return out;
 }
@@ -984,6 +1010,95 @@ function renderDashboard(){
     </div>`;
   }).join('')||'<div class="meta">还没有设置跟进时间的事项。</div>';
 }
+let currentTaskFilter='';
+function taskFilterInfo(kind){
+  const map={
+    overdue:{title:'已逾期',desc:'跟进时间已经超过当前时间，且尚未完成。'},
+    today:{title:'今天跟进',desc:'今天需要处理的跟进事项。'},
+    week:{title:'未来7天',desc:'未来7天内需要处理的跟进事项。'},
+    waiting:{title:'等待客户',desc:'当前状态为“等待客户”的跟进事项。'}
+  };
+  return map[kind]||{title:'跟进事项',desc:''};
+}
+function taskMatchesFilter(t,kind){
+  if(t.status==='已完成') return false;
+  const now=Date.now(), due=new Date(t.h.followUpAt).getTime();
+  const end=new Date(); end.setHours(23,59,59,999);
+  const week=now+7*86400000;
+  if(kind==='overdue') return due<now;
+  if(kind==='today') return due>=now && due<=end.getTime();
+  if(kind==='week') return due>end.getTime() && due<=week;
+  if(kind==='waiting') return t.status==='等待客户';
+  return true;
+}
+function openTaskFilter(kind){
+  stopVoiceListening();
+  currentTaskFilter=kind;
+  document.getElementById('dashPanel')?.classList.add('hidden');
+  document.getElementById('voicePanel')?.classList.add('hidden');
+  document.getElementById('dbPanel')?.classList.add('hidden');
+  document.getElementById('formPanel')?.classList.add('hidden');
+  document.getElementById('taskFilterPanel')?.classList.remove('hidden');
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  renderTaskFilter();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function backToDashboard(){
+  currentTaskFilter='';
+  showTab('dash');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderTaskFilter(){
+  const info=taskFilterInfo(currentTaskFilter);
+  const rows=allTasks().filter(t=>taskMatchesFilter(t,currentTaskFilter)).sort((a,b)=>taskScore(b)-taskScore(a));
+  const title=document.getElementById('taskFilterTitle'), metaBox=document.getElementById('taskFilterMeta'), list=document.getElementById('taskFilterList');
+  if(!title||!metaBox||!list)return;
+  title.textContent=`${info.title} · ${rows.length} 条`;
+  metaBox.textContent=info.desc;
+  list.innerHTML=rows.map(t=>{
+    const due=new Date(t.h.followUpAt), cls=due.getTime()<Date.now()?'overdue':'future';
+    return `<div class="task ${cls}">
+      <div class="tasktop"><b>${esc(t.c.name)}${t.h.contact?' · '+esc(t.h.contact):''}</b><span class="pri">${esc(t.priority)} · ${esc(t.status)}</span></div>
+      <div style="margin-top:8px">${esc(t.h.todo||t.h.content||'跟进')}</div>
+      <div class="meta" style="margin-top:6px">跟进时间：${esc(String(t.h.followUpAt||'').replace('T',' '))}</div>
+      <div class="choicebar">
+        <button class="primary" onclick="setTaskStatusByIndex(${t.ci},${t.i},'已完成')">已完成</button>
+        <button class="secondary" onclick="postponeTask(${t.ci},${t.i})">延期</button>
+        <button class="secondary" onclick="setTaskStatusByIndex(${t.ci},${t.i},'等待客户')">等待客户</button>
+        <button class="secondary" onclick="setTaskStatusByIndex(${t.ci},${t.i},'待跟进')">待跟进</button>
+        <button class="secondary" onclick="openTaskVisit(${t.ci},${t.i})">查看拜访详情</button>
+      </div>
+    </div>`;
+  }).join('')||'<div class="meta">这个分类下目前没有跟进事项。</div>';
+}
+function setTaskStatusByIndex(ci,i,status){
+  const h=data?.[ci]?.history?.[i]; if(!h)return;
+  h.status=status;
+  h.completedAt=status==='已完成'?nowText():'';
+  saveStore();
+  renderDashboard();
+  renderTaskFilter();
+}
+function postponeTask(ci,i){
+  const h=data?.[ci]?.history?.[i]; if(!h)return;
+  const old=String(h.followUpAt||localDateTimeValue(new Date())).slice(0,16);
+  const nv=prompt('请输入新的跟进时间（格式：YYYY-MM-DDTHH:MM）',old);
+  if(nv===null)return;
+  const v=nv.trim();
+  if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(v) || Number.isNaN(new Date(v).getTime())){
+    alert('时间格式不正确，请按 YYYY-MM-DDTHH:MM 输入，例如 2026-09-10T10:00。');return;
+  }
+  h.followUpAt=v;h.status='待跟进';h.completedAt='';
+  saveStore();renderDashboard();renderTaskFilter();
+}
+function openTaskVisit(ci,i){
+  document.getElementById('taskFilterPanel')?.classList.add('hidden');
+  document.getElementById('dbPanel')?.classList.remove('hidden');
+  dbReturnToTaskFilter=true;
+  dbView={type:'visit',ci,hi:i};
+  renderDB();
+}
+
 function setTaskStatus(cn,i,status){
   const c=data.find(x=>x.name===decodeURIComponent(cn)); if(!c||!c.history?.[i])return;
   c.history[i].status=status;c.history[i].completedAt=status==='已完成'?nowText():'';
@@ -1048,7 +1163,7 @@ function rememberContactAlias(customer,alias,target){
 function voiceLearnCount(){return Object.keys(learnedAliases||{}).length+Object.keys(voiceLearning.corrections||{}).length+Object.keys(voiceLearning.contactAliases||{}).length;}
 function updateVoiceLearnStatus(){
   const el=document.getElementById('voiceLearnStatus');if(!el)return;
-  el.innerHTML=`<b>个性语音学习：</b>已记住 ${voiceLearnCount()} 条习惯。你在确认页修正客户、联系人或识别错词后，下次会优先按你的改法处理。`;
+  el.innerHTML=`<b>个性语音学习：</b>已记住 ${voiceLearnCount()} 条习惯。你在确认页修正客户、联系人、沟通内容或待办中的识别错词后，下次会优先按你的改法处理。`;
 }
 
 let voiceAutoText='';
@@ -1067,6 +1182,9 @@ function stopVoiceListening(){
   try{recognition?.stop();}catch(e){}
   setMicState(false);
 }
+// 只允许在“语音录入”页面前台持续监听；离开页面、切后台、锁屏/最小化都会自动停止。
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) stopVoiceListening(); });
+window.addEventListener('pagehide',()=>stopVoiceListening());
 function startVoiceCycle(SR){
   if(!voiceWanted)return;
   try{
@@ -1104,7 +1222,7 @@ function startVoiceCycle(SR){
     recognition.onend=()=>{
       if(voiceCycleFinal){voiceFinalText=joinVoiceParts(voiceFinalText,voiceCycleFinal);voiceCycleFinal='';}
       voiceText.value=joinVoiceParts(voiceBaseText,voiceFinalText);voiceAutoText=voiceText.value;
-      if(!voiceWanted){setMicState(false);return;}
+      if(!voiceWanted || document.hidden || document.getElementById('voicePanel')?.classList.contains('hidden')){voiceWanted=false;setMicState(false);return;}
       setMicState(true,'正在续听… 点这里停止');
       voiceRestartTimer=setTimeout(()=>startVoiceCycle(SR),300);
     };
@@ -1116,6 +1234,7 @@ function startVoiceCycle(SR){
   }
 }
 function toggleVoice(){
+  if(document.hidden || document.getElementById('voicePanel')?.classList.contains('hidden')) return;
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){alert('当前浏览器没有开放网页语音识别。你仍可以使用 iPhone 键盘上的麦克风，把文字说进文本框。');return;}
   if(voiceWanted||listening){stopVoiceListening();return;}
@@ -1238,8 +1357,9 @@ function extractVoice(){
   const contactCandidates=contactSpeechCandidates(chosen,text);
   const chosenContact=contactCandidates[0]?.score>=.58?contactCandidates[0].ct:null;
   const spokenContact=extractSpokenContact(text);
-  window.voiceDraft={customer:chosen?.name||'',contact:chosenContact?.name||spokenContact||'',date:inferVisitDate(text),content:text,todo:inferTodo(text),
-    followUpAt:/下周|明天|后天|上午|下午|晚上|\d{1,2}(?:[点时]|[:：]\d{2})/.test(text)?parseRelativeDate(text):'',priority:inferPriority(text),status:'待跟进',attachments:[]};
+  const initialTodo=inferTodo(text);
+  window.voiceDraft={customer:chosen?.name||'',contact:chosenContact?.name||spokenContact||'',date:inferVisitDate(text),content:text,todo:initialTodo,
+    followUpAt:/下周|明天|后天|上午|下午|晚上|\d{1,2}(?:[点时]|[:：]\d{2})/.test(text)?parseRelativeDate(text):'',priority:inferPriority(text),status:'待跟进',attachments:[],_initialContent:text,_initialTodo:initialTodo};
   window.voiceCustomerCandidates=customerCandidates;window.voiceContactCandidates=contactCandidates;
   renderVoiceConfirm(customerCandidates,contactCandidates);
 }
@@ -1408,17 +1528,60 @@ function addHistoryLink(ci,hi){
 }
 async function saveVoiceDraft(withExport=false){
   const d=window.voiceDraft;if(!d)return;
+  stopVoiceListening();
   const editedContent=vcContent.value.trim();
-  if(d._initialContent&&editedContent!==d._initialContent)learnSmallVoiceEdit(d._initialContent,editedContent);
-  d.date=vcDate.value;d.content=applyVoiceLearning(editedContent);d.todo=applyVoiceLearning(vcTodo.value.trim());d.followUpAt=vcFollow.value;d.priority=vcPri.value;d.status=vcStatus.value;
+  const editedTodo=vcTodo.value.trim();
+  if(d._initialContent&&editedContent!==d._initialContent) learnSmallVoiceEdit(d._initialContent,editedContent);
+  if(d._initialTodo!==undefined&&editedTodo!==d._initialTodo) learnSmallVoiceEdit(d._initialTodo,editedTodo);
+  d.date=vcDate.value;d.content=applyVoiceLearning(editedContent);d.todo=applyVoiceLearning(editedTodo);d.followUpAt=vcFollow.value;d.priority=vcPri.value;d.status=vcStatus.value;
   if(!d.customer||!d.contact||!d.content)return alert('客户、联系人和沟通内容需要确认');
   answers={customer:d.customer,contact:d.contact,phone:'',office:'',date:d.date,content:d.content,todo:d.todo,followUpAt:d.followUpAt,priority:d.priority,status:d.status,attachments:d.attachments||[]};
   commit();
+  const ci=data.findIndex(c=>normalizeName(c.name)===normalizeName(answers.customer));
+  const hi=ci>=0?(data[ci].history||[]).length-1:-1;
+  window.lastVoiceSaved={ci,hi,customer:answers.customer,contact:answers.contact,date:answers.date};
   await requestPersistentStorage();
   if(withExport) await exportJSON(false);
-  else alert('本次拜访已保存到浏览器本地数据库。未生成备份文件。');
-  voiceText.value=''; voiceConfirm.innerHTML=''; showTab('dash'); renderDashboard();
+  finishVoiceSave();
 }
+function clearVoiceSession(){
+  stopVoiceListening();
+  voiceBaseText='';voiceFinalText='';voiceCycleFinal='';voiceAutoText='';
+  if(typeof voiceText!=='undefined'&&voiceText) voiceText.value='';
+  if(typeof voiceConfirm!=='undefined'&&voiceConfirm) voiceConfirm.innerHTML='';
+  window.voiceDraft=null;window.voiceCustomerCandidates=[];window.voiceContactCandidates=[];
+}
+function finishVoiceSave(){
+  clearVoiceSession();
+  const card=document.getElementById('voiceDoneCard'),txt=document.getElementById('voiceDoneText');
+  if(txt&&window.lastVoiceSaved) txt.innerHTML=`${esc(window.lastVoiceSaved.customer)} · ${esc(window.lastVoiceSaved.contact)} · ${esc(window.lastVoiceSaved.date)}<br>语音识别内容已清空，监听已停止。请选择下一步。`;
+  card?.classList.remove('hidden');
+  document.getElementById('voicePanel')?.classList.remove('hidden');
+  document.getElementById('dashPanel')?.classList.add('hidden');
+  document.getElementById('dbPanel')?.classList.add('hidden');
+  document.getElementById('taskFilterPanel')?.classList.add('hidden');
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.getElementById('tabVoice')?.classList.add('active');
+  updateVoiceLearnStatus();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function newVoiceVisit(){
+  clearVoiceSession();
+  document.getElementById('voiceDoneCard')?.classList.add('hidden');
+  showTab('voice');
+  setMicState(false);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function openLastVoiceCustomer(){
+  stopVoiceListening();
+  const ci=window.lastVoiceSaved?.ci;
+  if(!(Number.isInteger(ci)&&data[ci])) return showTab('db');
+  showTab('db');
+  dbView={type:'customer',ci};
+  renderDB();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
 
 requestPersistentStorage();
 
