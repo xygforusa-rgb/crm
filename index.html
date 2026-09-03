@@ -1060,7 +1060,19 @@ function saveVoiceDraft(){
 }
 
 if('serviceWorker' in navigator && location.protocol!=='file:'){
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloadingForUpdate = false;
+
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(hadController && !reloadingForUpdate){
+      reloadingForUpdate = true;
+      location.reload();
+    }
+  });
+
+  navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'})
+    .then(reg=>reg.update())
+    .catch(()=>{});
 }
 
 renderStep();
