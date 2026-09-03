@@ -85,17 +85,29 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
 .sectiontitle{font-size:19px;font-weight:800;margin:18px 0 8px}
 @media(min-width:700px){.dashboard-grid{grid-template-columns:repeat(4,1fr)}}
 
+
+.candidatebox{margin-top:8px}.candidate{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-top:1px dashed var(--border)}.candidate:first-child{border-top:0}.confhigh{color:#166534}.confmid{color:#92400e}.conflow{color:#991b1b}.confidence{font-size:12px;font-weight:800}
+
+.dbactions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.editbtn{background:#e8f1ff;color:#1756a9;padding:8px 10px;font-size:13px}
+.delbtn{background:#fee2e2;color:#991b1b;padding:8px 10px;font-size:13px}
+.contactrow{border:1px solid var(--border);border-radius:10px;padding:10px;margin:8px 0;background:#fafcff}
+.histactions{display:flex;gap:6px;margin-top:8px}
+
+.attachbox{margin-top:10px;padding:10px;border:1px solid var(--border);border-radius:12px;background:#f8fafc}
+.attachitem{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px dashed var(--border)}
+.attachitem:first-child{border-top:0}.attachmeta{min-width:0;flex:1}.attachname{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.linkinput{width:100%;margin-top:6px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>客户管理助手</h1>
-  <div class="sub">逐题填写 · 保存后自动归到对应客户</div>
+  <div class="sub">PWA 测试版 V4 · 语音新增 · 客户库可维护 · 本地附件与链接</div>
 
   <div class="tabs">
     <button class="tab active" id="tabDash" onclick="showTab('dash')">看板</button>
-    <button class="tab" id="tabVoice" onclick="showTab('voice')">语音</button>
-    <button class="tab" id="tabForm" onclick="showTab('form')">录入</button>
+    <button class="tab" id="tabVoice" onclick="showTab('voice')">语音录入</button>
     <button class="tab" id="tabDB" onclick="showTab('db')">客户库</button>
   </div>
 
@@ -112,7 +124,7 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
 
   <section id="voicePanel" class="hidden">
     <div class="voicebox">
-      <div class="question">🎙️ 说一次拜访</div>
+      <div class="question">🎙️ 说一次拜访</div><div class="notice"><b>新增只走语音：</b>识别后所有字段都可以在确认页修改；确认无误后再保存。</div>
       <div class="meta">例如：今天拜访西开电气王经理，聊了550项目，下周三上午十点跟进，比较重要。</div>
       <button class="mic" id="micBtn" onclick="toggleVoice()">开始说话</button>
       <textarea id="voiceText" class="transcript" placeholder="识别结果会出现在这里；也可以直接粘贴或手动输入。"></textarea>
@@ -121,7 +133,7 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
     </div>
   </section>
 
-  <section id="formPanel" class="hidden">
+  <section id="formPanel" class="hidden" style="display:none!important">
     <div class="notice"><b>主数据规则：</b>JSON 文件是正式主数据；浏览器中的数据只作为临时工作副本。每次保存一条记录后，会自动生成一份最新 JSON 主数据文件。</div>
     <div class="datastatus" id="dataStatus">正在检查主数据状态…</div>
     <div class="progress"><div class="bar" id="bar"></div></div>
@@ -141,7 +153,7 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
         <h2>已保存</h2>
         <div class="meta" id="doneText"></div>
         <div class="row">
-          <button class="primary" onclick="resetForm()">继续录入</button>
+          <button class="primary" onclick="showTab('voice')">继续语音录入</button>
           <button class="secondary" onclick="showTab('db')">查看客户库</button>
         </div>
       </div>
@@ -505,7 +517,8 @@ function commit() {
     followUpAt:answers.followUpAt||'',
     priority:answers.priority||'B',
     status:answers.status||'待跟进',
-    completedAt:''
+    completedAt:'',
+    attachments:answers.attachments||[]
   });
   saveStore();
   exportJSON(true);
@@ -519,18 +532,19 @@ function commit() {
 
 function resetForm() {
   step=0;
-  answers={customer:'',contact:'',phone:'',office:'',date:new Date().toISOString().slice(0,10),content:'',todo:'',followUpAt:'',priority:'B',status:'待跟进'};
+  answers={customer:'',contact:'',phone:'',office:'',date:new Date().toISOString().slice(0,10),content:'',todo:'',followUpAt:'',priority:'B',status:'待跟进',attachments:[]};
   document.getElementById('doneCard').classList.add('hidden');
   document.getElementById('formCard').classList.remove('hidden');
   renderStep();
 }
 
 function showTab(t) {
-  ['dash','voice','form','db'].forEach(x=>{
+  ['dash','voice','db'].forEach(x=>{
     document.getElementById(x+'Panel')?.classList.toggle('hidden',x!==t);
     const id='tab'+x.charAt(0).toUpperCase()+x.slice(1);
     document.getElementById(id)?.classList.toggle('active',x===t);
   });
+  document.getElementById('formPanel')?.classList.add('hidden');
   if(t==='db') renderDB();
   if(t==='dash') renderDashboard();
 }
@@ -543,19 +557,171 @@ function renderDB() {
   const q=(document.getElementById('search')?.value||'').toLowerCase();
   const list=document.getElementById('dbList'); if(!list)return;
   const filtered=data.filter(c=>{
-    const blob=[c.name,...(c.contacts||[]).flatMap(x=>[x.name,x.phone,x.office]),...(c.history||[]).flatMap(h=>[h.content,h.todo])].join(' ').toLowerCase();
+    const blob=[c.name,...(c.contacts||[]).flatMap(x=>[x.name,x.phone,x.office,x.note]),...(c.history||[]).flatMap(h=>[h.content,h.todo,h.contact,h.office])].join(' ').toLowerCase();
     return !q || blob.includes(q);
   });
-  list.innerHTML = filtered.map(c=>`
-    <div class="customer">
+
+  list.innerHTML = filtered.map(c=>{
+    const ci=data.indexOf(c);
+    return `<div class="customer">
       <h3>${esc(c.name)}</h3>
-      <div>${(c.contacts||[]).map(x=>`<span class="badge">${esc(x.name)}${x.phone?' · '+esc(x.phone):''}${x.office?' · '+esc(x.office):''}</span>`).join('') || '<span class="meta">暂无联系人</span>'}</div>
-      ${(c.history||[]).slice().reverse().slice(0,5).map(h=>`
-        <div class="hist"><b>${esc(h.date||'历史记录')}</b>${h.contact?' · '+esc(h.contact):''}<br>${esc(h.content)}${h.todo?'<br><span class="meta">待办：'+esc(h.todo)+'</span>':''}</div>
-      `).join('')}
-    </div>`).join('') || '<div class="meta">没有找到结果</div>';
+      <div class="meta">${esc(c.defaultOffice||'')}</div>
+
+      <div class="dbactions">
+        <button class="editbtn" onclick="editCustomer(${ci})">编辑客户</button>
+        <button class="delbtn" onclick="deleteCustomer(${ci})">删除客户</button>
+      </div>
+
+      <div style="margin-top:12px"><b>联系人</b></div>
+      ${(c.contacts||[]).map((x,xi)=>`
+        <div class="contactrow">
+          <div><b>${esc(x.name)}</b>${x.phone?' · '+esc(x.phone):''}${x.office?' · '+esc(x.office):''}${x.note?' · '+esc(x.note):''}</div>
+          <div class="dbactions">
+            <button class="editbtn" onclick="editContact(${ci},${xi})">编辑联系人</button>
+            <button class="delbtn" onclick="deleteContact(${ci},${xi})">删除联系人</button>
+          </div>
+        </div>`).join('') || '<div class="meta">暂无联系人</div>'}
+
+      <div style="margin-top:14px"><b>拜访记录</b></div>
+      ${(c.history||[]).slice().reverse().map((h,revIndex)=>{
+        const hi=(c.history||[]).length-1-revIndex;
+        return `<div class="hist">
+          <b>${esc(h.date||'历史记录')}</b>${h.contact?' · '+esc(h.contact):''}
+          <br>${esc(h.content||'')}
+          ${h.todo?'<br><span class="meta">待办：'+esc(h.todo)+'</span>':''}
+          ${h.followUpAt?'<br><span class="meta">跟进：'+esc(h.followUpAt.replace('T',' '))+' · '+esc(h.priority||'B')+' · '+esc(h.status||'待跟进')+'</span>':''}
+          <div class="attachbox">
+            <b>附件 / 链接</b>
+            ${(h.attachments||[]).map((a,ai)=>`<div class="attachitem"><div class="attachmeta"><div class="attachname">${esc(a.name||'附件')}</div><div class="meta">${a.kind==='link'?'链接':'本地文件'}</div></div><button class="editbtn" onclick="openAttachment(${ci},${hi},${ai})">打开</button><button class="delbtn" onclick="removeHistoryAttachment(${ci},${hi},${ai})">删除</button></div>`).join('')||'<div class="meta">暂无附件</div>'}
+            <div class="choicebar">
+              <button class="secondary" onclick="document.getElementById('hf_${ci}_${hi}').click()">添加文件</button>
+              <button class="secondary" onclick="addHistoryLink(${ci},${hi})">添加链接</button>
+              <input id="hf_${ci}_${hi}" type="file" multiple style="display:none" onchange="addHistoryFiles(${ci},${hi},this.files)">
+            </div>
+          </div>
+          <div class="histactions">
+            <button class="editbtn" onclick="editHistory(${ci},${hi})">编辑记录</button>
+            <button class="delbtn" onclick="deleteHistory(${ci},${hi})">删除记录</button>
+          </div>
+        </div>`;
+      }).join('') || '<div class="meta">暂无拜访记录</div>'}
+    </div>`;
+  }).join('') || '<div class="meta">没有找到结果</div>';
 }
 
+function editCustomer(ci){
+  const c=data[ci]; if(!c)return;
+  const newName=prompt('客户名称',c.name); if(newName===null)return;
+  const newOffice=prompt('默认办公地',c.defaultOffice||''); if(newOffice===null)return;
+  const n=newName.trim();
+  if(!n)return alert('客户名称不能为空');
+  const duplicate=data.find((x,i)=>i!==ci && normalizeName(x.name)===normalizeName(n));
+  if(duplicate && !confirm(`数据库里已有“${duplicate.name}”。仍然保存为当前名称吗？`))return;
+  const oldName=c.name;
+  c.name=n; c.defaultOffice=newOffice.trim();
+  // 保持历史记录不变，只更新客户主名称。
+  saveStore(); renderDB(); renderDashboard();
+  alert(`已修改客户：${oldName} → ${c.name}`);
+}
+
+function deleteCustomer(ci){
+  const c=data[ci]; if(!c)return;
+  if(!confirm(`确定删除客户“${c.name}”吗？\n\n这会同时删除该客户的联系人和全部拜访记录。`))return;
+  data.splice(ci,1);
+  saveStore(); renderDB(); renderDashboard();
+}
+
+function editContact(ci,xi){
+  const c=data[ci], ct=c?.contacts?.[xi]; if(!ct)return;
+  const oldName=ct.name;
+  const name=prompt('联系人姓名',ct.name); if(name===null)return;
+  const phone=prompt('电话',ct.phone||''); if(phone===null)return;
+  const office=prompt('办公地',ct.office||''); if(office===null)return;
+  const note=prompt('职位 / 备注',ct.note||''); if(note===null)return;
+  if(!name.trim())return alert('联系人姓名不能为空');
+  ct.name=name.trim(); ct.phone=phone.trim(); ct.office=office.trim(); ct.note=note.trim();
+
+  // 同步历史记录中的联系人名称，避免改名后历史断开。
+  (c.history||[]).forEach(h=>{
+    if(normalizeName(h.contact||'')===normalizeName(oldName)) h.contact=ct.name;
+  });
+  saveStore(); renderDB(); renderDashboard();
+}
+
+function deleteContact(ci,xi){
+  const c=data[ci], ct=c?.contacts?.[xi]; if(!ct)return;
+  if(!confirm(`确定删除联系人“${ct.name}”吗？\n\n历史拜访记录不会删除，只会保留当时记录里的联系人名字。`))return;
+  c.contacts.splice(xi,1);
+  saveStore(); renderDB();
+}
+
+function editHistory(ci,hi){
+  const c=data[ci], h=c?.history?.[hi]; if(!h)return;
+
+  const date=prompt('拜访日期 YYYY-MM-DD',h.date||''); if(date===null)return;
+  const contact=prompt('联系人',h.contact||''); if(contact===null)return;
+  const office=prompt('办公地',h.office||''); if(office===null)return;
+  const content=prompt('沟通内容',h.content||''); if(content===null)return;
+  const todo=prompt('待办',h.todo||''); if(todo===null)return;
+  const follow=prompt('跟进时间（如 2026-09-10T10:00，可留空）',h.followUpAt||''); if(follow===null)return;
+  const priority=prompt('重要程度 S / A / B / C',h.priority||'B'); if(priority===null)return;
+  const status=prompt('状态：待跟进 / 等待客户 / 已完成',h.status||'待跟进'); if(status===null)return;
+
+  h.date=date.trim();
+  h.contact=contact.trim();
+  h.office=office.trim();
+  h.content=content.trim();
+  h.todo=todo.trim();
+  h.followUpAt=follow.trim();
+  h.priority=['S','A','B','C'].includes(priority.trim().toUpperCase())?priority.trim().toUpperCase():'B';
+  h.status=['待跟进','等待客户','已完成'].includes(status.trim())?status.trim():'待跟进';
+  if(h.status==='已完成' && !h.completedAt) h.completedAt=nowText();
+  if(h.status!=='已完成') h.completedAt='';
+
+  saveStore(); renderDB(); renderDashboard();
+}
+
+function deleteHistory(ci,hi){
+  const c=data[ci], h=c?.history?.[hi]; if(!h)return;
+  if(!confirm(`确定删除这条拜访记录吗？\n\n${h.date||''} ${h.contact||''}\n${h.content||''}`))return;
+  c.history.splice(hi,1);
+  saveStore(); renderDB(); renderDashboard();
+}
+
+
+async function exportFullBackup(){
+  const db=await openAttachDB();
+  const files=await new Promise((resolve,reject)=>{
+    const r=db.transaction('files').objectStore('files').getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error);
+  });db.close();
+  const packed=[];
+  for(const f of files){
+    const buf=await f.blob.arrayBuffer();
+    let binary='',bytes=new Uint8Array(buf),chunk=0x8000;
+    for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));
+    packed.push({id:f.id,name:f.name,type:f.type,size:f.size,createdAt:f.createdAt,base64:btoa(binary)});
+  }
+  const payload={format:'crm-full-backup-v1',exportedAt:new Date().toISOString(),data,files:packed};
+  download(`CRM完整备份_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(payload,null,2),'application/json');
+}
+async function importFullBackup(file){
+  if(!file)return;
+  try{
+    const x=JSON.parse(await file.text());
+    if(x.format!=='crm-full-backup-v1'||!Array.isArray(x.data)||!Array.isArray(x.files))throw new Error('不是有效的 CRM 完整备份');
+    if(!confirm(`将恢复 ${x.data.length} 个客户和 ${x.files.length} 个附件。当前本地数据库会被替换，继续吗？`))return;
+    const db=await openAttachDB();
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction('files','readwrite'),store=tx.objectStore('files');store.clear();
+      for(const f of x.files){
+        const bin=atob(f.base64),bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+        store.put({id:f.id,name:f.name,type:f.type||'',size:f.size||bytes.length,createdAt:f.createdAt||'',blob:new Blob([bytes],{type:f.type||'application/octet-stream'})});
+      }
+      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+    });db.close();
+    data=x.data;saveStore();renderDB();renderDashboard();updateDataStatus();alert('完整备份恢复完成');
+  }catch(e){alert('恢复失败：'+e.message);}
+}
 function download(name, text, type) {
   const blob=new Blob([text],{type});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click();
@@ -695,37 +861,201 @@ function parseRelativeDate(text){
   if(tm){h=+tm[1];min=+(tm[2]||0);if(/下午|晚上/.test(tm[0])&&h<12)h+=12;}
   d.setHours(h,min,0,0); return localDateTimeValue(d);
 }
+
+function normalizeForSpeech(s){
+  return String(s||'').toLowerCase().replace(/[，。！？、；：,.!?;:\s]/g,'')
+    .replace(/有限责任公司|股份有限公司|集团有限公司|有限公司|集团公司|公司/g,'')
+    .replace(/电气设备|电气|开关设备|开关|高压电器|高压|中压/g,'')
+    .replace(/[（）()·\-—_]/g,'');
+}
+function extractCustomerPhrase(text){
+  const pats=[
+    /(?:今天|昨天|前天)?(?:去|到|拜访了?|拜访|去了|见了|客户是|客户为)\s*([^，。,.；;]{2,18}?)(?=的|，|。|,|；|;|见|找|和|跟|聊|联系人|$)/,
+    /客户(?:叫|是|为)?\s*([^，。,.；;]{2,18}?)(?=，|。|,|；|;|联系人|聊|$)/
+  ];
+  for(const p of pats){const m=text.match(p);if(m&&m[1])return m[1].trim();}
+  return '';
+}
+function companyCoreTokens(name){
+  const n=normalizeForSpeech(name), out=[n];
+  ['电器','电气','高压','中压','开关','集团','能源','科技','设备'].forEach(s=>{if(n.endsWith(s)&&n.length>s.length+1)out.push(n.slice(0,-s.length))});
+  if(n.length>=4){out.push(n.slice(0,4),n.slice(-4))}
+  if(n.length>=3){out.push(n.slice(0,3),n.slice(-3))}
+  return [...new Set(out.filter(x=>x.length>=2))];
+}
+function customerSpeechCandidates(text){
+  const phrase=extractCustomerPhrase(text), nt=normalizeForSpeech(text), np=normalizeForSpeech(phrase);
+  return data.map(c=>{
+    const cn=normalizeForSpeech(c.name);let s=0,reasons=[];
+    if(phrase){
+      if(cn===np){s+=1.25;reasons.push('语音片段完全匹配')}
+      else if(cn.includes(np)||np.includes(cn)){s+=.95;reasons.push('语音片段包含匹配')}
+      else {const sim=similarity(phrase,c.name);s+=sim*.9;if(sim>.5)reasons.push('名称相似')}
+    }
+    if(nt.includes(cn)){s+=1.1;reasons.push('整句直接出现')}
+    companyCoreTokens(c.name).forEach(t=>{if(nt.includes(t)){s+=Math.min(.55,.16*t.length);reasons.push('简称命中')}});
+    ['北京','天津','上海','西安','杭州','常州','镇江','宁波','成都','衡阳','泰州','昆山','石家庄','青州','如皋'].forEach(r=>{if(text.includes(r)&&c.name.includes(r))s+=.28});
+    return {c,score:s,reasons:[...new Set(reasons)]};
+  }).filter(x=>x.score>.22).sort((a,b)=>b.score-a.score).slice(0,6);
+}
+function contactSpeechCandidates(customer,text){
+  if(!customer)return [];
+  return (customer.contacts||[]).map(ct=>{
+    let s=0,reasons=[];
+    if(text.includes(ct.name)){s+=1.2;reasons.push('姓名直接出现')}
+    const surname=ct.name.slice(0,1);
+    if(surname&&new RegExp(surname+'(?:经理|总|工|主任|老师)').test(text)){s+=.65;reasons.push('姓氏+称呼')}
+    if(ct.note&&text.includes(ct.note)){s+=.25;reasons.push('职位命中')}
+    return {ct,score:s,reasons};
+  }).filter(x=>x.score>.15).sort((a,b)=>b.score-a.score).slice(0,6);
+}
+function confidenceText(score){return score>=1.05?['高','confhigh']:score>=.58?['中','confmid']:['低','conflow'];}
+function inferTodo(text){
+  for(const p of [/(?:我要|需要|准备|计划|记得|到时候|后面|之后)([^，。,.；;]{2,30})/,/(?:跟进|回访|联系|确认|发送|发|报价|样品)([^，。,.；;]{0,24})/]){
+    const m=text.match(p);if(m)return (m[0]||'').trim();
+  } return '';
+}
+function inferVisitDate(text){
+  const d=new Date(); if(/昨天/.test(text))d.setDate(d.getDate()-1); else if(/前天/.test(text))d.setDate(d.getDate()-2);
+  const z=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;
+}
+function inferPriority(text){
+  if(/非常重要|特别重要|重点项目|必须盯|最重要|关键/.test(text))return 'S';
+  if(/比较重要|很重要|重要|尽快|抓紧/.test(text))return 'A';
+  if(/不急|有空|长期|保持联系/.test(text))return 'C';
+  return 'B';
+}
 function extractVoice(){
   const text=voiceText.value.trim(); if(!text)return alert('请先说一段话或输入文字');
-  const customerCandidates=data.map(c=>({c,score:similarity(text,c.name)})).filter(x=>text.includes(x.c.name)||x.score>.35).sort((a,b)=>b.score-a.score).slice(0,4);
-  const chosen=customerCandidates[0]?.c||null;
-  let contactCandidates=(chosen?.contacts||[]).filter(ct=>text.includes(ct.name)||text.includes(ct.name.slice(0,1)+'经理')||text.includes(ct.name.slice(0,1)+'工')).slice(0,4);
-  const follow=/下周|明天|后天|上午|下午|晚上|\d{1,2}[点时]/.test(text)?parseRelativeDate(text):'';
-  const pri=/非常重要|重点|必须/.test(text)?'S':/比较重要|重要/.test(text)?'A':'B';
-  window.voiceDraft={customer:chosen?.name||'',contact:contactCandidates[0]?.name||'',date:new Date().toISOString().slice(0,10),content:text,todo:'',followUpAt:follow,priority:pri,status:'待跟进'};
+  const customerCandidates=customerSpeechCandidates(text);
+  const chosen=customerCandidates[0]?.score>=.58?customerCandidates[0].c:null;
+  const contactCandidates=contactSpeechCandidates(chosen,text);
+  const chosenContact=contactCandidates[0]?.score>=.58?contactCandidates[0].ct:null;
+  window.voiceDraft={customer:chosen?.name||'',contact:chosenContact?.name||'',date:inferVisitDate(text),content:text,todo:inferTodo(text),
+    followUpAt:/下周|明天|后天|上午|下午|晚上|\d{1,2}[点时]/.test(text)?parseRelativeDate(text):'',priority:inferPriority(text),status:'待跟进',attachments:[]};
+  window.voiceCustomerCandidates=customerCandidates;window.voiceContactCandidates=contactCandidates;
   renderVoiceConfirm(customerCandidates,contactCandidates);
 }
-function renderVoiceConfirm(customers=[],contacts=[]){
-  const d=window.voiceDraft;
-  const choices=(arr,field,key)=>arr.length?`<div class="choicebar">${arr.map(x=>{const v=x[key].name;return `<button class="secondary" onclick="voicePick('${field}','${encodeURIComponent(v)}')">${esc(v)}</button>`}).join('')}<button class="secondary" onclick="voiceManual('${field}')">手动输入</button></div>`:`<div class="choicebar"><button class="secondary" onclick="voiceManual('${field}')">手动输入</button></div>`;
-  voiceConfirm.innerHTML=`<div class="confirmgrid">
-    <div class="confirmitem ${d.customer?'':'warn'}"><b>客户</b><div>${esc(d.customer||'未确定')}</div>${choices(customers,'customer','c')}</div>
-    <div class="confirmitem ${d.contact?'':'warn'}"><b>联系人</b><div>${esc(d.contact||'未确定')}</div>${choices(contacts,'contact','ct')}</div>
-    <div class="confirmitem"><b>拜访日期</b><input id="vcDate" type="date" value="${esc(d.date)}"></div>
-    <div class="confirmitem"><b>沟通内容</b><textarea id="vcContent">${esc(d.content)}</textarea></div>
-    <div class="confirmitem"><b>待办</b><textarea id="vcTodo" placeholder="例如：发送报价、确认样品">${esc(d.todo)}</textarea></div>
-    <div class="confirmitem ${d.followUpAt?'':'warn'}"><b>跟进时间</b><input id="vcFollow" type="datetime-local" value="${esc(d.followUpAt)}"></div>
-    <div class="confirmitem"><b>重要程度</b><select id="vcPri">${['S','A','B','C'].map(x=>`<option ${d.priority===x?'selected':''}>${x}</option>`).join('')}</select></div>
-    <div class="confirmitem"><b>状态</b><select id="vcStatus">${['待跟进','等待客户','已完成'].map(x=>`<option ${d.status===x?'selected':''}>${x}</option>`).join('')}</select></div>
-  </div><div class="row"><button class="primary" onclick="saveVoiceDraft()">确认并保存</button></div>`;
+function candidateButtons(arr,field,key){
+  if(!arr.length)return `<div class="choicebar"><button class="secondary" onclick="voiceManual('${field}')">手动输入</button></div>`;
+  return `<div class="candidatebox">${arr.map(x=>{const obj=x[key],[lab,cls]=confidenceText(x.score);return `<div class="candidate"><div><b>${esc(obj.name)}</b><div class="meta">${esc((x.reasons||[]).join(' · ')||'候选')}</div></div><div><span class="confidence ${cls}">${lab}置信</span> <button class="secondary small" onclick="voicePick('${field}','${encodeURIComponent(obj.name)}')">选择</button></div></div>`}).join('')}</div><div class="choicebar"><button class="secondary" onclick="voiceManual('${field}')">都不是，手动输入</button></div>`;
 }
-function voicePick(field,val){window.voiceDraft[field]=decodeURIComponent(val);renderVoiceConfirm();}
-function voiceManual(field){const v=prompt('请输入'+(field==='customer'?'客户全称':'联系人'));if(v){window.voiceDraft[field]=v;renderVoiceConfirm();}}
+function renderVoiceConfirm(customers=window.voiceCustomerCandidates||[],contacts=window.voiceContactCandidates||[]){
+  const d=window.voiceDraft;
+  voiceConfirm.innerHTML=`<div class="confirmgrid">
+  <div class="confirmitem ${d.customer?'':'warn'}"><b>客户</b><div>${esc(d.customer||'未确定')}</div>${candidateButtons(customers,'customer','c')}</div>
+  <div class="confirmitem ${d.contact?'':'warn'}"><b>联系人</b><div>${esc(d.contact||'未确定')}</div>${candidateButtons(contacts,'contact','ct')}</div>
+  <div class="confirmitem"><b>拜访日期</b><input id="vcDate" type="date" value="${esc(d.date)}"></div>
+  <div class="confirmitem"><b>沟通内容</b><textarea id="vcContent">${esc(d.content)}</textarea></div>
+  <div class="confirmitem"><b>待办</b><textarea id="vcTodo" placeholder="例如：发送报价、确认样品">${esc(d.todo)}</textarea></div>
+  <div class="confirmitem ${d.followUpAt?'':'warn'}"><b>跟进时间</b><input id="vcFollow" type="datetime-local" value="${esc(d.followUpAt)}"></div>
+  <div class="confirmitem"><b>重要程度</b><select id="vcPri">${['S','A','B','C'].map(x=>`<option ${d.priority===x?'selected':''}>${x}</option>`).join('')}</select></div>
+  <div class="confirmitem"><b>状态</b><select id="vcStatus">${['待跟进','等待客户','已完成'].map(x=>`<option ${d.status===x?'selected':''}>${x}</option>`).join('')}</select></div>
+  <div class="confirmitem">
+    <b>附件 / 链接</b>
+    <div class="meta">文件保存在本机 CRM 附件库；也可以只保存 iCloud、网盘、网页等链接。</div>
+    <div class="choicebar">
+      <button class="secondary" onclick="document.getElementById('voiceFileInput').click()">添加文件/照片</button>
+      <button class="secondary" onclick="addVoiceLink()">添加链接</button>
+    </div>
+    <input id="voiceFileInput" type="file" multiple style="display:none" onchange="addVoiceFiles(this.files)">
+    <div id="voiceAttachments"></div>
+  </div>
+  </div><div class="row"><button class="primary" onclick="saveVoiceDraft()">确认并保存</button></div>`;
+  setTimeout(renderVoiceAttachments,0);
+}
+function voicePick(field,val){
+  const value=decodeURIComponent(val);window.voiceDraft[field]=value;
+  if(field==='customer'){const c=getCustomer(value);window.voiceContactCandidates=contactSpeechCandidates(c,voiceText.value.trim());window.voiceDraft.contact=window.voiceContactCandidates[0]?.score>=.58?window.voiceContactCandidates[0].ct.name:'';}
+  renderVoiceConfirm();
+}
+function voiceManual(field){
+  const v=prompt('请输入'+(field==='customer'?'客户全称':'联系人'));
+  if(v){window.voiceDraft[field]=v;if(field==='customer')window.voiceContactCandidates=contactSpeechCandidates(getCustomer(v),voiceText.value.trim());renderVoiceConfirm();}
+}
+
+function newId(){return 'a_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);}
+function openAttachDB(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open('crm_attachments_v1',1);
+    req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files',{keyPath:'id'});};
+    req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
+  });
+}
+async function putLocalFile(file){
+  const db=await openAttachDB(), id=newId();
+  await new Promise((resolve,reject)=>{
+    const tx=db.transaction('files','readwrite');
+    tx.objectStore('files').put({id,name:file.name,type:file.type||'',size:file.size,blob:file,createdAt:new Date().toISOString()});
+    tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+  });
+  db.close(); return {id,kind:'local',name:file.name,type:file.type||'',size:file.size,note:''};
+}
+async function getLocalFile(id){
+  const db=await openAttachDB();
+  const rec=await new Promise((resolve,reject)=>{const r=db.transaction('files').objectStore('files').get(id);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+  db.close();return rec;
+}
+async function deleteLocalFile(id){
+  const db=await openAttachDB();
+  await new Promise((resolve,reject)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});
+  db.close();
+}
+async function addVoiceFiles(files){
+  if(!window.voiceDraft)return;
+  window.voiceDraft.attachments=window.voiceDraft.attachments||[];
+  for(const f of Array.from(files||[])){
+    try{window.voiceDraft.attachments.push(await putLocalFile(f));}catch(e){alert('附件保存失败：'+e.message);}
+  }
+  renderVoiceAttachments();
+}
+function addVoiceLink(){
+  if(!window.voiceDraft)return;
+  const url=prompt('请输入链接（例如 iCloud/网盘共享链接、客户官网等）','https://');if(!url)return;
+  const name=prompt('给这个链接起个名称','链接')||'链接';
+  window.voiceDraft.attachments=window.voiceDraft.attachments||[];
+  window.voiceDraft.attachments.push({id:newId(),kind:'link',name:name.trim(),url:url.trim(),note:''});
+  renderVoiceAttachments();
+}
+function renderVoiceAttachments(){
+  const box=document.getElementById('voiceAttachments');if(!box||!window.voiceDraft)return;
+  const arr=window.voiceDraft.attachments||[];
+  box.innerHTML=arr.map((a,i)=>`<div class="attachitem"><div class="attachmeta"><div class="attachname">${esc(a.name||'附件')}</div><div class="meta">${a.kind==='link'?'链接':'本地文件'}${a.size?' · '+Math.round(a.size/1024)+' KB':''}</div></div><button class="delbtn" onclick="removeVoiceAttachment(${i})">移除</button></div>`).join('')||'<div class="meta">暂无附件</div>';
+}
+async function removeVoiceAttachment(i){
+  const a=window.voiceDraft?.attachments?.[i];if(!a)return;
+  if(a.kind==='local')await deleteLocalFile(a.id);
+  window.voiceDraft.attachments.splice(i,1);renderVoiceAttachments();
+}
+async function openAttachment(ci,hi,ai){
+  const a=data?.[ci]?.history?.[hi]?.attachments?.[ai];if(!a)return;
+  if(a.kind==='link'){window.open(a.url,'_blank');return;}
+  const rec=await getLocalFile(a.id);if(!rec?.blob)return alert('这个本地附件已不在当前设备。请从完整备份恢复，或重新添加。');
+  const u=URL.createObjectURL(rec.blob);window.open(u,'_blank');setTimeout(()=>URL.revokeObjectURL(u),60000);
+}
+async function removeHistoryAttachment(ci,hi,ai){
+  const h=data?.[ci]?.history?.[hi],a=h?.attachments?.[ai];if(!a)return;
+  if(!confirm(`确定移除附件“${a.name||'附件'}”吗？`))return;
+  if(a.kind==='local')await deleteLocalFile(a.id);
+  h.attachments.splice(ai,1);saveStore();renderDB();
+}
+async function addHistoryFiles(ci,hi,files){
+  const h=data?.[ci]?.history?.[hi];if(!h)return;h.attachments=h.attachments||[];
+  for(const f of Array.from(files||[]))h.attachments.push(await putLocalFile(f));
+  saveStore();renderDB();
+}
+function addHistoryLink(ci,hi){
+  const h=data?.[ci]?.history?.[hi];if(!h)return;
+  const url=prompt('请输入链接','https://');if(!url)return;
+  const name=prompt('链接名称','链接')||'链接';
+  h.attachments=h.attachments||[];h.attachments.push({id:newId(),kind:'link',name:name.trim(),url:url.trim(),note:''});
+  saveStore();renderDB();
+}
 function saveVoiceDraft(){
   const d=window.voiceDraft;if(!d)return;
   d.date=vcDate.value;d.content=vcContent.value.trim();d.todo=vcTodo.value.trim();d.followUpAt=vcFollow.value;d.priority=vcPri.value;d.status=vcStatus.value;
   if(!d.customer||!d.contact||!d.content)return alert('客户、联系人和沟通内容需要确认');
-  answers={customer:d.customer,contact:d.contact,phone:'',office:'',date:d.date,content:d.content,todo:d.todo,followUpAt:d.followUpAt,priority:d.priority,status:d.status};
+  answers={customer:d.customer,contact:d.contact,phone:'',office:'',date:d.date,content:d.content,todo:d.todo,followUpAt:d.followUpAt,priority:d.priority,status:d.status,attachments:d.attachments||[]};
   commit(); voiceText.value=''; voiceConfirm.innerHTML=''; showTab('dash'); renderDashboard();
 }
 
