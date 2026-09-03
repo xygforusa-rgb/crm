@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>客户管理助手 V5.8</title>
+<title>客户管理助手 V5.12</title>
 <meta name="theme-color" content="#172033">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -107,13 +107,17 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
 .customerSummary,.entityCard,.reportCard{border:1px solid var(--border);border-radius:14px;padding:14px;margin:10px 0;background:#fff}
 .customerSummary h3,.entityCard h3{margin:0 0 8px}.countRow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}.countBox{border:1px solid var(--border);background:#f8fafc;border-radius:12px;padding:10px;text-align:center}.countBox b{display:block;font-size:22px;margin-top:2px}.recentTitle{font-size:13px;font-weight:800;color:#33415c;margin-top:10px}.miniReport{padding:9px 0;border-top:1px dashed var(--border)}.miniReport:first-child{border-top:0}.miniDate{font-size:12px;color:var(--muted);margin-bottom:3px}.miniContent{font-size:14px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.entityTop,.reportTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.pill{display:inline-block;background:#eef4ff;border-radius:999px;padding:4px 8px;font-size:12px;color:#33415c}.detailTitle{font-size:19px;font-weight:900;margin:8px 0}.reportCard{cursor:pointer}.reportCard:active{transform:scale(.995)}
 
+.followOverlay{position:fixed;inset:0;background:rgba(15,23,42,.52);z-index:10020;display:flex;align-items:flex-end;justify-content:center;padding:14px}.followSheet{width:min(620px,100%);background:#fff;border-radius:18px 18px 14px 14px;padding:16px;box-shadow:0 -12px 40px rgba(15,23,42,.18)}.followSheet h3{margin:0 0 6px;font-size:20px}.followSheet .meta{line-height:1.5}.followQuick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}.followQuick button{width:100%}.followCustom{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.followCustom input{flex:1;min-width:210px}.followCancel{margin-top:12px;width:100%}@media(min-width:700px){.followOverlay{align-items:center}.followSheet{border-radius:18px}}
+
 .previewOverlay{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}.previewCard{width:min(900px,100%);max-height:92vh;background:#fff;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}.previewHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)}.previewTitle{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.previewBody{padding:12px;overflow:auto;min-height:160px}.previewBody img{display:block;max-width:100%;height:auto;margin:auto}.previewBody iframe{width:100%;height:72vh;border:0}.previewBody video{max-width:100%;max-height:72vh}.previewBody audio{width:100%}.previewText{white-space:pre-wrap;word-break:break-word;font-size:14px}.previewActions{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border);flex-wrap:wrap}
+
+.visitEditOverlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:10030;display:flex;align-items:flex-end;justify-content:center;padding:12px}.visitEditSheet{width:min(720px,100%);max-height:94vh;overflow:auto;background:#fff;border-radius:20px 20px 14px 14px;padding:16px;box-shadow:0 -14px 46px rgba(15,23,42,.2)}.visitEditSheet h3{margin:0 0 10px;font-size:20px}.veGrid{display:grid;grid-template-columns:1fr;gap:12px}.veField label{display:block;font-size:13px;font-weight:800;color:#334155;margin-bottom:6px}.veField input,.veField textarea,.veField select{width:100%}.veField textarea{min-height:110px}.segBtns{display:flex;gap:8px;flex-wrap:wrap}.segBtns button{padding:9px 12px}.segBtns button.active{background:#172033;color:#fff}.visitEditActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.cleanupCard{border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0;background:#fff}.cleanupTitle{font-weight:800}.cleanupWarn{font-size:12px;color:#9a3412;margin-top:4px}.toolbar .dangerLite{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}@media(min-width:700px){.visitEditOverlay{align-items:center}.visitEditSheet{border-radius:18px}.veGrid{grid-template-columns:1fr 1fr}.veField.full{grid-column:1/-1}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>客户管理助手</h1>
-  <div class="sub">PWA V5.9 · 语音页面生命周期 · 保存后选择 · 可交互跟进看板 · 个性语音学习 · 本地智能识别 · 分层客户视图 · 本机附件 · 旧数据库兼容</div>
+  <div class="sub">PWA V5.12 · 客户整理工作台 · 灵活延期与等待客户提醒 · 首页拜访可点击详情 · 语音页面生命周期 · 保存后选择 · 可交互跟进看板 · 个性语音学习 · 本地智能识别 · 分层客户视图 · 本机附件 · 旧数据库兼容</div>
 
   <div class="tabs">
     <button class="tab active" id="tabDash" onclick="showTab('dash')">看板</button>
@@ -197,11 +201,43 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
       <button class="primary small" onclick="saveAndExportData()">备份当前数据库</button>
       <button class="secondary small" onclick="document.getElementById('importFile').click()">导入主数据 JSON</button>
       <button class="secondary small" onclick="exportCSV()">导出 CSV 查看</button>
+      <button class="secondary small dangerLite" onclick="openCleanup()">待整理</button>
       <input id="importFile" type="file" accept=".json" class="hidden" onchange="importJSON(event)">
     </div>
     <input id="search" placeholder="搜索客户 / 联系人 / 电话" oninput="renderDB()" style="margin:8px 0 12px">
     <div id="dbList"></div>
   </section>
+</div>
+
+<div id="followOverlay" class="followOverlay hidden" onclick="if(event.target===this)closeFollowPicker()">
+  <div class="followSheet" role="dialog" aria-modal="true" aria-labelledby="followPickerTitle">
+    <h3 id="followPickerTitle">选择时间</h3>
+    <div class="meta" id="followPickerDesc"></div>
+    <div class="followQuick" id="followQuick"></div>
+    <div class="followCustom">
+      <input id="followCustomTime" type="datetime-local">
+      <button class="primary" onclick="applyCustomFollowTime()">使用自定义时间</button>
+    </div>
+    <button class="secondary followCancel" onclick="closeFollowPicker()">取消</button>
+  </div>
+</div>
+
+
+<div id="visitEditOverlay" class="visitEditOverlay hidden" onclick="if(event.target===this)closeVisitEditor()">
+  <div class="visitEditSheet" role="dialog" aria-modal="true" aria-labelledby="visitEditTitle">
+    <h3 id="visitEditTitle">编辑拜访</h3>
+    <div class="veGrid">
+      <div class="veField"><label>拜访日期</label><input id="veDate" type="date"></div>
+      <div class="veField"><label>联系人（可选择，也可直接输入）</label><input id="veContact" list="veContactList" placeholder="选择已有联系人或输入新名字"><datalist id="veContactList"></datalist></div>
+      <div class="veField"><label>办公地</label><input id="veOffice" placeholder="可留空"></div>
+      <div class="veField"><label>跟进时间</label><input id="veFollow" type="datetime-local"></div>
+      <div class="veField full"><label>沟通内容</label><textarea id="veContent"></textarea></div>
+      <div class="veField full"><label>待办 / 下一步</label><textarea id="veTodo"></textarea></div>
+      <div class="veField full"><label>重要程度</label><div class="segBtns" id="vePriorityBtns"></div><input id="vePriority" type="hidden" value="B"></div>
+      <div class="veField full"><label>状态</label><div class="segBtns" id="veStatusBtns"></div><input id="veStatus" type="hidden" value="待跟进"></div>
+    </div>
+    <div class="visitEditActions"><button class="primary" onclick="saveVisitEditor()">保存</button><button class="secondary" onclick="closeVisitEditor()">取消</button></div>
+  </div>
 </div>
 
 <script>
@@ -602,7 +638,10 @@ function fieldLine(label,value,editCall,clearCall,allowClear=true){
 
 let dbView={type:'search',ci:null,xi:null,hi:null};
 let dbReturnToTaskFilter=false;
+let dbReturnToDashboard=false;
 function dbBack(){
+  if(dbView.type==='cleanup'){dbView={type:'search',ci:null};return renderDB();}
+  if(dbReturnToDashboard && dbView.type==='visit'){dbReturnToDashboard=false;showTab('dash');window.scrollTo({top:0,behavior:'smooth'});return;}
   if(dbReturnToTaskFilter && dbView.type==='visit'){dbReturnToTaskFilter=false;document.getElementById('dbPanel')?.classList.add('hidden');document.getElementById('taskFilterPanel')?.classList.remove('hidden');renderTaskFilter();return;}
   if(dbView.type==='visit') dbView={type:'customer',ci:dbView.ci};
   else if(dbView.type==='contact') dbView={type:'contacts',ci:dbView.ci};
@@ -615,6 +654,7 @@ function openContacts(ci){dbView={type:'contacts',ci};renderDB();}
 function openContact(ci,xi){dbView={type:'contact',ci,xi};renderDB();}
 function openReports(ci){dbView={type:'reports',ci};renderDB();}
 function openVisit(ci,hi){dbView={type:'visit',ci,hi};renderDB();}
+function openCleanup(){stopVoiceListening();dbView={type:'cleanup',ci:null};showTab('db');renderDB();}
 function historyOrder(c){
   return (c.history||[]).map((h,hi)=>({h,hi})).sort((a,b)=>{
     const ad=a.h.date||'',bd=b.h.date||'';
@@ -645,33 +685,96 @@ function renderDB() {
     return;
   }
   if(search)search.style.display='none';
+  if(dbView.type==='cleanup'){
+    const orphanVisits=[]; const lonelyContacts=[];
+    data.forEach((c,ci)=>{
+      const contacts=c.contacts||[], hist=c.history||[];
+      contacts.forEach((ct,xi)=>{const n=hist.filter(h=>visitMatchesContact(h,ct.name)).length;if(n===0)lonelyContacts.push({c,ci,ct,xi});});
+      hist.forEach((h,hi)=>{const ok=h.contact && contacts.some(ct=>visitMatchesContact(h,ct.name));if(!ok)orphanVisits.push({c,ci,h,hi});});
+    });
+    list.innerHTML=`<div class="dbnav"><button class="secondary small" onclick="dbBack()">← 返回客户库</button><div class="dbcrumb">待整理</div></div>
+      <div class="notice"><b>待整理数据：</b>这里专门找“联系人没有关联拜访”和“拜访没有关联到有效联系人”的历史数据。</div>
+      <div class="detailTitle">未关联联系人拜访（${orphanVisits.length}）</div>`+
+      (orphanVisits.map(x=>`<div class="cleanupCard"><div class="cleanupTitle">${esc(x.c.name)} · ${esc(x.h.date||'日期未填')}</div><div class="cleanupWarn">当前联系人：${esc(x.h.contact||'未关联')}</div><div class="miniContent">${esc(x.h.content||'暂无内容')}</div><div class="choicebar"><button class="primary" onclick="openVisitEditor(${x.ci},${x.hi},'edit')">选择 / 补联系人</button><button class="secondary" onclick="openVisit(${x.ci},${x.hi})">查看详情</button></div></div>`).join('')||'<div class="meta">没有未关联的拜访。</div>')+
+      `<div class="detailTitle" style="margin-top:18px">只有联系人、暂无关联拜访（${lonelyContacts.length}）</div>`+
+      (lonelyContacts.map(x=>`<div class="cleanupCard"><div class="cleanupTitle">${esc(x.c.name)} · ${esc(x.ct.name)}</div><div class="meta">${esc(x.ct.phone||'无电话')} ${x.ct.note?'· '+esc(x.ct.note):''}</div><div class="choicebar"><button class="primary" onclick="openVisitEditor(${x.ci},-1,'new',${x.xi})">在此联系人下新建拜访</button><button class="secondary" onclick="openContact(${x.ci},${x.xi})">打开联系人</button></div></div>`).join('')||'<div class="meta">没有这类联系人。</div>');
+    return;
+  }
   const ci=dbView.ci,c=data[ci];
   if(!c){dbView={type:'search',ci:null};return renderDB();}
   const nav=`<div class="dbnav"><button class="secondary small" onclick="dbBack()">← 返回</button><div class="dbcrumb">${esc(c.name)}</div></div>`;
   if(dbView.type==='customer'){
     const recent=historyOrder(c).slice(0,3);
-    list.innerHTML=nav+`<div class="customer"><div class="detailTitle">${esc(c.name)}</div>${fieldLine('客户名称',c.name,`editCustomerField(${ci},'name')`,'',false)}${fieldLine('默认办公地',c.defaultOffice||'',`editCustomerField(${ci},'defaultOffice')`,`clearCustomerField(${ci},'defaultOffice')`)}<div class="countRow"><button class="countBox" onclick="openContacts(${ci})">联系人<b>${(c.contacts||[]).length}</b></button><button class="countBox" onclick="openReports(${ci})">拜访报告<b>${(c.history||[]).length}</b></button></div><div class="recentTitle">最近 3 条报告</div>${recent.map(x=>reportSummary(ci,x)).join('')||'<div class="meta">暂无拜访报告</div>'}<div class="dbactions"><button class="secondary" onclick="openReports(${ci})">查看全部报告</button><button class="secondary" onclick="openContacts(${ci})">按联系人查看</button><button class="delbtn" onclick="deleteCustomer(${ci})">删除整个客户</button></div></div>`;
+    list.innerHTML=nav+`<div class="customer"><div class="detailTitle">${esc(c.name)}</div>${fieldLine('客户名称',c.name,`editCustomerField(${ci},'name')`,'',false)}${fieldLine('默认办公地',c.defaultOffice||'',`editCustomerField(${ci},'defaultOffice')`,`clearCustomerField(${ci},'defaultOffice')`)}<div class="countRow"><button class="countBox" onclick="openContacts(${ci})">联系人<b>${(c.contacts||[]).length}</b></button><button class="countBox" onclick="openReports(${ci})">拜访报告<b>${(c.history||[]).length}</b></button></div><div class="recentTitle">最近 3 条报告</div>${recent.map(x=>reportSummary(ci,x)).join('')||'<div class="meta">暂无拜访报告</div>'}<div class="dbactions"><button class="primary" onclick="newContact(${ci})">＋ 新建联系人</button><button class="primary" onclick="openVisitEditor(${ci},-1,'new')">＋ 新建拜访</button><button class="secondary" onclick="openReports(${ci})">查看全部报告</button><button class="secondary" onclick="openContacts(${ci})">按联系人查看</button><button class="delbtn" onclick="deleteCustomer(${ci})">删除整个客户</button></div></div>`;
     return;
   }
   if(dbView.type==='contacts'){
-    list.innerHTML=nav+`<div class="detailTitle">联系人</div>`+(c.contacts||[]).map((x,xi)=>{const n=(c.history||[]).filter(h=>visitMatchesContact(h,x.name)).length;return `<div class="entityCard"><div class="entityTop"><div><h3>${esc(x.name)}</h3><div class="meta">${esc(x.note||'')} ${x.phone?'· '+esc(x.phone):''}</div></div><button class="secondary small" onclick="openContact(${ci},${xi})">查看</button></div><div class="meta">${n} 条相关拜访报告</div></div>`}).join('')||'<div class="meta">暂无联系人</div>';
+    list.innerHTML=nav+`<div class="choicebar"><button class="primary" onclick="newContact(${ci})">＋ 新建联系人</button></div><div class="detailTitle">联系人</div>`+(c.contacts||[]).map((x,xi)=>{const n=(c.history||[]).filter(h=>visitMatchesContact(h,x.name)).length;return `<div class="entityCard"><div class="entityTop"><div><h3>${esc(x.name)}</h3><div class="meta">${esc(x.note||'')} ${x.phone?'· '+esc(x.phone):''}</div></div><button class="secondary small" onclick="openContact(${ci},${xi})">查看</button></div><div class="meta">${n} 条相关拜访报告</div></div>`}).join('')||'<div class="meta">暂无联系人</div>';
     return;
   }
   if(dbView.type==='contact'){
     const xi=dbView.xi,ct=c.contacts?.[xi];if(!ct){dbView={type:'contacts',ci};return renderDB();}
     const reports=historyOrder(c).filter(x=>visitMatchesContact(x.h,ct.name));
-    list.innerHTML=nav+`<div class="customer"><div class="detailTitle">${esc(ct.name)}</div>${fieldLine('姓名',ct.name,`editContactField(${ci},${xi},'name')`,'',false)}${fieldLine('电话',ct.phone||'',`editContactField(${ci},${xi},'phone')`,`clearContactField(${ci},${xi},'phone')`)}${fieldLine('办公地',ct.office||'',`editContactField(${ci},${xi},'office')`,`clearContactField(${ci},${xi},'office')`)}${fieldLine('职位 / 备注',ct.note||'',`editContactField(${ci},${xi},'note')`,`clearContactField(${ci},${xi},'note')`)}<div class="recentTitle">这个联系人相关的拜访报告（${reports.length}）</div>${reports.map(x=>reportSummary(ci,x)).join('')||'<div class="meta">暂无相关报告</div>'}<div class="dbactions"><button class="delbtn" onclick="deleteContact(${ci},${xi})">删除这个联系人</button></div></div>`;
+    list.innerHTML=nav+`<div class="customer"><div class="detailTitle">${esc(ct.name)}</div>${fieldLine('姓名',ct.name,`editContactField(${ci},${xi},'name')`,'',false)}${fieldLine('电话',ct.phone||'',`editContactField(${ci},${xi},'phone')`,`clearContactField(${ci},${xi},'phone')`)}${fieldLine('办公地',ct.office||'',`editContactField(${ci},${xi},'office')`,`clearContactField(${ci},${xi},'office')`)}${fieldLine('职位 / 备注',ct.note||'',`editContactField(${ci},${xi},'note')`,`clearContactField(${ci},${xi},'note')`)}<div class="recentTitle">这个联系人相关的拜访报告（${reports.length}）</div>${reports.map(x=>reportSummary(ci,x)).join('')||'<div class="meta">暂无相关报告</div>'}<div class="dbactions"><button class="primary" onclick="openVisitEditor(${ci},-1,'new',${xi})">＋ 在此联系人下新建拜访</button><button class="delbtn" onclick="deleteContact(${ci},${xi})">删除这个联系人</button></div></div>`;
     return;
   }
   if(dbView.type==='reports'){
     const reports=historyOrder(c);
-    list.innerHTML=nav+`<div class="detailTitle">全部拜访报告（${reports.length}）</div>`+reports.map(x=>reportSummary(ci,x)).join('')||'<div class="meta">暂无拜访报告</div>';
+    list.innerHTML=nav+`<div class="choicebar"><button class="primary" onclick="openVisitEditor(${ci},-1,'new')">＋ 新建拜访</button></div><div class="detailTitle">全部拜访报告（${reports.length}）</div>`+reports.map(x=>reportSummary(ci,x)).join('')||'<div class="meta">暂无拜访报告</div>';
     return;
   }
   if(dbView.type==='visit'){
     const hi=dbView.hi,h=c.history?.[hi];if(!h){dbView={type:'customer',ci};return renderDB();}
-    list.innerHTML=nav+`<div class="customer"><div class="detailTitle">拜访详情</div>${fieldLine('拜访日期',h.date||'',`editHistoryField(${ci},${hi},'date')`,`clearHistoryField(${ci},${hi},'date')`)}${fieldLine('联系人',h.contact||'',`editHistoryField(${ci},${hi},'contact')`,`clearHistoryField(${ci},${hi},'contact')`)}${fieldLine('办公地',h.office||'',`editHistoryField(${ci},${hi},'office')`,`clearHistoryField(${ci},${hi},'office')`)}${fieldLine('沟通内容',h.content||'',`editHistoryField(${ci},${hi},'content')`,`clearHistoryField(${ci},${hi},'content')`)}${fieldLine('待办',h.todo||'',`editHistoryField(${ci},${hi},'todo')`,`clearHistoryField(${ci},${hi},'todo')`)}${fieldLine('跟进时间',h.followUpAt?String(h.followUpAt).replace('T',' '):'',`editHistoryField(${ci},${hi},'followUpAt')`,`clearHistoryField(${ci},${hi},'followUpAt')`)}${fieldLine('重要程度',h.priority||'B',`editHistoryField(${ci},${hi},'priority')`,'',false)}${fieldLine('状态',h.status||'待跟进',`editHistoryField(${ci},${hi},'status')`,'',false)}<div class="attachbox"><b>附件 / 链接</b>${(h.attachments||[]).map((a,ai)=>`<div class="attachitem"><div class="attachmeta"><div class="attachname">${esc(a.name||'附件')}</div><div class="meta">${a.kind==='link'?'链接':'本地文件'}</div></div><button class="editbtn" onclick="openAttachment(${ci},${hi},${ai})">打开</button><button class="delbtn" onclick="removeHistoryAttachment(${ci},${hi},${ai})">删除</button></div>`).join('')||'<div class="meta">暂无附件</div>'}<div class="choicebar"><button class="secondary" onclick="document.getElementById('hf_${ci}_${hi}').click()">添加文件/照片</button><button class="secondary" onclick="addHistoryLink(${ci},${hi})">添加链接</button><input id="hf_${ci}_${hi}" type="file" multiple style="display:none" onchange="addHistoryFiles(${ci},${hi},this.files)"></div></div><div class="histactions"><button class="delbtn" onclick="deleteHistory(${ci},${hi})">删除整条拜访记录</button></div></div>`;
+    list.innerHTML=nav+`<div class="customer"><div class="detailTitle">拜访详情</div>${fieldLine('拜访日期',h.date||'',`editHistoryField(${ci},${hi},'date')`,`clearHistoryField(${ci},${hi},'date')`)}${fieldLine('联系人',h.contact||'',`editHistoryField(${ci},${hi},'contact')`,`clearHistoryField(${ci},${hi},'contact')`)}${fieldLine('办公地',h.office||'',`editHistoryField(${ci},${hi},'office')`,`clearHistoryField(${ci},${hi},'office')`)}${fieldLine('沟通内容',h.content||'',`editHistoryField(${ci},${hi},'content')`,`clearHistoryField(${ci},${hi},'content')`)}${fieldLine('待办',h.todo||'',`editHistoryField(${ci},${hi},'todo')`,`clearHistoryField(${ci},${hi},'todo')`)}${fieldLine('跟进时间',h.followUpAt?String(h.followUpAt).replace('T',' '):'',`editHistoryField(${ci},${hi},'followUpAt')`,`clearHistoryField(${ci},${hi},'followUpAt')`)}${fieldLine('重要程度',h.priority||'B',`editHistoryField(${ci},${hi},'priority')`,'',false)}${fieldLine('状态',h.status||'待跟进',`editHistoryField(${ci},${hi},'status')`,'',false)}<div class="choicebar"><button class="primary" onclick="openVisitEditor(${ci},${hi},'edit')">编辑整条拜访</button><button class="secondary" onclick="openVisitEditor(${ci},${hi},'edit','focusContact')">关联 / 更换联系人</button></div><div class="attachbox"><b>附件 / 链接</b>${(h.attachments||[]).map((a,ai)=>`<div class="attachitem"><div class="attachmeta"><div class="attachname">${esc(a.name||'附件')}</div><div class="meta">${a.kind==='link'?'链接':'本地文件'}</div></div><button class="editbtn" onclick="openAttachment(${ci},${hi},${ai})">打开</button><button class="delbtn" onclick="removeHistoryAttachment(${ci},${hi},${ai})">删除</button></div>`).join('')||'<div class="meta">暂无附件</div>'}<div class="choicebar"><button class="secondary" onclick="document.getElementById('hf_${ci}_${hi}').click()">添加文件/照片</button><button class="secondary" onclick="addHistoryLink(${ci},${hi})">添加链接</button><input id="hf_${ci}_${hi}" type="file" multiple style="display:none" onchange="addHistoryFiles(${ci},${hi},this.files)"></div></div><div class="histactions"><button class="delbtn" onclick="deleteHistory(${ci},${hi})">删除整条拜访记录</button></div></div>`;
   }
+}
+
+
+let visitEditorState=null;
+function setSegmentValue(inputId,boxId,value){
+  const input=document.getElementById(inputId);if(input)input.value=value;
+  document.querySelectorAll('#'+boxId+' button').forEach(b=>b.classList.toggle('active',b.dataset.value===value));
+}
+function renderVisitSegments(priority,status){
+  const pb=document.getElementById('vePriorityBtns'),sb=document.getElementById('veStatusBtns');
+  if(pb){pb.innerHTML='';[['S','重点'],['A','重要'],['B','常规'],['C','低优先']].forEach(([v,label])=>{const b=document.createElement('button');b.type='button';b.className='secondary';b.dataset.value=v;b.textContent=v+' · '+label;b.onclick=()=>setSegmentValue('vePriority','vePriorityBtns',v);pb.appendChild(b);});}
+  if(sb){sb.innerHTML='';['待跟进','等待客户','已完成'].forEach(v=>{const b=document.createElement('button');b.type='button';b.className='secondary';b.dataset.value=v;b.textContent=v;b.onclick=()=>setSegmentValue('veStatus','veStatusBtns',v);sb.appendChild(b);});}
+  setSegmentValue('vePriority','vePriorityBtns',priority||'B');setSegmentValue('veStatus','veStatusBtns',status||'待跟进');
+}
+function openVisitEditor(ci,hi,mode='edit',contactHint){
+  const c=data?.[ci];if(!c)return;
+  let h=hi>=0?c.history?.[hi]:null;
+  visitEditorState={ci,hi,mode};
+  const ctList=document.getElementById('veContactList');ctList.innerHTML=(c.contacts||[]).map(ct=>`<option value="${esc(ct.name)}"></option>`).join('');
+  let preset='';
+  if(Number.isInteger(contactHint) && contactHint>=0)preset=c.contacts?.[contactHint]?.name||'';
+  const base=h||{date:new Date().toISOString().slice(0,10),contact:preset,office:(c.contacts?.[contactHint]?.office||c.defaultOffice||''),content:'',todo:'',followUpAt:'',priority:'B',status:'待跟进'};
+  document.getElementById('visitEditTitle').textContent=h?'编辑拜访':'新建拜访';
+  veDate.value=base.date||new Date().toISOString().slice(0,10);veContact.value=base.contact||preset||'';veOffice.value=base.office||'';veContent.value=base.content||'';veTodo.value=base.todo||'';veFollow.value=String(base.followUpAt||'').slice(0,16);renderVisitSegments(base.priority||'B',base.status||'待跟进');
+  visitEditOverlay.classList.remove('hidden');
+  setTimeout(()=>{(contactHint==='focusContact'?veContact:veContent).focus();},50);
+}
+function closeVisitEditor(){document.getElementById('visitEditOverlay')?.classList.add('hidden');visitEditorState=null;}
+function saveVisitEditor(){
+  const st=visitEditorState;if(!st)return;const c=data?.[st.ci];if(!c)return;
+  const contact=veContact.value.trim(),date=veDate.value,office=veOffice.value.trim(),content=veContent.value.trim(),todo=veTodo.value.trim(),follow=veFollow.value,priority=vePriority.value||'B',status=veStatus.value||'待跟进';
+  if(!content)return alert('沟通内容不能为空。');
+  if(contact && !(c.contacts||[]).some(ct=>normalizeName(ct.name)===normalizeName(contact))){
+    if(confirm(`“${contact}”还不在这个客户的联系人列表里。\n\n是否同时新建这个联系人？`)){c.contacts=c.contacts||[];c.contacts.push({name:contact,phone:'',office:office||'',note:''});}
+  }
+  const payload={date,contact,office,content,todo,followUpAt:follow,priority,status};
+  if(st.hi>=0){const h=c.history?.[st.hi];if(!h)return;Object.assign(h,payload);if(status==='已完成'&&!h.completedAt)h.completedAt=nowText();if(status!=='已完成')h.completedAt='';}
+  else{c.history=c.history||[];c.history.push({...payload,attachments:[],createdAt:new Date().toISOString(),completedAt:status==='已完成'?nowText():''});st.hi=c.history.length-1;}
+  saveStore();renderDashboard();closeVisitEditor();
+  if(dbView.type==='cleanup')return renderDB();
+  dbView={type:'visit',ci:st.ci,hi:st.hi};renderDB();
+}
+function newContact(ci){
+  const c=data?.[ci];if(!c)return;
+  const name=prompt('联系人姓名（必填）','');if(name===null)return;const n=name.trim();if(!n)return alert('联系人姓名不能为空。');
+  const dup=(c.contacts||[]).find(ct=>normalizeName(ct.name)===normalizeName(n));if(dup)return alert('这个联系人已经存在。');
+  const phone=prompt('电话（可以不填）','');if(phone===null)return;const office=prompt('办公地（可以不填）',c.defaultOffice||'');if(office===null)return;const note=prompt('职位 / 备注（可以不填）','');if(note===null)return;
+  c.contacts=c.contacts||[];c.contacts.push({name:n,phone:phone.trim(),office:office.trim(),note:note.trim()});saveStore();renderDB();
 }
 
 function promptField(label,current){ return prompt('修改：'+label,current??''); }
@@ -962,7 +1065,7 @@ function importJSON(e) {
       updateDataStatus();
       alert(`导入成功：${migrated.length} 个客户、${totalContacts} 个联系人、${totalVisits} 条拜访报告。`);
     } catch(err) {
-      alert('无法导入这个 JSON：'+(err?.message||'格式无法识别')+'。\n\nV5.8 支持 V4/V5 主数据、V4/V5 完整备份，以及 customers/customerList/clients/records 等常见结构。');
+      alert('无法导入这个 JSON：'+(err?.message||'格式无法识别')+'。\n\nV5.12 支持 V4/V5 主数据、V4/V5 完整备份，以及 customers/customerList/clients/records 等常见结构。');
     }
   };
   r.readAsText(file);
@@ -998,14 +1101,15 @@ function renderDashboard(){
   tasks.sort((a,b)=>taskScore(b)-taskScore(a));
   taskList.innerHTML=tasks.slice(0,12).map(t=>{
     const due=new Date(t.h.followUpAt), cls=due.getTime()<Date.now()?'overdue':due<=end?'today':'future';
-    return `<div class="task ${cls}">
+    return `<div class="task ${cls}" role="button" tabindex="0" onclick="openDashboardVisit(${t.ci},${t.i})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDashboardVisit(${t.ci},${t.i})}">
       <div class="tasktop"><b>${esc(t.c.name)}${t.h.contact?' · '+esc(t.h.contact):''}</b><span class="pri">${esc(t.priority)} · ${esc(t.status)}</span></div>
       <div style="margin-top:8px">${esc(t.h.todo||t.h.content||'跟进')}</div>
       <div class="meta">${esc(t.h.followUpAt.replace('T',' '))}</div>
-      <div class="choicebar">
-        <button class="secondary" onclick="setTaskStatus('${encodeURIComponent(t.c.name)}',${t.i},'已完成')">完成</button>
-        <button class="secondary" onclick="snoozeTask('${encodeURIComponent(t.c.name)}',${t.i},1)">1小时后</button>
-        <button class="secondary" onclick="setTaskStatus('${encodeURIComponent(t.c.name)}',${t.i},'等待客户')">等待客户</button>
+      <div class="choicebar" onclick="event.stopPropagation()">
+        <button class="primary" onclick="event.stopPropagation();openDashboardVisit(${t.ci},${t.i})">查看详情</button>
+        <button class="secondary" onclick="event.stopPropagation();setTaskStatus('${encodeURIComponent(t.c.name)}',${t.i},'已完成')">完成</button>
+        <button class="secondary" onclick="event.stopPropagation();openFollowPicker(${t.ci},${t.i},'postpone')">延期 / 稍后</button>
+        <button class="secondary" onclick="event.stopPropagation();openFollowPicker(${t.ci},${t.i},'waiting')">等待客户</button>
       </div>
     </div>`;
   }).join('')||'<div class="meta">还没有设置跟进时间的事项。</div>';
@@ -1063,13 +1167,70 @@ function renderTaskFilter(){
       <div class="meta" style="margin-top:6px">跟进时间：${esc(String(t.h.followUpAt||'').replace('T',' '))}</div>
       <div class="choicebar">
         <button class="primary" onclick="setTaskStatusByIndex(${t.ci},${t.i},'已完成')">已完成</button>
-        <button class="secondary" onclick="postponeTask(${t.ci},${t.i})">延期</button>
-        <button class="secondary" onclick="setTaskStatusByIndex(${t.ci},${t.i},'等待客户')">等待客户</button>
+        <button class="secondary" onclick="openFollowPicker(${t.ci},${t.i},'postpone')">延期 / 稍后</button>
+        <button class="secondary" onclick="openFollowPicker(${t.ci},${t.i},'waiting')">等待客户</button>
         <button class="secondary" onclick="setTaskStatusByIndex(${t.ci},${t.i},'待跟进')">待跟进</button>
         <button class="secondary" onclick="openTaskVisit(${t.ci},${t.i})">查看拜访详情</button>
       </div>
     </div>`;
   }).join('')||'<div class="meta">这个分类下目前没有跟进事项。</div>';
+}
+let followPickerState=null;
+function addDaysAtHour(days,hour=9){
+  const d=new Date(); d.setDate(d.getDate()+days); d.setHours(hour,0,0,0); return d;
+}
+function addMonthsAtHour(months,hour=9){
+  const d=new Date(); d.setMonth(d.getMonth()+months); d.setHours(hour,0,0,0); return d;
+}
+function laterToday(){
+  const d=new Date();
+  if(d.getHours()<18){d.setHours(18,0,0,0);}else{d.setHours(d.getHours()+2,0,0,0);}
+  return d;
+}
+function openFollowPicker(ci,i,mode){
+  const h=data?.[ci]?.history?.[i]; if(!h)return;
+  followPickerState={ci,i,mode};
+  const overlay=document.getElementById('followOverlay');
+  const title=document.getElementById('followPickerTitle');
+  const desc=document.getElementById('followPickerDesc');
+  const quick=document.getElementById('followQuick');
+  const custom=document.getElementById('followCustomTime');
+  if(!overlay||!title||!desc||!quick||!custom)return;
+  const waiting=mode==='waiting';
+  title.textContent=waiting?'等待客户：最晚什么时候提醒我？':'延期 / 稍后处理';
+  desc.textContent=waiting?'先把状态设为“等待客户”。如果到你选的时间仍没有回复，这条事项会重新出现在今天/逾期提醒中。':'选择下一次你希望处理这条跟进的时间。';
+  const opts=waiting
+    ? [['明天',()=>addDaysAtHour(1,9)],['3天后',()=>addDaysAtHour(3,9)],['1周后',()=>addDaysAtHour(7,9)],['1个月后',()=>addMonthsAtHour(1,9)]]
+    : [['1小时后',()=>new Date(Date.now()+3600000)],['今天晚些时候',laterToday],['明天',()=>addDaysAtHour(1,9)],['3天后',()=>addDaysAtHour(3,9)],['1周后',()=>addDaysAtHour(7,9)],['1个月后',()=>addMonthsAtHour(1,9)]];
+  quick.innerHTML='';
+  opts.forEach(([label,make])=>{
+    const b=document.createElement('button'); b.className='secondary'; b.textContent=label;
+    b.onclick=()=>applyFollowChoice(localDateTimeValue(make())); quick.appendChild(b);
+  });
+  custom.value=String(h.followUpAt||localDateTimeValue(waiting?addDaysAtHour(3,9):addDaysAtHour(1,9))).slice(0,16);
+  overlay.classList.remove('hidden');
+}
+function closeFollowPicker(){
+  document.getElementById('followOverlay')?.classList.add('hidden');
+  followPickerState=null;
+}
+function applyCustomFollowTime(){
+  const v=document.getElementById('followCustomTime')?.value||'';
+  if(!v){alert('请选择日期和时间。');return;}
+  applyFollowChoice(v);
+}
+function applyFollowChoice(v){
+  const st=followPickerState; if(!st)return;
+  const h=data?.[st.ci]?.history?.[st.i]; if(!h)return closeFollowPicker();
+  if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(v) || Number.isNaN(new Date(v).getTime())){alert('时间不正确，请重新选择。');return;}
+  h.followUpAt=v;
+  h.status=st.mode==='waiting'?'等待客户':'待跟进';
+  h.completedAt='';
+  if(st.mode==='waiting') h.waitingSince=nowText(); else h.waitingSince='';
+  saveStore();
+  closeFollowPicker();
+  renderDashboard();
+  renderTaskFilter();
 }
 function setTaskStatusByIndex(ci,i,status){
   const h=data?.[ci]?.history?.[i]; if(!h)return;
@@ -1091,6 +1252,21 @@ function postponeTask(ci,i){
   h.followUpAt=v;h.status='待跟进';h.completedAt='';
   saveStore();renderDashboard();renderTaskFilter();
 }
+function openDashboardVisit(ci,i){
+  stopVoiceListening();
+  dbReturnToTaskFilter=false;
+  dbReturnToDashboard=true;
+  document.getElementById('dashPanel')?.classList.add('hidden');
+  document.getElementById('taskFilterPanel')?.classList.add('hidden');
+  document.getElementById('voicePanel')?.classList.add('hidden');
+  document.getElementById('formPanel')?.classList.add('hidden');
+  document.getElementById('dbPanel')?.classList.remove('hidden');
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  dbView={type:'visit',ci,hi:i};
+  renderDB();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
 function openTaskVisit(ci,i){
   document.getElementById('taskFilterPanel')?.classList.add('hidden');
   document.getElementById('dbPanel')?.classList.remove('hidden');
