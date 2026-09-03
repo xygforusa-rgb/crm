@@ -98,12 +98,16 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
 .attachitem{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px dashed var(--border)}
 .attachitem:first-child{border-top:0}.attachmeta{min-width:0;flex:1}.attachname{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .linkinput{width:100%;margin-top:6px}
+
+.fieldline{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px dashed var(--border)}
+.fieldline:first-child{border-top:0}.fieldmain{min-width:0;flex:1}.fieldlabel{font-size:12px;color:var(--muted);margin-bottom:3px}.fieldvalue{white-space:pre-wrap;word-break:break-word;line-height:1.55}.fieldactions{display:flex;gap:5px;flex-shrink:0}.fieldactions button{padding:7px 9px;font-size:12px}
+.previewOverlay{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}.previewCard{width:min(900px,100%);max-height:92vh;background:#fff;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}.previewHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)}.previewTitle{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.previewBody{padding:12px;overflow:auto;min-height:160px}.previewBody img{display:block;max-width:100%;height:auto;margin:auto}.previewBody iframe{width:100%;height:72vh;border:0}.previewBody video{max-width:100%;max-height:72vh}.previewBody audio{width:100%}.previewText{white-space:pre-wrap;word-break:break-word;font-size:14px}.previewActions{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border);flex-wrap:wrap}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>客户管理助手</h1>
-  <div class="sub">PWA 测试版 V4 · 语音新增 · 客户库可维护 · 本地附件与链接</div>
+  <div class="sub">PWA V5 · 本地智能识别 · 自动学习 · 单项编辑 · 附件预览</div>
 
   <div class="tabs">
     <button class="tab active" id="tabDash" onclick="showTab('dash')">看板</button>
@@ -176,6 +180,8 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
 const SEED = [{"name": "北京双杰", "contacts": [], "history": [{"date": "", "contact": "", "office": "北京", "content": "现在想要做126gis，拿的泰山的图纸，三工位导体直径58mm，用cudd。做完再做252，还没定方案。充气柜主要做1250以下，弹簧就够了。也找天津平高做过代工，快速接地用的刀闸", "todo": ""}], "defaultOffice": "北京"}, {"name": "北京科锐", "contacts": [], "history": [{"date": "", "contact": "", "office": "北京", "content": "变压器，环网柜，箱变为主，充气柜几乎没有。刚装了一台3150充气柜，做组装，买江苏森源的开关", "todo": ""}], "defaultOffice": "北京"}, {"name": "北京合纵", "contacts": [], "history": [{"date": "", "contact": "", "office": "北京", "content": "几乎破产，不到50人，能中标，贴牌", "todo": ""}], "defaultOffice": "北京"}, {"name": "北京搏世因", "contacts": [], "history": [{"date": "", "contact": "", "office": "北京", "content": "套管弹簧用的多，表带cud一点点", "todo": ""}, {"date": "", "contact": "", "office": "北京", "content": "建新厂没有时间入新供方，得到2027年", "todo": ""}], "defaultOffice": "北京"}, {"name": "常州洛凯高压", "contacts": [], "history": [{"date": "", "contact": "", "office": "常州", "content": "做充气柜，弹簧多，3150A100直径2条弹簧能过实验，4000A没过实验", "todo": ""}, {"date": "", "contact": "", "office": "常州", "content": "4000A的装在轴上，用的mc的cudd。还没做实验。mc今年要出新表带", "todo": ""}], "defaultOffice": "常州"}, {"name": "天津平高", "contacts": [], "history": [{"date": "", "contact": "", "office": "天津", "content": "充气柜要国产化，计划更换三工位cux和侧并cud", "todo": ""}, {"date": "", "contact": "", "office": "天津", "content": "4000A轴120mm 壁厚22.5mm，给了LSS方案98pian", "todo": ""}, {"date": "", "contact": "", "office": "天津", "content": "环网柜快速接地40mm 25kA/4s，用线径2的弹簧，8月做实验", "todo": ""}, {"date": "", "contact": "", "office": "天津", "content": "柱上开关还没有量产", "todo": ""}], "defaultOffice": "天津"}, {"name": "上海天灵", "contacts": [{"name": "张明", "phone": "13621826507", "office": "上海", "note": "采购"}, {"name": "秦小燕", "phone": "15021012985", "office": "上海", "note": "采购"}, {"name": "徐齐齐", "phone": "18918272673", "office": "上海", "note": "副总工"}], "history": [{"date": "", "contact": "", "office": "上海", "content": "跟天津配网搞技术统一，从普莱威特采购lss做样机", "todo": ""}, {"date": "", "contact": "", "office": "上海", "content": "4000A的还没开始做，主要考虑内阻问题，温度升高后差异比较大", "todo": ""}], "defaultOffice": "上海"}, {"name": "西安德华瑞尔", "contacts": [], "history": [{"date": "", "contact": "", "office": "西安", "content": "做铁路隔离开关，用lse，120mm导体", "todo": ""}], "defaultOffice": "西安"}, {"name": "天津突破", "contacts": [], "history": [], "defaultOffice": "天津"}, {"name": "衡阳特变高压", "contacts": [], "history": [{"date": "", "contact": "", "office": "衡阳", "content": "做550以上，用cu，有计划换成国产", "todo": ""}], "defaultOffice": "衡阳"}, {"name": "衡阳特变中压", "contacts": [], "history": [], "defaultOffice": "衡阳"}, {"name": "如高中压", "contacts": [], "history": [{"date": "", "contact": "", "office": "如皋", "content": "有用cu，寻过国产", "todo": ""}], "defaultOffice": "如皋"}, {"name": "上海西门子开关", "contacts": [], "history": [{"date": "", "contact": "", "office": "上海", "content": "主要做空气柜，想了解3150断路器出线的成本和方案。快接地用刀闸式，41kA/4s", "todo": ""}], "defaultOffice": "上海"}, {"name": "上海巴佩", "contacts": [], "history": [{"date": "", "contact": "", "office": "上海", "content": "做充气柜，用弹簧为主，3150的用两条弹簧", "todo": ""}], "defaultOffice": "上海"}, {"name": "信一电力", "contacts": [], "history": [{"date": "", "contact": "", "office": "宁波", "content": "做充气柜，最大4000A，用过mc表带，现在都是弹簧", "todo": ""}], "defaultOffice": "宁波"}, {"name": "库柏 宁波", "contacts": [], "history": [{"date": "", "contact": "", "office": "宁波", "content": "充气柜 用表带和弹簧，表带用的维通利，环保气体还在做", "todo": ""}], "defaultOffice": "宁波"}, {"name": "江苏大全", "contacts": [], "history": [{"date": "", "contact": "", "office": "镇江", "content": "充气柜说是全国领先，天津平高抄他们的，4000A的目前在用弹簧验证。充气柜不用快速接地", "todo": ""}, {"date": "", "contact": "", "office": "镇江", "content": "已经国产化，采购需要投标，要走供应商流程", "todo": ""}], "defaultOffice": "镇江"}, {"name": "平高泰事达 泰州", "contacts": [], "history": [{"date": "", "contact": "", "office": "泰州", "content": "目前充气柜都外购开关本体，2027年要自产", "todo": ""}], "defaultOffice": "泰州"}, {"name": "正泰", "contacts": [{"name": "刘涛", "phone": "13889847880", "office": "上海", "note": "研发"}, {"name": "郭建火", "phone": "15902111631", "office": "上海", "note": "研发经理"}, {"name": "白刚", "phone": "18659263860", "office": "上海", "note": "研发"}], "history": [], "defaultOffice": "上海"}, {"name": "浙江聚弘凯", "contacts": [], "history": [{"date": "", "contact": "", "office": "杭州", "content": "做充气柜，用的弹簧", "todo": ""}], "defaultOffice": "杭州"}, {"name": "西门子能源高压 杭州", "contacts": [], "history": [{"date": "", "contact": "", "office": "杭州", "content": "做gis，好像之前联系过，有机会", "todo": ""}], "defaultOffice": "杭州"}, {"name": "江苏安靠", "contacts": [], "history": [{"date": "", "contact": "", "office": "常州", "content": "gil  cux", "todo": ""}], "defaultOffice": "常州"}, {"name": "施耐德中压", "contacts": [], "history": [{"date": "", "contact": "", "office": "北京", "content": "充气柜 2500A", "todo": ""}], "defaultOffice": "北京"}, {"name": "山东龙马电气", "contacts": [], "history": [{"date": "", "contact": "", "office": "青州", "content": "252  用的cud  75mm和40mm直径", "todo": ""}], "defaultOffice": "青州"}, {"name": "上海思源高压", "contacts": [], "history": [{"date": "", "contact": "", "office": "上海", "content": "低电压的快接地好像是用的MC的cud，两条", "todo": ""}], "defaultOffice": "上海"}, {"name": "西安豪特", "contacts": [], "history": [{"date": "", "contact": "", "office": "西安", "content": "40.5kv gis 母线 2500A 99mm 需求cud 120st  但是看图纸推测应该为107st", "todo": ""}], "defaultOffice": "西安"}, {"name": "石家庄科林", "contacts": [], "history": [{"date": "", "contact": "", "office": "石家庄", "content": "ZW68国网几乎没招标", "todo": ""}], "defaultOffice": "石家庄"}, {"name": "香江集团", "contacts": [], "history": [{"date": "", "contact": "", "office": "镇江", "content": "10kv 四工位旋转连接器，20A，盲插，sst连接", "todo": ""}], "defaultOffice": "镇江"}, {"name": "江苏太平洋", "contacts": [], "history": [{"date": "", "contact": "", "office": "常州", "content": "做电网和铁路，同一种结构，六氟化硫的全是刀闸，环保气体2500A用一条维科瑞cud，3150A打算用两条，准备开始设计", "todo": ""}], "defaultOffice": "常州"}, {"name": "常州伊顿", "contacts": [], "history": [{"date": "", "contact": "", "office": "常州", "content": "原来是常州森源，国内最好的中压开关，后来被伊顿收购，和库柏合资，宁波库柏做充气柜，平顶山伊顿做环网柜，上海伊顿做sst", "todo": ""}], "defaultOffice": "常州"}, {"name": "江苏森源", "contacts": [], "history": [{"date": "", "contact": "", "office": "昆山", "content": "3150用表带，量很小，有可能用MC的", "todo": ""}], "defaultOffice": "昆山"}, {"name": "特锐德 成都", "contacts": [], "history": [{"date": "", "contact": "", "office": "成都", "content": "做中压充气柜，全部用刀闸，4000A也用，锥形套管用神电的，cu", "todo": ""}], "defaultOffice": "成都"}, {"name": "西开电气", "contacts": [], "history": [{"date": "", "contact": "", "office": "西安", "content": "550，母线用的cud/126，初步认可我们的表带，等国产化需求", "todo": ""}, {"date": "", "contact": "", "office": "西安", "content": "管母用的HM触指，主要要求允许3度斜角，15000次45mm华东距离", "todo": ""}, {"date": "", "contact": "", "office": "西安", "content": "真空断路器用的cud和cudd。和西高所的方案没关系。", "todo": ""}, {"date": "", "contact": "", "office": "西安", "content": "发断说流程卡在供应链", "todo": ""}], "defaultOffice": "西安"}, {"name": "西开有限", "contacts": [], "history": [{"date": "", "contact": "", "office": "西安", "content": "126母线用的cux，之前用国产的测试通过了，装配力太大，不能用", "todo": ""}], "defaultOffice": "西安"}, {"name": "纵横机电", "contacts": [{"name": "董海鹏", "phone": "18610094287", "office": "", "note": "供应商管理"}, {"name": "岳领峰", "phone": "13561533748", "office": "", "note": "牵引计划经理"}, {"name": "刘阳", "phone": "18910257201", "office": "", "note": "交流传动开发部  机械工程师"}, {"name": "赵红利", "phone": "18001133610", "office": "", "note": "交流传动开发部 高级电气工程师"}, {"name": "李晨", "phone": "13301055651", "office": "", "note": "采购工程师"}], "history": []}, {"name": "中兴创元", "contacts": [{"name": "李明杰", "phone": "13951332686", "office": "", "note": "技术部长"}, {"name": "胡伟", "phone": "13912899927", "office": "", "note": "技术部副部长"}, {"name": "姜春花", "phone": "13862493603", "office": "", "note": "采购工程师"}], "history": []}, {"name": "安靠", "contacts": [{"name": "李松伟", "phone": "17637506270", "office": "", "note": "研发工程师"}, {"name": "王明杰", "phone": "18915810570", "office": "", "note": "质量工程师"}], "history": []}, {"name": "南京电气高压套管", "contacts": [{"name": "孙荣升", "phone": "13505149580", "office": "", "note": "技术部"}], "history": []}, {"name": "苏州兰姆达", "contacts": [{"name": "马天柱", "phone": "18061538296", "office": "", "note": "总工程师"}], "history": []}, {"name": "江苏思源中压", "contacts": [{"name": "刘海乐", "phone": "18964506658", "office": "", "note": "采购科长"}, {"name": "陈加明", "phone": "13817176546", "office": "", "note": "副总工"}], "history": []}, {"name": "阿尔斯通", "contacts": [{"name": "赵杨", "phone": "18121587603", "office": "", "note": "采购"}, {"name": "裴军", "phone": "16121587759", "office": "", "note": "技术总监"}], "history": []}, {"name": "厦门华电开关", "contacts": [{"name": "张兴朗", "phone": "13591185265", "office": "", "note": "研发工程师"}], "history": []}, {"name": "杭州西门子高压", "contacts": [{"name": "吴权峰", "phone": "15957119258", "office": "", "note": "220-550隔离开关"}], "history": []}, {"name": "上海大华", "contacts": [{"name": "陈迅煜", "phone": "13817615019", "office": "", "note": "采购"}, {"name": "蔡长胜", "phone": "15216844928", "office": "", "note": "技术工程师"}, {"name": "顾晓东", "phone": "13501935136", "office": "", "note": "技术经理"}, {"name": "朱晓东", "phone": "13651818543", "office": "", "note": "总工"}], "history": []}, {"name": "上海思源高压开关", "contacts": [{"name": "董源清", "phone": "18017518637", "office": "", "note": "研发工程师"}, {"name": "李海强", "phone": "15861122852", "office": "", "note": "220GIL 研发"}, {"name": "崔杰", "phone": "18117452790", "office": "", "note": "550 GIL 研发"}], "history": []}, {"name": "特变云集", "contacts": [{"name": "赵永福", "phone": "18573411627", "office": "", "note": "研发"}, {"name": "殷福昱", "phone": "18573410832", "office": "", "note": "研发 550"}, {"name": "汤伟", "phone": "18573410661", "office": "", "note": "研发"}], "history": []}, {"name": "上海金盘", "contacts": [{"name": "陈", "phone": "18698581919", "office": "", "note": "研发"}], "history": []}, {"name": "上海西开", "contacts": [{"name": "罗睿康", "phone": "13786664693", "office": "", "note": "研发"}], "history": []}, {"name": "现代重工", "contacts": [{"name": "翁", "phone": "17209646865", "office": "", "note": "研发"}], "history": []}, {"name": "江苏新纪元", "contacts": [{"name": "汤智", "phone": "13773382368", "office": "", "note": "研发工程师"}], "history": []}];
 const KEY = 'mobile_crm_v1_data';
 const META_KEY = 'mobile_crm_v1_meta';
+const ALIAS_KEY = 'mobile_crm_v5_aliases';
+let learnedAliases = JSON.parse(localStorage.getItem(ALIAS_KEY) || '{}');
 let data = JSON.parse(localStorage.getItem(KEY) || 'null') || SEED;
 let meta = JSON.parse(localStorage.getItem(META_KEY) || 'null') || {source:'内置初始数据', fileName:'', importedAt:'', exportedAt:''};
 let step = 0;
@@ -200,6 +206,7 @@ const steps = [
 function saveStore() {
   localStorage.setItem(KEY, JSON.stringify(data));
   localStorage.setItem(META_KEY, JSON.stringify(meta));
+  localStorage.setItem(ALIAS_KEY, JSON.stringify(learnedAliases));
 }
 
 function nowText() {
@@ -553,6 +560,10 @@ function esc(s) {
   return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
+function fieldLine(label,value,editCall,clearCall,allowClear=true){
+  return `<div class="fieldline"><div class="fieldmain"><div class="fieldlabel">${esc(label)}</div><div class="fieldvalue">${esc(value||'未填写')}</div></div><div class="fieldactions"><button class="editbtn" onclick="${editCall}">修改</button>${allowClear?`<button class="delbtn" onclick="${clearCall}">清空</button>`:''}</div></div>`;
+}
+
 function renderDB() {
   const q=(document.getElementById('search')?.value||'').toLowerCase();
   const list=document.getElementById('dbList'); if(!list)return;
@@ -565,49 +576,67 @@ function renderDB() {
     const ci=data.indexOf(c);
     return `<div class="customer">
       <h3>${esc(c.name)}</h3>
-      <div class="meta">${esc(c.defaultOffice||'')}</div>
+      ${fieldLine('客户名称',c.name,`editCustomerField(${ci},'name')`,'',false)}
+      ${fieldLine('默认办公地',c.defaultOffice||'',`editCustomerField(${ci},'defaultOffice')`,`clearCustomerField(${ci},'defaultOffice')`)}
+      <div class="dbactions"><button class="delbtn" onclick="deleteCustomer(${ci})">删除整个客户</button></div>
 
-      <div class="dbactions">
-        <button class="editbtn" onclick="editCustomer(${ci})">编辑客户</button>
-        <button class="delbtn" onclick="deleteCustomer(${ci})">删除客户</button>
-      </div>
-
-      <div style="margin-top:12px"><b>联系人</b></div>
-      ${(c.contacts||[]).map((x,xi)=>`
-        <div class="contactrow">
-          <div><b>${esc(x.name)}</b>${x.phone?' · '+esc(x.phone):''}${x.office?' · '+esc(x.office):''}${x.note?' · '+esc(x.note):''}</div>
-          <div class="dbactions">
-            <button class="editbtn" onclick="editContact(${ci},${xi})">编辑联系人</button>
-            <button class="delbtn" onclick="deleteContact(${ci},${xi})">删除联系人</button>
-          </div>
-        </div>`).join('') || '<div class="meta">暂无联系人</div>'}
+      <div style="margin-top:14px"><b>联系人</b></div>
+      ${(c.contacts||[]).map((x,xi)=>`<div class="contactrow">
+        ${fieldLine('姓名',x.name,`editContactField(${ci},${xi},'name')`,'',false)}
+        ${fieldLine('电话',x.phone||'',`editContactField(${ci},${xi},'phone')`,`clearContactField(${ci},${xi},'phone')`)}
+        ${fieldLine('办公地',x.office||'',`editContactField(${ci},${xi},'office')`,`clearContactField(${ci},${xi},'office')`)}
+        ${fieldLine('职位 / 备注',x.note||'',`editContactField(${ci},${xi},'note')`,`clearContactField(${ci},${xi},'note')`)}
+        <div class="dbactions"><button class="delbtn" onclick="deleteContact(${ci},${xi})">删除这个联系人</button></div>
+      </div>`).join('') || '<div class="meta">暂无联系人</div>'}
 
       <div style="margin-top:14px"><b>拜访记录</b></div>
       ${(c.history||[]).slice().reverse().map((h,revIndex)=>{
         const hi=(c.history||[]).length-1-revIndex;
         return `<div class="hist">
-          <b>${esc(h.date||'历史记录')}</b>${h.contact?' · '+esc(h.contact):''}
-          <br>${esc(h.content||'')}
-          ${h.todo?'<br><span class="meta">待办：'+esc(h.todo)+'</span>':''}
-          ${h.followUpAt?'<br><span class="meta">跟进：'+esc(h.followUpAt.replace('T',' '))+' · '+esc(h.priority||'B')+' · '+esc(h.status||'待跟进')+'</span>':''}
+          ${fieldLine('拜访日期',h.date||'',`editHistoryField(${ci},${hi},'date')`,`clearHistoryField(${ci},${hi},'date')`)}
+          ${fieldLine('联系人',h.contact||'',`editHistoryField(${ci},${hi},'contact')`,`clearHistoryField(${ci},${hi},'contact')`)}
+          ${fieldLine('办公地',h.office||'',`editHistoryField(${ci},${hi},'office')`,`clearHistoryField(${ci},${hi},'office')`)}
+          ${fieldLine('沟通内容',h.content||'',`editHistoryField(${ci},${hi},'content')`,`clearHistoryField(${ci},${hi},'content')`)}
+          ${fieldLine('待办',h.todo||'',`editHistoryField(${ci},${hi},'todo')`,`clearHistoryField(${ci},${hi},'todo')`)}
+          ${fieldLine('跟进时间',h.followUpAt?String(h.followUpAt).replace('T',' '):'',`editHistoryField(${ci},${hi},'followUpAt')`,`clearHistoryField(${ci},${hi},'followUpAt')`)}
+          ${fieldLine('重要程度',h.priority||'B',`editHistoryField(${ci},${hi},'priority')`,'',false)}
+          ${fieldLine('状态',h.status||'待跟进',`editHistoryField(${ci},${hi},'status')`,'',false)}
           <div class="attachbox">
             <b>附件 / 链接</b>
             ${(h.attachments||[]).map((a,ai)=>`<div class="attachitem"><div class="attachmeta"><div class="attachname">${esc(a.name||'附件')}</div><div class="meta">${a.kind==='link'?'链接':'本地文件'}</div></div><button class="editbtn" onclick="openAttachment(${ci},${hi},${ai})">打开</button><button class="delbtn" onclick="removeHistoryAttachment(${ci},${hi},${ai})">删除</button></div>`).join('')||'<div class="meta">暂无附件</div>'}
-            <div class="choicebar">
-              <button class="secondary" onclick="document.getElementById('hf_${ci}_${hi}').click()">添加文件</button>
-              <button class="secondary" onclick="addHistoryLink(${ci},${hi})">添加链接</button>
-              <input id="hf_${ci}_${hi}" type="file" multiple style="display:none" onchange="addHistoryFiles(${ci},${hi},this.files)">
-            </div>
+            <div class="choicebar"><button class="secondary" onclick="document.getElementById('hf_${ci}_${hi}').click()">添加文件/照片</button><button class="secondary" onclick="addHistoryLink(${ci},${hi})">添加链接</button><input id="hf_${ci}_${hi}" type="file" multiple style="display:none" onchange="addHistoryFiles(${ci},${hi},this.files)"></div>
           </div>
-          <div class="histactions">
-            <button class="editbtn" onclick="editHistory(${ci},${hi})">编辑记录</button>
-            <button class="delbtn" onclick="deleteHistory(${ci},${hi})">删除记录</button>
-          </div>
+          <div class="histactions"><button class="delbtn" onclick="deleteHistory(${ci},${hi})">删除整条拜访记录</button></div>
         </div>`;
       }).join('') || '<div class="meta">暂无拜访记录</div>'}
     </div>`;
   }).join('') || '<div class="meta">没有找到结果</div>';
 }
+
+function promptField(label,current){ return prompt('修改：'+label,current??''); }
+function editCustomerField(ci,key){
+  const c=data[ci];if(!c)return; const labels={name:'客户名称',defaultOffice:'默认办公地'}; const v=promptField(labels[key]||key,c[key]||'');if(v===null)return;
+  const nv=v.trim(); if(key==='name'&&!nv)return alert('客户名称不能为空');
+  if(key==='name'){
+    const dup=data.find((x,i)=>i!==ci&&normalizeName(x.name)===normalizeName(nv));if(dup&&!confirm(`数据库里已有“${dup.name}”。仍然保存吗？`))return;
+    c.name=nv;
+  }else c[key]=nv;
+  saveStore();renderDB();renderDashboard();
+}
+function clearCustomerField(ci,key){const c=data[ci];if(!c||key==='name')return;if(confirm('确定清空这一项吗？')){c[key]='';saveStore();renderDB();renderDashboard();}}
+function editContactField(ci,xi,key){
+  const c=data[ci],ct=c?.contacts?.[xi];if(!ct)return;const labels={name:'联系人姓名',phone:'电话',office:'办公地',note:'职位 / 备注'};const old=ct[key]||'',v=promptField(labels[key]||key,old);if(v===null)return;const nv=v.trim();if(key==='name'&&!nv)return alert('联系人姓名不能为空');
+  if(key==='name'){const oldName=ct.name;ct.name=nv;(c.history||[]).forEach(h=>{if(normalizeName(h.contact||'')===normalizeName(oldName))h.contact=nv;});}else ct[key]=nv;
+  saveStore();renderDB();renderDashboard();
+}
+function clearContactField(ci,xi,key){const ct=data?.[ci]?.contacts?.[xi];if(!ct||key==='name')return;if(confirm('确定清空这一项吗？')){ct[key]='';saveStore();renderDB();renderDashboard();}}
+function editHistoryField(ci,hi,key){
+  const h=data?.[ci]?.history?.[hi];if(!h)return;const labels={date:'拜访日期 YYYY-MM-DD',contact:'联系人',office:'办公地',content:'沟通内容',todo:'待办',followUpAt:'跟进时间（如 2026-09-10T10:00）',priority:'重要程度 S / A / B / C',status:'状态：待跟进 / 等待客户 / 已完成'};const v=promptField(labels[key]||key,h[key]||'');if(v===null)return;let nv=v.trim();
+  if(key==='priority')nv=['S','A','B','C'].includes(nv.toUpperCase())?nv.toUpperCase():'B';
+  if(key==='status'){nv=['待跟进','等待客户','已完成'].includes(nv)?nv:'待跟进';if(nv==='已完成'&&!h.completedAt)h.completedAt=nowText();if(nv!=='已完成')h.completedAt='';}
+  h[key]=nv;saveStore();renderDB();renderDashboard();
+}
+function clearHistoryField(ci,hi,key){const h=data?.[ci]?.history?.[hi];if(!h)return;if(confirm('确定清空这一项吗？')){h[key]='';saveStore();renderDB();renderDashboard();}}
 
 function editCustomer(ci){
   const c=data[ci]; if(!c)return;
@@ -857,13 +886,17 @@ function parseRelativeDate(text){
     if(m){const map={'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'日':0,'天':0};let add=(7-now.getDay()+map[m[1]])%7;if(add<2)add+=7;d.setDate(d.getDate()+add);}
   }
   let h=9,min=0;
-  const tm=text.match(/(?:上午|下午|晚上)?\s*(\d{1,2})[点时](?:(\d{1,2})分?)?/);
+  const tm=text.match(/(?:上午|下午|晚上)?\s*(\d{1,2})(?:[点时](?:(\d{1,2})分?)?|[:：](\d{1,2}))/);
+  if(tm&&tm[3]&&!tm[2])tm[2]=tm[3];
   if(tm){h=+tm[1];min=+(tm[2]||0);if(/下午|晚上/.test(tm[0])&&h<12)h+=12;}
   d.setHours(h,min,0,0); return localDateTimeValue(d);
 }
 
 function normalizeForSpeech(s){
-  return String(s||'').toLowerCase().replace(/[，。！？、；：,.!?;:\s]/g,'')
+  return String(s||'').toLowerCase()
+    .replace(/膝盖|西盖|西凯|西铠|希开/g,'西开')
+    .replace(/电器/g,'电气')
+    .replace(/[，。！？、；：,.!?;:\s]/g,'')
     .replace(/有限责任公司|股份有限公司|集团有限公司|有限公司|集团公司|公司/g,'')
     .replace(/电气设备|电气|开关设备|开关|高压电器|高压|中压/g,'')
     .replace(/[（）()·\-—_]/g,'');
@@ -885,18 +918,38 @@ function companyCoreTokens(name){
 }
 function customerSpeechCandidates(text){
   const phrase=extractCustomerPhrase(text), nt=normalizeForSpeech(text), np=normalizeForSpeech(phrase);
+  const spokenContact=extractSpokenContact(text);
   return data.map(c=>{
-    const cn=normalizeForSpeech(c.name);let s=0,reasons=[];
+    const cn=normalizeForSpeech(c.name);let score=0,reasons=[];
     if(phrase){
-      if(cn===np){s+=1.25;reasons.push('语音片段完全匹配')}
-      else if(cn.includes(np)||np.includes(cn)){s+=.95;reasons.push('语音片段包含匹配')}
-      else {const sim=similarity(phrase,c.name);s+=sim*.9;if(sim>.5)reasons.push('名称相似')}
+      if(cn===np){score+=1.35;reasons.push('客户名称匹配')}
+      else if(cn.includes(np)||np.includes(cn)){score+=1.0;reasons.push('客户简称匹配')}
+      else {const sim=similarity(phrase,c.name);score+=sim*.92;if(sim>.5)reasons.push('客户名称相似')}
     }
-    if(nt.includes(cn)){s+=1.1;reasons.push('整句直接出现')}
-    companyCoreTokens(c.name).forEach(t=>{if(nt.includes(t)){s+=Math.min(.55,.16*t.length);reasons.push('简称命中')}});
-    ['北京','天津','上海','西安','杭州','常州','镇江','宁波','成都','衡阳','泰州','昆山','石家庄','青州','如皋'].forEach(r=>{if(text.includes(r)&&c.name.includes(r))s+=.28});
-    return {c,score:s,reasons:[...new Set(reasons)]};
+    if(nt.includes(cn)){score+=1.15;reasons.push('整句命中客户')}
+    companyCoreTokens(c.name).forEach(t=>{if(nt.includes(t)){score+=Math.min(.58,.17*t.length);reasons.push('客户简称命中')}});
+    // V5：用户纠正过一次后，本机记住“误识别词 -> 标准客户”。
+    Object.entries(learnedAliases).forEach(([alias,target])=>{if(target===c.name && nt.includes(normalizeForSpeech(alias))){score+=1.55;reasons.push('已学习的叫法/误识别')}});
+    // 联系人是非常强的反向证据：即使客户名被语音识别错，也可由联系人找回客户。
+    if(spokenContact){
+      (c.contacts||[]).forEach(ct=>{
+        const surname=ct.name?.slice(0,1)||'';
+        if(ct.name && text.includes(ct.name)){score+=1.45;reasons.push('联系人反向锁定客户')}
+        else if(surname && spokenContact.startsWith(surname)){score+=.52;reasons.push('联系人姓氏吻合')}
+      });
+    }
+    // 历史拜访越多，只做轻微加权，避免频繁客户压过明确证据。
+    score+=Math.min(.12,(c.history||[]).length*.015);
+    ['北京','天津','上海','西安','杭州','常州','镇江','宁波','成都','衡阳','泰州','昆山','石家庄','青州','如皋'].forEach(r=>{if(text.includes(r)&&c.name.includes(r)){score+=.3;reasons.push('地区吻合')}});
+    return {c,score,reasons:[...new Set(reasons)]};
   }).filter(x=>x.score>.22).sort((a,b)=>b.score-a.score).slice(0,6);
+}
+function extractSpokenContact(text){
+  let m=text.match(/(?:联系人(?:是|为|叫)?|找|见|跟|和)([\u4e00-\u9fa5]{1,4})(经理|总经理|副总|总|主任|部长|科长|总工|工程师|工)?(?=聊|谈|说|沟通|讨论|，|。|,|；|;|\s|$)/);
+  if(m)return (m[1]+(m[2]||'')).trim();
+  m=text.match(/([\u4e00-\u9fa5])(经理|总经理|副总|总|主任|部长|科长|总工|工程师|工)(?=聊|谈|说|沟通|讨论|，|。|,|；|;|\s|$)/);
+  if(m)return (m[1]+m[2]).trim();
+  return '';
 }
 function contactSpeechCandidates(customer,text){
   if(!customer)return [];
@@ -931,8 +984,9 @@ function extractVoice(){
   const chosen=customerCandidates[0]?.score>=.58?customerCandidates[0].c:null;
   const contactCandidates=contactSpeechCandidates(chosen,text);
   const chosenContact=contactCandidates[0]?.score>=.58?contactCandidates[0].ct:null;
-  window.voiceDraft={customer:chosen?.name||'',contact:chosenContact?.name||'',date:inferVisitDate(text),content:text,todo:inferTodo(text),
-    followUpAt:/下周|明天|后天|上午|下午|晚上|\d{1,2}[点时]/.test(text)?parseRelativeDate(text):'',priority:inferPriority(text),status:'待跟进',attachments:[]};
+  const spokenContact=extractSpokenContact(text);
+  window.voiceDraft={customer:chosen?.name||'',contact:chosenContact?.name||spokenContact||'',date:inferVisitDate(text),content:text,todo:inferTodo(text),
+    followUpAt:/下周|明天|后天|上午|下午|晚上|\d{1,2}(?:[点时]|[:：]\d{2})/.test(text)?parseRelativeDate(text):'',priority:inferPriority(text),status:'待跟进',attachments:[]};
   window.voiceCustomerCandidates=customerCandidates;window.voiceContactCandidates=contactCandidates;
   renderVoiceConfirm(customerCandidates,contactCandidates);
 }
@@ -964,14 +1018,20 @@ function renderVoiceConfirm(customers=window.voiceCustomerCandidates||[],contact
   </div><div class="row"><button class="primary" onclick="saveVoiceDraft()">确认并保存</button></div>`;
   setTimeout(renderVoiceAttachments,0);
 }
+function learnCustomerAlias(value){
+  const phrase=extractCustomerPhrase(voiceText.value.trim());
+  if(phrase && value && normalizeForSpeech(phrase)!==normalizeForSpeech(value)){
+    learnedAliases[phrase]=value; localStorage.setItem(ALIAS_KEY,JSON.stringify(learnedAliases));
+  }
+}
 function voicePick(field,val){
   const value=decodeURIComponent(val);window.voiceDraft[field]=value;
-  if(field==='customer'){const c=getCustomer(value);window.voiceContactCandidates=contactSpeechCandidates(c,voiceText.value.trim());window.voiceDraft.contact=window.voiceContactCandidates[0]?.score>=.58?window.voiceContactCandidates[0].ct.name:'';}
+  if(field==='customer'){learnCustomerAlias(value);const c=getCustomer(value);window.voiceContactCandidates=contactSpeechCandidates(c,voiceText.value.trim());window.voiceDraft.contact=window.voiceContactCandidates[0]?.score>=.58?window.voiceContactCandidates[0].ct.name:(window.voiceDraft.contact||'');}
   renderVoiceConfirm();
 }
 function voiceManual(field){
   const v=prompt('请输入'+(field==='customer'?'客户全称':'联系人'));
-  if(v){window.voiceDraft[field]=v;if(field==='customer')window.voiceContactCandidates=contactSpeechCandidates(getCustomer(v),voiceText.value.trim());renderVoiceConfirm();}
+  if(v){window.voiceDraft[field]=v;if(field==='customer'){learnCustomerAlias(v);window.voiceContactCandidates=contactSpeechCandidates(getCustomer(v),voiceText.value.trim());}renderVoiceConfirm();}
 }
 
 function newId(){return 'a_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);}
@@ -1027,12 +1087,40 @@ async function removeVoiceAttachment(i){
   if(a.kind==='local')await deleteLocalFile(a.id);
   window.voiceDraft.attachments.splice(i,1);renderVoiceAttachments();
 }
+let activePreviewUrl='';
+function closeAttachmentPreview(){
+  const el=document.getElementById('attachmentPreview');if(el)el.remove();
+  if(activePreviewUrl){URL.revokeObjectURL(activePreviewUrl);activePreviewUrl='';}
+}
+function showAttachmentPreview(rec){
+  closeAttachmentPreview();
+  const u=URL.createObjectURL(rec.blob);activePreviewUrl=u;
+  const type=(rec.type||rec.blob.type||'').toLowerCase(),name=rec.name||'附件';
+  let body='';
+  if(type.startsWith('image/')) body=`<img src="${u}" alt="${esc(name)}">`;
+  else if(type==='application/pdf') body=`<iframe src="${u}"></iframe>`;
+  else if(type.startsWith('video/')) body=`<video src="${u}" controls playsinline></video>`;
+  else if(type.startsWith('audio/')) body=`<audio src="${u}" controls></audio>`;
+  else if(type.startsWith('text/')) body=`<div class="previewText">正在读取文本…</div>`;
+  else body=`<div class="meta">这种文件 iPhone 网页里不一定能直接预览。可以点下面“打开/下载文件”。</div>`;
+  const box=document.createElement('div');box.id='attachmentPreview';box.className='previewOverlay';box.innerHTML=`<div class="previewCard"><div class="previewHead"><div class="previewTitle">${esc(name)}</div><button class="secondary small" onclick="closeAttachmentPreview()">关闭</button></div><div class="previewBody">${body}</div><div class="previewActions"><a id="previewOpenLink" href="${u}" target="_blank" rel="noopener" style="text-decoration:none"><button class="secondary">打开/下载文件</button></a></div></div>`;
+  box.addEventListener('click',e=>{if(e.target===box)closeAttachmentPreview();});document.body.appendChild(box);
+  if(type.startsWith('text/')) rec.blob.text().then(t=>{const e=box.querySelector('.previewText');if(e)e.textContent=t;}).catch(()=>{});
+}
 async function openAttachment(ci,hi,ai){
   const a=data?.[ci]?.history?.[hi]?.attachments?.[ai];if(!a)return;
-  if(a.kind==='link'){window.open(a.url,'_blank');return;}
-  const rec=await getLocalFile(a.id);if(!rec?.blob)return alert('这个本地附件已不在当前设备。请从完整备份恢复，或重新添加。');
-  const u=URL.createObjectURL(rec.blob);window.open(u,'_blank');setTimeout(()=>URL.revokeObjectURL(u),60000);
+  if(a.kind==='link'){
+    const w=window.open(a.url,'_blank');
+    if(!w) location.href=a.url;
+    return;
+  }
+  try{
+    const rec=await getLocalFile(a.id);
+    if(!rec?.blob)return alert('这个本地附件已不在当前设备。请从完整备份恢复，或重新添加。');
+    showAttachmentPreview(rec);
+  }catch(e){alert('附件打开失败：'+(e?.message||e));}
 }
+
 async function removeHistoryAttachment(ci,hi,ai){
   const h=data?.[ci]?.history?.[hi],a=h?.attachments?.[ai];if(!a)return;
   if(!confirm(`确定移除附件“${a.name||'附件'}”吗？`))return;

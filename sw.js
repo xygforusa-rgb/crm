@@ -1,4 +1,4 @@
-const CACHE = 'crm-pwa-test-v4.1-20260903';
+const CACHE = 'crm-pwa-v5-20260903';
 const APP_SHELL = [
   './',
   './index.html',
@@ -20,7 +20,7 @@ self.addEventListener('activate', event => {
     caches.keys()
       .then(keys => Promise.all(
         keys
-          .filter(key => key.startsWith('crm-pwa-test-') && key !== CACHE)
+          .filter(key => (key.startsWith('crm-pwa-test-') || key.startsWith('crm-pwa-v')) && key !== CACHE)
           .map(key => caches.delete(key))
       ))
       .then(() => self.clients.claim())
