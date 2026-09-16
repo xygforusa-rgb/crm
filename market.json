@@ -1,0 +1,668 @@
+{
+ "schema": 1,
+ "goods": "组合电器",
+ "title": "国家电网组合电器中标行情",
+ "updatedAt": "2026-09-16",
+ "source": "电能革新（微信公众号）公开发布的中标分析文章，经新浪财经等门户同步转载",
+ "years": [
+  2026
+ ],
+ "items": [
+  {
+   "period": "2026-1",
+   "publishDate": "2026-03-25",
+   "tenderNo": "0711-260TL00311002 + 0711-260TL00411003",
+   "batchName": "国家电网有限公司2026年输变电项目第一次变电设备(含电缆)公开招标采购 + 国家电网有限公司2026年青藏铁路电气化外电配套工程新增第一次变电设备公开招标采购",
+   "totalWan": 290327,
+   "packages": 77,
+   "winnerCount": 25,
+   "winners": [
+    {
+     "rank": 1,
+     "company": "上海思源高压开关有限公司",
+     "packages": 9,
+     "amountWan": 81315
+    },
+    {
+     "rank": 2,
+     "company": "河南平高电气股份有限公司",
+     "packages": 6,
+     "amountWan": 50513
+    },
+    {
+     "rank": 3,
+     "company": "西安西电开关电气有限公司",
+     "packages": 7,
+     "amountWan": 33548
+    },
+    {
+     "rank": 4,
+     "company": "河南平芝高压开关有限公司",
+     "packages": 6,
+     "amountWan": 25468
+    },
+    {
+     "rank": 5,
+     "company": "山东泰开高压开关有限公司",
+     "packages": 6,
+     "amountWan": 18695
+    },
+    {
+     "rank": 6,
+     "company": "西安西电高压开关有限责任公司",
+     "packages": 3,
+     "amountWan": 9107
+    },
+    {
+     "rank": 7,
+     "company": "山东泰开电力开关有限公司",
+     "packages": 4,
+     "amountWan": 6781
+    },
+    {
+     "rank": 8,
+     "company": "厦门日立能源高压开关有限公司",
+     "packages": 3,
+     "amountWan": 6553
+    },
+    {
+     "rank": 9,
+     "company": "湖南长高电气有限公司",
+     "packages": 3,
+     "amountWan": 6317
+    },
+    {
+     "rank": 10,
+     "company": "江苏省如高高压电器有限公司",
+     "packages": 3,
+     "amountWan": 6108
+    },
+    {
+     "rank": 11,
+     "company": "特变电工中发上海高压开关有限公司",
+     "packages": 3,
+     "amountWan": 5949
+    },
+    {
+     "rank": 12,
+     "company": "上海西电高压开关有限公司",
+     "packages": 4,
+     "amountWan": 5495
+    },
+    {
+     "rank": 13,
+     "company": "新东北电气集团高压开关有限公司",
+     "packages": 3,
+     "amountWan": 5441
+    },
+    {
+     "rank": 14,
+     "company": "山东电工电气日立高压开关有限公司",
+     "packages": 3,
+     "amountWan": 5360
+    },
+    {
+     "rank": 15,
+     "company": "泰安泰山高压开关有限公司",
+     "packages": 2,
+     "amountWan": 4187
+    },
+    {
+     "rank": 16,
+     "company": "无锡恒驰中兴开关有限公司",
+     "packages": 2,
+     "amountWan": 2591
+    },
+    {
+     "rank": 17,
+     "company": "正泰电气股份有限公司",
+     "packages": 1,
+     "amountWan": 2433
+    },
+    {
+     "rank": 18,
+     "company": "平高集团威海高压电器有限公司",
+     "packages": 1,
+     "amountWan": 2410
+    },
+    {
+     "rank": 19,
+     "company": "江苏沃能高压电气有限公司",
+     "packages": 1,
+     "amountWan": 2337
+    },
+    {
+     "rank": 20,
+     "company": "北京日立能源高压开关设备有限公司",
+     "packages": 1,
+     "amountWan": 2252
+    },
+    {
+     "rank": 21,
+     "company": "广州西电高压电气制造有限公司",
+     "packages": 1,
+     "amountWan": 2200
+    },
+    {
+     "rank": 22,
+     "company": "青岛特锐德电气股份有限公司",
+     "packages": 1,
+     "amountWan": 2149
+    },
+    {
+     "rank": 23,
+     "company": "北京北开电气股份有限公司",
+     "packages": 2,
+     "amountWan": 2018
+    },
+    {
+     "rank": 24,
+     "company": "青岛益和电气集团股份有限公司",
+     "packages": 1,
+     "amountWan": 828
+    },
+    {
+     "rank": 25,
+     "company": "山东达驰高压开关有限公司",
+     "packages": 1,
+     "amountWan": 271
+    }
+   ]
+  },
+  {
+   "period": "2026-2",
+   "publishDate": "2026-04-30",
+   "tenderNo": "0711-260TL02711017 + 0711-260TL02811018 + 0711-260TL04011023",
+   "batchName": "国家电网有限公司2026年输变电项目第二次变电设备(含电缆)公开招标采购 + 国家电网有限公司2026年输变电项目第一次变电设备框架协议(协议库存)公开招标采购 + 国家电网有限公司2026年青藏铁路电气化外电配套工程新增第二次变电设备公开招标采购",
+   "totalWan": 399906,
+   "packages": 83,
+   "winnerCount": 26,
+   "winners": [
+    {
+     "rank": 1,
+     "company": "河南平高电气股份有限公司",
+     "packages": 6,
+     "amountWan": 58113
+    },
+    {
+     "rank": 2,
+     "company": "西安西电开关电气有限公司",
+     "packages": 5,
+     "amountWan": 44448
+    },
+    {
+     "rank": 3,
+     "company": "山东泰开高压开关有限公司",
+     "packages": 8,
+     "amountWan": 41620
+    },
+    {
+     "rank": 4,
+     "company": "上海思源高压开关有限公司",
+     "packages": 9,
+     "amountWan": 39660
+    },
+    {
+     "rank": 5,
+     "company": "湖南长高电气有限公司",
+     "packages": 5,
+     "amountWan": 20385
+    },
+    {
+     "rank": 6,
+     "company": "山东电工电气日立高压开关有限公司",
+     "packages": 5,
+     "amountWan": 18686
+    },
+    {
+     "rank": 7,
+     "company": "河南平芝高压开关有限公司",
+     "packages": 5,
+     "amountWan": 18176
+    },
+    {
+     "rank": 8,
+     "company": "西安西电高压开关有限责任公司",
+     "packages": 3,
+     "amountWan": 16287
+    },
+    {
+     "rank": 9,
+     "company": "新东北电气集团高压开关有限公司",
+     "packages": 4,
+     "amountWan": 15655
+    },
+    {
+     "rank": 10,
+     "company": "正泰电气股份有限公司",
+     "packages": 4,
+     "amountWan": 14969
+    },
+    {
+     "rank": 11,
+     "company": "山东泰开电力开关有限公司",
+     "packages": 3,
+     "amountWan": 13387
+    },
+    {
+     "rank": 12,
+     "company": "江苏省如高高压电器有限公司",
+     "packages": 4,
+     "amountWan": 12022
+    },
+    {
+     "rank": 13,
+     "company": "青岛益和电气集团股份有限公司",
+     "packages": 3,
+     "amountWan": 10204
+    },
+    {
+     "rank": 14,
+     "company": "无锡恒驰中兴开关有限公司",
+     "packages": 2,
+     "amountWan": 9835
+    },
+    {
+     "rank": 15,
+     "company": "上海西电高压开关有限公司",
+     "packages": 3,
+     "amountWan": 9424
+    },
+    {
+     "rank": 16,
+     "company": "泰安泰山高压开关有限公司",
+     "packages": 2,
+     "amountWan": 9362
+    },
+    {
+     "rank": 17,
+     "company": "许继(厦门)智能电力设备股份有限公司",
+     "packages": 3,
+     "amountWan": 9145
+    },
+    {
+     "rank": 18,
+     "company": "青岛特锐德电气股份有限公司",
+     "packages": 1,
+     "amountWan": 5209
+    },
+    {
+     "rank": 19,
+     "company": "特变电工中发上海高压开关有限公司",
+     "packages": 1,
+     "amountWan": 4985
+    },
+    {
+     "rank": 20,
+     "company": "北京日立能源高压开关设备有限公司",
+     "packages": 1,
+     "amountWan": 4677
+    },
+    {
+     "rank": 21,
+     "company": "厦门日立能源高压开关有限公司",
+     "packages": 1,
+     "amountWan": 4362
+    },
+    {
+     "rank": 22,
+     "company": "平高集团威海高压电器有限公司",
+     "packages": 1,
+     "amountWan": 4098
+    },
+    {
+     "rank": 23,
+     "company": "江苏沃能高压电气有限公司",
+     "packages": 1,
+     "amountWan": 3965
+    },
+    {
+     "rank": 24,
+     "company": "广州西电高压电气制造有限公司",
+     "packages": 1,
+     "amountWan": 3951
+    },
+    {
+     "rank": 25,
+     "company": "厦门华电开关有限公司",
+     "packages": 1,
+     "amountWan": 3795
+    },
+    {
+     "rank": 26,
+     "company": "山东达驰高压开关有限公司",
+     "packages": 1,
+     "amountWan": 3487
+    }
+   ]
+  },
+  {
+   "period": "2026-3",
+   "publishDate": "2026-07-16",
+   "tenderNo": "0711-260TL07011033",
+   "batchName": "国家电网有限公司2026年输变电项目第三次变电设备(含电缆)公开招标采购",
+   "totalWan": 449969,
+   "packages": 83,
+   "winnerCount": 27,
+   "winners": [
+    {
+     "rank": 1,
+     "company": "上海思源高压开关有限公司",
+     "packages": 8,
+     "amountWan": 64578
+    },
+    {
+     "rank": 2,
+     "company": "河南平高电气股份有限公司",
+     "packages": 5,
+     "amountWan": 36571
+    },
+    {
+     "rank": 3,
+     "company": "山东泰开高压开关有限公司",
+     "packages": 5,
+     "amountWan": 32411
+    },
+    {
+     "rank": 4,
+     "company": "河南平芝高压开关有限公司",
+     "packages": 6,
+     "amountWan": 29872
+    },
+    {
+     "rank": 5,
+     "company": "西安西电开关电气有限公司",
+     "packages": 6,
+     "amountWan": 25722
+    },
+    {
+     "rank": 6,
+     "company": "山东电工电气日立高压开关有限公司",
+     "packages": 4,
+     "amountWan": 25077
+    },
+    {
+     "rank": 7,
+     "company": "湖南长高电气有限公司",
+     "packages": 4,
+     "amountWan": 24436
+    },
+    {
+     "rank": 8,
+     "company": "正泰电气股份有限公司",
+     "packages": 4,
+     "amountWan": 21831
+    },
+    {
+     "rank": 9,
+     "company": "新东北电气集团高压开关有限公司",
+     "packages": 5,
+     "amountWan": 20440
+    },
+    {
+     "rank": 10,
+     "company": "西安西电高压开关有限责任公司",
+     "packages": 3,
+     "amountWan": 16755
+    },
+    {
+     "rank": 11,
+     "company": "上海西门子能源高压开关有限公司",
+     "packages": 2,
+     "amountWan": 16520
+    },
+    {
+     "rank": 12,
+     "company": "山东泰开电力开关有限公司",
+     "packages": 4,
+     "amountWan": 14693
+    },
+    {
+     "rank": 13,
+     "company": "江苏省如高高压电器有限公司",
+     "packages": 3,
+     "amountWan": 13331
+    },
+    {
+     "rank": 14,
+     "company": "上海西电高压开关有限公司",
+     "packages": 3,
+     "amountWan": 12542
+    },
+    {
+     "rank": 15,
+     "company": "泰安泰山高压开关有限公司",
+     "packages": 3,
+     "amountWan": 12541
+    },
+    {
+     "rank": 16,
+     "company": "无锡恒驰中兴开关有限公司",
+     "packages": 2,
+     "amountWan": 11021
+    },
+    {
+     "rank": 17,
+     "company": "特变电工中发上海高压开关有限公司",
+     "packages": 2,
+     "amountWan": 10717
+    },
+    {
+     "rank": 18,
+     "company": "北京北开电气股份有限公司",
+     "packages": 3,
+     "amountWan": 9827
+    },
+    {
+     "rank": 19,
+     "company": "许继(厦门)智能电力设备股份有限公司",
+     "packages": 2,
+     "amountWan": 9667
+    },
+    {
+     "rank": 20,
+     "company": "厦门日立能源高压开关有限公司",
+     "packages": 2,
+     "amountWan": 6390
+    },
+    {
+     "rank": 21,
+     "company": "厦门华电开关有限公司",
+     "packages": 1,
+     "amountWan": 5652
+    },
+    {
+     "rank": 22,
+     "company": "青岛特锐德电气股份有限公司",
+     "packages": 1,
+     "amountWan": 5534
+    },
+    {
+     "rank": 23,
+     "company": "广州西电高压电气制造有限公司",
+     "packages": 1,
+     "amountWan": 5356
+    },
+    {
+     "rank": 24,
+     "company": "青岛益和电气集团股份有限公司",
+     "packages": 1,
+     "amountWan": 5198
+    },
+    {
+     "rank": 25,
+     "company": "平高集团威海高压电器有限公司",
+     "packages": 1,
+     "amountWan": 5100
+    },
+    {
+     "rank": 26,
+     "company": "广州白云电器设备股份有限公司",
+     "packages": 1,
+     "amountWan": 4738
+    },
+    {
+     "rank": 27,
+     "company": "北京日立能源高压开关设备有限公司",
+     "packages": 1,
+     "amountWan": 3448
+    }
+   ]
+  },
+  {
+   "period": "2026-4",
+   "publishDate": "2026-09-04",
+   "tenderNo": "0711-260TL09811048",
+   "batchName": "国家电网有限公司2026年输变电项目第四次变电设备(含电缆)公开招标采购",
+   "totalWan": 288078,
+   "packages": 62,
+   "winnerCount": 21,
+   "winners": [
+    {
+     "rank": 1,
+     "company": "河南平高电气股份有限公司",
+     "packages": 6,
+     "amountWan": 43067
+    },
+    {
+     "rank": 2,
+     "company": "上海思源高压开关有限公司",
+     "packages": 7,
+     "amountWan": 37993
+    },
+    {
+     "rank": 3,
+     "company": "山东泰开高压开关有限公司",
+     "packages": 5,
+     "amountWan": 26688
+    },
+    {
+     "rank": 4,
+     "company": "河南平芝高压开关有限公司",
+     "packages": 5,
+     "amountWan": 24850
+    },
+    {
+     "rank": 5,
+     "company": "西安西电开关电气有限公司",
+     "packages": 4,
+     "amountWan": 18023
+    },
+    {
+     "rank": 6,
+     "company": "湖南长高电气有限公司",
+     "packages": 3,
+     "amountWan": 18018
+    },
+    {
+     "rank": 7,
+     "company": "新东北电气集团高压开关有限公司",
+     "packages": 3,
+     "amountWan": 12337
+    },
+    {
+     "rank": 8,
+     "company": "山东泰开电力开关有限公司",
+     "packages": 4,
+     "amountWan": 11529
+    },
+    {
+     "rank": 9,
+     "company": "西安西电高压开关有限责任公司",
+     "packages": 3,
+     "amountWan": 11463
+    },
+    {
+     "rank": 10,
+     "company": "上海西电高压开关有限公司",
+     "packages": 2,
+     "amountWan": 10760
+    },
+    {
+     "rank": 11,
+     "company": "山东电工电气日立高压开关有限公司",
+     "packages": 3,
+     "amountWan": 10749
+    },
+    {
+     "rank": 12,
+     "company": "泰安泰山高压开关有限公司",
+     "packages": 3,
+     "amountWan": 10281
+    },
+    {
+     "rank": 13,
+     "company": "正泰电气股份有限公司",
+     "packages": 2,
+     "amountWan": 9730
+    },
+    {
+     "rank": 14,
+     "company": "江苏省如高高压电器有限公司",
+     "packages": 2,
+     "amountWan": 8575
+    },
+    {
+     "rank": 15,
+     "company": "许继(厦门)智能电力设备股份有限公司",
+     "packages": 2,
+     "amountWan": 7865
+    },
+    {
+     "rank": 16,
+     "company": "青岛益和电气集团股份有限公司",
+     "packages": 2,
+     "amountWan": 7285
+    },
+    {
+     "rank": 17,
+     "company": "厦门日立能源高压开关有限公司",
+     "packages": 2,
+     "amountWan": 6549
+    },
+    {
+     "rank": 18,
+     "company": "厦门华电开关有限公司",
+     "packages": 1,
+     "amountWan": 4782
+    },
+    {
+     "rank": 19,
+     "company": "青岛特锐德电气股份有限公司",
+     "packages": 1,
+     "amountWan": 3741
+    },
+    {
+     "rank": 20,
+     "company": "特变电工中发上海高压开关有限公司",
+     "packages": 1,
+     "amountWan": 3512
+    },
+    {
+     "rank": 21,
+     "company": "北京北开电气股份有限公司",
+     "packages": 1,
+     "amountWan": 281
+    }
+   ]
+  }
+ ],
+ "sources": [
+  {
+   "period": "2026-1",
+   "url": "https://finance.sina.cn/2026-04-10/detail-inhtznzw8248703.d.html"
+  },
+  {
+   "period": "2026-2",
+   "url": "https://finance.sina.cn/2026-05-03/detail-inhwrxaz0563383.d.html"
+  },
+  {
+   "period": "2026-3",
+   "url": "https://cj.sina.cn/articles/view/5953466437/162dab0450670b2lb8"
+  },
+  {
+   "period": "2026-4",
+   "url": "https://finance.sina.com.cn/roll/2026-09-05/doc-iniquyin4896016.shtml"
+  }
+ ]
+}

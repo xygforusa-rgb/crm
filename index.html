@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>客户管理助手 V5.12.3</title>
+<title>客户管理助手 V5.13.0</title>
 <meta name="theme-color" content="#172033">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -112,17 +112,53 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
 .previewOverlay{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}.previewCard{width:min(900px,100%);max-height:92vh;background:#fff;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}.previewHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)}.previewTitle{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.previewBody{padding:12px;overflow:auto;min-height:160px}.previewBody img{display:block;max-width:100%;height:auto;margin:auto}.previewBody iframe{width:100%;height:72vh;border:0}.previewBody video{max-width:100%;max-height:72vh}.previewBody audio{width:100%}.previewText{white-space:pre-wrap;word-break:break-word;font-size:14px}.previewActions{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border);flex-wrap:wrap}
 
 .visitEditOverlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:10030;display:flex;align-items:flex-end;justify-content:center;padding:12px}.visitEditOverlay.hidden{display:none!important}.visitEditSheet{width:min(720px,100%);max-height:94vh;overflow:auto;background:#fff;border-radius:20px 20px 14px 14px;padding:16px;box-shadow:0 -14px 46px rgba(15,23,42,.2)}.visitEditSheet h3{margin:0 0 10px;font-size:20px}.veGrid{display:grid;grid-template-columns:1fr;gap:12px}.veField label{display:block;font-size:13px;font-weight:800;color:#334155;margin-bottom:6px}.veField input,.veField textarea,.veField select{width:100%}.veField textarea{min-height:110px}.segBtns{display:flex;gap:8px;flex-wrap:wrap}.segBtns button{padding:9px 12px}.segBtns button.active{background:#172033;color:#fff}.contactChoiceBtns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}.contactChoiceBtns button{padding:9px 12px}.contactChoiceBtns button.active{background:#1f4fa3;color:#fff}.visitEditActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.visitEditHead{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:-16px;background:#fff;z-index:3;padding:14px 0 8px}.visitEditHead h3{margin:0}.visitCloseBtn{width:40px;height:40px;min-width:40px;border-radius:999px;border:1px solid #d7deea;background:#f8fafc;color:#172033;font-size:28px;line-height:1;padding:0}.visitEditActions{position:sticky;bottom:-16px;background:#fff;padding:10px 0 14px;z-index:3;border-top:1px solid #eef2f7}.visitEditSheet{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.cleanupCard{border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0;background:#fff}.cleanupTitle{font-weight:800}.cleanupWarn{font-size:12px;color:#9a3412;margin-top:4px}.toolbar .dangerLite{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}@media(min-width:700px){.visitEditOverlay{align-items:center}.visitEditSheet{border-radius:18px}.veGrid{grid-template-columns:1fr 1fr}.veField.full{grid-column:1/-1}}
+
+/* ===== 国网中标行情 ===== */
+.tabs{gap:6px}
+.tab{padding:11px 4px;font-size:15px}
+.mktStatus{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#eef8f0;border:1px solid #c7e5ce;border-radius:12px;padding:10px 12px;font-size:13px;color:#245b31;margin-bottom:12px;line-height:1.55}
+.mktStatus.warn{background:#fff7d6;border-color:#f0df9a;color:#66571b}
+.mktStatus.err{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+.mktStatus .stxt{flex:1;min-width:190px}
+.mktFilters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.mktChip{background:#e9eef6;color:#33415c;border:0;border-radius:999px;padding:8px 12px;font-size:14px;font-weight:700;cursor:pointer}
+.mktChip.active{background:#172033;color:#fff}
+.mktChip.mine{background:#eef4ff;color:#1756a9}
+.mktChip.mine.active{background:#1f4fa3;color:#fff}
+.mktKpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.mktKpi{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center}
+.mktKpi span{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.mktKpi b{font-size:20px;color:#172033}
+.mktKpi small{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.mktRow{display:flex;gap:10px;align-items:center;background:#fff;border:1px solid var(--border);border-radius:14px;padding:11px 12px;margin-bottom:8px}
+.mktRow.mine{border-color:#bcd3fb;background:#f8fbff;cursor:pointer}
+.mktRow.mine:active{transform:scale(.995)}
+.mktRank{width:30px;min-width:30px;height:30px;border-radius:999px;background:#eef3fa;color:#33415c;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+.mktRow.mine .mktRank{background:#1f4fa3;color:#fff}
+.mktMain{flex:1;min-width:0}
+.mktName{font-size:15px;font-weight:700;line-height:1.35;word-break:break-all}
+.mktTag{display:inline-block;background:#e8f1ff;color:#1756a9;border-radius:999px;padding:2px 7px;font-size:11px;font-weight:700;margin-left:6px;white-space:nowrap}
+.mktBarWrap{height:6px;background:#eef2f7;border-radius:99px;margin:6px 0 5px;overflow:hidden}
+.mktBarWrap i{display:block;height:100%;background:#1f6feb;border-radius:99px}
+.mktRow.mine .mktBarWrap i{background:#1756a9}
+.mktMeta{font-size:12px;color:var(--muted)}
+.mktAmt{text-align:right;font-size:13px;font-weight:800;color:#172033;white-space:nowrap}
+.mktAmt small{display:block;font-weight:600;color:var(--muted);font-size:11px;margin-top:3px}
+.mktEmpty{background:#fff;border:1px dashed var(--border);border-radius:14px;padding:22px 14px;text-align:center;color:var(--muted);font-size:14px;line-height:1.7}
+.mktNote{margin-top:14px;font-size:12px;color:var(--muted);line-height:1.75;background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px}
+.mktNote b{color:#33415c}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>客户管理助手</h1>
-  <div class="sub">PWA V5.12.3 · 客户整理工作台 · 灵活延期与等待客户提醒 · 首页拜访可点击详情 · 语音页面生命周期 · 保存后选择 · 可交互跟进看板 · 个性语音学习 · 本地智能识别 · 分层客户视图 · 本机附件 · 旧数据库兼容</div>
+  <div class="sub">PWA V5.13.0 · 国网组合电器中标行情 · 客户整理工作台 · 灵活延期与等待客户提醒 · 首页拜访可点击详情 · 语音页面生命周期 · 保存后选择 · 可交互跟进看板 · 个性语音学习 · 本地智能识别 · 分层客户视图 · 本机附件 · 旧数据库兼容</div>
 
   <div class="tabs">
     <button class="tab active" id="tabDash" onclick="showTab('dash')">看板</button>
     <button class="tab" id="tabVoice" onclick="showTab('voice')">语音录入</button>
     <button class="tab" id="tabDB" onclick="showTab('db')">客户库</button>
+    <button class="tab" id="tabMkt" onclick="showTab('mkt')">中标行情</button>
   </div>
 
   <section id="dashPanel">
@@ -207,6 +243,14 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
     <input id="search" placeholder="搜索客户 / 联系人 / 电话" oninput="renderDB()" style="margin:8px 0 12px">
     <div id="dbList"></div>
   </section>
+
+  <section id="mktPanel" class="hidden">
+    <div class="mktStatus" id="mktStatus"><div class="stxt">正在加载行情数据…</div></div>
+    <div class="mktFilters" id="mktFilters"></div>
+    <div class="mktKpis" id="mktKpis"></div>
+    <div id="mktBody"></div>
+    <div class="mktNote" id="mktNote"></div>
+  </section>
 </div>
 
 <div id="followOverlay" class="followOverlay hidden" onclick="if(event.target===this)closeFollowPicker()">
@@ -239,6 +283,8 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
     <div class="visitEditActions"><button class="primary" onclick="saveVisitEditor()">保存</button><button class="secondary" onclick="closeVisitEditor()">取消</button></div>
   </div>
 </div>
+
+<script id="marketSnapshot" type="application/json">{"schema":1,"goods":"组合电器","title":"国家电网组合电器中标行情","updatedAt":"2026-09-16","source":"电能革新（微信公众号）公开发布的中标分析文章，经新浪财经等门户同步转载","years":[2026],"items":[{"period":"2026-1","publishDate":"2026-03-25","tenderNo":"0711-260TL00311002 + 0711-260TL00411003","batchName":"国家电网有限公司2026年输变电项目第一次变电设备(含电缆)公开招标采购 + 国家电网有限公司2026年青藏铁路电气化外电配套工程新增第一次变电设备公开招标采购","totalWan":290327,"packages":77,"winnerCount":25,"winners":[{"rank":1,"company":"上海思源高压开关有限公司","packages":9,"amountWan":81315},{"rank":2,"company":"河南平高电气股份有限公司","packages":6,"amountWan":50513},{"rank":3,"company":"西安西电开关电气有限公司","packages":7,"amountWan":33548},{"rank":4,"company":"河南平芝高压开关有限公司","packages":6,"amountWan":25468},{"rank":5,"company":"山东泰开高压开关有限公司","packages":6,"amountWan":18695},{"rank":6,"company":"西安西电高压开关有限责任公司","packages":3,"amountWan":9107},{"rank":7,"company":"山东泰开电力开关有限公司","packages":4,"amountWan":6781},{"rank":8,"company":"厦门日立能源高压开关有限公司","packages":3,"amountWan":6553},{"rank":9,"company":"湖南长高电气有限公司","packages":3,"amountWan":6317},{"rank":10,"company":"江苏省如高高压电器有限公司","packages":3,"amountWan":6108},{"rank":11,"company":"特变电工中发上海高压开关有限公司","packages":3,"amountWan":5949},{"rank":12,"company":"上海西电高压开关有限公司","packages":4,"amountWan":5495},{"rank":13,"company":"新东北电气集团高压开关有限公司","packages":3,"amountWan":5441},{"rank":14,"company":"山东电工电气日立高压开关有限公司","packages":3,"amountWan":5360},{"rank":15,"company":"泰安泰山高压开关有限公司","packages":2,"amountWan":4187},{"rank":16,"company":"无锡恒驰中兴开关有限公司","packages":2,"amountWan":2591},{"rank":17,"company":"正泰电气股份有限公司","packages":1,"amountWan":2433},{"rank":18,"company":"平高集团威海高压电器有限公司","packages":1,"amountWan":2410},{"rank":19,"company":"江苏沃能高压电气有限公司","packages":1,"amountWan":2337},{"rank":20,"company":"北京日立能源高压开关设备有限公司","packages":1,"amountWan":2252},{"rank":21,"company":"广州西电高压电气制造有限公司","packages":1,"amountWan":2200},{"rank":22,"company":"青岛特锐德电气股份有限公司","packages":1,"amountWan":2149},{"rank":23,"company":"北京北开电气股份有限公司","packages":2,"amountWan":2018},{"rank":24,"company":"青岛益和电气集团股份有限公司","packages":1,"amountWan":828},{"rank":25,"company":"山东达驰高压开关有限公司","packages":1,"amountWan":271}]},{"period":"2026-2","publishDate":"2026-04-30","tenderNo":"0711-260TL02711017 + 0711-260TL02811018 + 0711-260TL04011023","batchName":"国家电网有限公司2026年输变电项目第二次变电设备(含电缆)公开招标采购 + 国家电网有限公司2026年输变电项目第一次变电设备框架协议(协议库存)公开招标采购 + 国家电网有限公司2026年青藏铁路电气化外电配套工程新增第二次变电设备公开招标采购","totalWan":399906,"packages":83,"winnerCount":26,"winners":[{"rank":1,"company":"河南平高电气股份有限公司","packages":6,"amountWan":58113},{"rank":2,"company":"西安西电开关电气有限公司","packages":5,"amountWan":44448},{"rank":3,"company":"山东泰开高压开关有限公司","packages":8,"amountWan":41620},{"rank":4,"company":"上海思源高压开关有限公司","packages":9,"amountWan":39660},{"rank":5,"company":"湖南长高电气有限公司","packages":5,"amountWan":20385},{"rank":6,"company":"山东电工电气日立高压开关有限公司","packages":5,"amountWan":18686},{"rank":7,"company":"河南平芝高压开关有限公司","packages":5,"amountWan":18176},{"rank":8,"company":"西安西电高压开关有限责任公司","packages":3,"amountWan":16287},{"rank":9,"company":"新东北电气集团高压开关有限公司","packages":4,"amountWan":15655},{"rank":10,"company":"正泰电气股份有限公司","packages":4,"amountWan":14969},{"rank":11,"company":"山东泰开电力开关有限公司","packages":3,"amountWan":13387},{"rank":12,"company":"江苏省如高高压电器有限公司","packages":4,"amountWan":12022},{"rank":13,"company":"青岛益和电气集团股份有限公司","packages":3,"amountWan":10204},{"rank":14,"company":"无锡恒驰中兴开关有限公司","packages":2,"amountWan":9835},{"rank":15,"company":"上海西电高压开关有限公司","packages":3,"amountWan":9424},{"rank":16,"company":"泰安泰山高压开关有限公司","packages":2,"amountWan":9362},{"rank":17,"company":"许继(厦门)智能电力设备股份有限公司","packages":3,"amountWan":9145},{"rank":18,"company":"青岛特锐德电气股份有限公司","packages":1,"amountWan":5209},{"rank":19,"company":"特变电工中发上海高压开关有限公司","packages":1,"amountWan":4985},{"rank":20,"company":"北京日立能源高压开关设备有限公司","packages":1,"amountWan":4677},{"rank":21,"company":"厦门日立能源高压开关有限公司","packages":1,"amountWan":4362},{"rank":22,"company":"平高集团威海高压电器有限公司","packages":1,"amountWan":4098},{"rank":23,"company":"江苏沃能高压电气有限公司","packages":1,"amountWan":3965},{"rank":24,"company":"广州西电高压电气制造有限公司","packages":1,"amountWan":3951},{"rank":25,"company":"厦门华电开关有限公司","packages":1,"amountWan":3795},{"rank":26,"company":"山东达驰高压开关有限公司","packages":1,"amountWan":3487}]},{"period":"2026-3","publishDate":"2026-07-16","tenderNo":"0711-260TL07011033","batchName":"国家电网有限公司2026年输变电项目第三次变电设备(含电缆)公开招标采购","totalWan":449969,"packages":83,"winnerCount":27,"winners":[{"rank":1,"company":"上海思源高压开关有限公司","packages":8,"amountWan":64578},{"rank":2,"company":"河南平高电气股份有限公司","packages":5,"amountWan":36571},{"rank":3,"company":"山东泰开高压开关有限公司","packages":5,"amountWan":32411},{"rank":4,"company":"河南平芝高压开关有限公司","packages":6,"amountWan":29872},{"rank":5,"company":"西安西电开关电气有限公司","packages":6,"amountWan":25722},{"rank":6,"company":"山东电工电气日立高压开关有限公司","packages":4,"amountWan":25077},{"rank":7,"company":"湖南长高电气有限公司","packages":4,"amountWan":24436},{"rank":8,"company":"正泰电气股份有限公司","packages":4,"amountWan":21831},{"rank":9,"company":"新东北电气集团高压开关有限公司","packages":5,"amountWan":20440},{"rank":10,"company":"西安西电高压开关有限责任公司","packages":3,"amountWan":16755},{"rank":11,"company":"上海西门子能源高压开关有限公司","packages":2,"amountWan":16520},{"rank":12,"company":"山东泰开电力开关有限公司","packages":4,"amountWan":14693},{"rank":13,"company":"江苏省如高高压电器有限公司","packages":3,"amountWan":13331},{"rank":14,"company":"上海西电高压开关有限公司","packages":3,"amountWan":12542},{"rank":15,"company":"泰安泰山高压开关有限公司","packages":3,"amountWan":12541},{"rank":16,"company":"无锡恒驰中兴开关有限公司","packages":2,"amountWan":11021},{"rank":17,"company":"特变电工中发上海高压开关有限公司","packages":2,"amountWan":10717},{"rank":18,"company":"北京北开电气股份有限公司","packages":3,"amountWan":9827},{"rank":19,"company":"许继(厦门)智能电力设备股份有限公司","packages":2,"amountWan":9667},{"rank":20,"company":"厦门日立能源高压开关有限公司","packages":2,"amountWan":6390},{"rank":21,"company":"厦门华电开关有限公司","packages":1,"amountWan":5652},{"rank":22,"company":"青岛特锐德电气股份有限公司","packages":1,"amountWan":5534},{"rank":23,"company":"广州西电高压电气制造有限公司","packages":1,"amountWan":5356},{"rank":24,"company":"青岛益和电气集团股份有限公司","packages":1,"amountWan":5198},{"rank":25,"company":"平高集团威海高压电器有限公司","packages":1,"amountWan":5100},{"rank":26,"company":"广州白云电器设备股份有限公司","packages":1,"amountWan":4738},{"rank":27,"company":"北京日立能源高压开关设备有限公司","packages":1,"amountWan":3448}]},{"period":"2026-4","publishDate":"2026-09-04","tenderNo":"0711-260TL09811048","batchName":"国家电网有限公司2026年输变电项目第四次变电设备(含电缆)公开招标采购","totalWan":288078,"packages":62,"winnerCount":21,"winners":[{"rank":1,"company":"河南平高电气股份有限公司","packages":6,"amountWan":43067},{"rank":2,"company":"上海思源高压开关有限公司","packages":7,"amountWan":37993},{"rank":3,"company":"山东泰开高压开关有限公司","packages":5,"amountWan":26688},{"rank":4,"company":"河南平芝高压开关有限公司","packages":5,"amountWan":24850},{"rank":5,"company":"西安西电开关电气有限公司","packages":4,"amountWan":18023},{"rank":6,"company":"湖南长高电气有限公司","packages":3,"amountWan":18018},{"rank":7,"company":"新东北电气集团高压开关有限公司","packages":3,"amountWan":12337},{"rank":8,"company":"山东泰开电力开关有限公司","packages":4,"amountWan":11529},{"rank":9,"company":"西安西电高压开关有限责任公司","packages":3,"amountWan":11463},{"rank":10,"company":"上海西电高压开关有限公司","packages":2,"amountWan":10760},{"rank":11,"company":"山东电工电气日立高压开关有限公司","packages":3,"amountWan":10749},{"rank":12,"company":"泰安泰山高压开关有限公司","packages":3,"amountWan":10281},{"rank":13,"company":"正泰电气股份有限公司","packages":2,"amountWan":9730},{"rank":14,"company":"江苏省如高高压电器有限公司","packages":2,"amountWan":8575},{"rank":15,"company":"许继(厦门)智能电力设备股份有限公司","packages":2,"amountWan":7865},{"rank":16,"company":"青岛益和电气集团股份有限公司","packages":2,"amountWan":7285},{"rank":17,"company":"厦门日立能源高压开关有限公司","packages":2,"amountWan":6549},{"rank":18,"company":"厦门华电开关有限公司","packages":1,"amountWan":4782},{"rank":19,"company":"青岛特锐德电气股份有限公司","packages":1,"amountWan":3741},{"rank":20,"company":"特变电工中发上海高压开关有限公司","packages":1,"amountWan":3512},{"rank":21,"company":"北京北开电气股份有限公司","packages":1,"amountWan":281}]}],"sources":[{"period":"2026-1","url":"https://finance.sina.cn/2026-04-10/detail-inhtznzw8248703.d.html"},{"period":"2026-2","url":"https://finance.sina.cn/2026-05-03/detail-inhwrxaz0563383.d.html"},{"period":"2026-3","url":"https://cj.sina.cn/articles/view/5953466437/162dab0450670b2lb8"},{"period":"2026-4","url":"https://finance.sina.com.cn/roll/2026-09-05/doc-iniquyin4896016.shtml"}]}</script>
 
 <script>
 const SEED = [];
@@ -617,7 +663,7 @@ function resetForm() {
 function showTab(t) {
   if(t!=='voice') stopVoiceListening();
   if(t==='voice') document.getElementById('voiceDoneCard')?.classList.add('hidden');
-  ['dash','voice','db'].forEach(x=>{
+  ['dash','voice','db','mkt'].forEach(x=>{
     document.getElementById(x+'Panel')?.classList.toggle('hidden',x!==t);
     const id='tab'+x.charAt(0).toUpperCase()+x.slice(1);
     document.getElementById(id)?.classList.toggle('active',x===t);
@@ -626,6 +672,7 @@ function showTab(t) {
   document.getElementById('taskFilterPanel')?.classList.add('hidden');
   if(t==='db') renderDB();
   if(t==='dash') renderDashboard();
+  if(t==='mkt'){ if(!marketData && marketStatus!=='loading') loadMarket(); else renderMarket(); }
 }
 
 function esc(s) {
@@ -1758,6 +1805,7 @@ function finishVoiceSave(){
   document.getElementById('voicePanel')?.classList.remove('hidden');
   document.getElementById('dashPanel')?.classList.add('hidden');
   document.getElementById('dbPanel')?.classList.add('hidden');
+  document.getElementById('mktPanel')?.classList.add('hidden');
   document.getElementById('taskFilterPanel')?.classList.add('hidden');
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   document.getElementById('tabVoice')?.classList.add('active');
@@ -1779,6 +1827,176 @@ function openLastVoiceCustomer(){
   dbView={type:'customer',ci};
   renderDB();
   window.scrollTo({top:0,behavior:'smooth'});
+}
+
+
+/* ==================== 国网中标行情（组合电器） ==================== */
+let marketData = null;
+let marketStatus = 'idle';                 // idle | loading | ok | fallback | error
+let marketView = { period:'ALL', onlyMine:false };
+
+function marketSnapshotData(){
+  try{
+    const el = document.getElementById('marketSnapshot');
+    return el ? JSON.parse(el.textContent) : null;
+  }catch(e){ return null; }
+}
+
+async function loadMarket(manual){
+  marketStatus = 'loading';
+  renderMarket();
+  let remote = null;
+  try{
+    const res = await fetch('./market.json?t=' + Date.now(), {cache:'no-store'});
+    if(res && res.ok) remote = await res.json();
+  }catch(e){ remote = null; }
+  if(remote && Array.isArray(remote.items) && remote.items.length){
+    marketData = remote; marketStatus = 'ok';
+  }else{
+    const snap = marketSnapshotData();
+    if(snap && snap.items && snap.items.length){ marketData = snap; marketStatus = 'fallback'; }
+    else { marketData = null; marketStatus = 'error'; }
+  }
+  if(manual) window.scrollTo({top:0, behavior:'smooth'});
+  renderMarket();
+}
+
+/* 把选中口径下的中标记录按企业聚合 */
+function marketAggregate(){
+  if(!marketData || !Array.isArray(marketData.items)) return [];
+  const items = marketView.period === 'ALL'
+    ? marketData.items
+    : marketData.items.filter(x => x.period === marketView.period);
+  const map = new Map();
+  items.forEach(it => (it.winners || []).forEach(w => {
+    const cur = map.get(w.company) || {company:w.company, amount:0, packages:0, periods:0, best:99};
+    cur.amount += Number(w.amountWan) || 0;
+    cur.packages += Number(w.packages) || 0;
+    cur.periods += 1;
+    cur.best = Math.min(cur.best, Number(w.rank) || 99);
+    map.set(w.company, cur);
+  }));
+  return [...map.values()].sort((a,b) => b.amount - a.amount);
+}
+
+/* 与客户库模糊匹配：命中则返回 {ci, name, score} */
+function marketCustomerHit(company){
+  if(typeof customerMatches !== 'function' || !Array.isArray(data) || !data.length) return null;
+  const m = customerMatches(company);
+  if(!m || !m.length) return null;
+  const top = m[0];
+  if(!top || top.score < 0.55) return null;
+  const ci = data.indexOf(top.c);
+  if(ci < 0) return null;
+  return {ci, name:top.c.name, score:top.score};
+}
+
+function setMarketPeriod(p){
+  marketView.period = p;
+  renderMarket();
+}
+function toggleMarketMine(){
+  marketView.onlyMine = !marketView.onlyMine;
+  renderMarket();
+}
+function openMarketCustomer(company){
+  const hit = marketCustomerHit(company);
+  if(!hit) return;
+  stopVoiceListening();
+  showTab('db');
+  dbView = {type:'customer', ci:hit.ci};
+  renderDB();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function renderMarket(){
+  const st = document.getElementById('mktStatus');
+  const fEl = document.getElementById('mktFilters');
+  const kEl = document.getElementById('mktKpis');
+  const bEl = document.getElementById('mktBody');
+  const nEl = document.getElementById('mktNote');
+  if(!st || !bEl) return;
+
+  if(marketStatus === 'loading'){
+    st.className = 'mktStatus';
+    st.innerHTML = '<div class="stxt">正在加载行情数据…</div>';
+    fEl.innerHTML = ''; kEl.innerHTML = ''; bEl.innerHTML = ''; nEl.innerHTML = '';
+    return;
+  }
+  if(marketStatus === 'error' || !marketData){
+    st.className = 'mktStatus err';
+    st.innerHTML = '<div class="stxt">行情数据加载失败，且本地没有内置快照。<br>请联网后重试。</div>'
+      + '<button class="secondary small" onclick="loadMarket(true)">重新加载</button>';
+    fEl.innerHTML = ''; kEl.innerHTML = ''; nEl.innerHTML = '';
+    bEl.innerHTML = '<div class="mktEmpty">暂无行情数据。</div>';
+    return;
+  }
+
+  const rows0 = marketAggregate();
+  const hits = new Map();
+  rows0.forEach(r => hits.set(r.company, marketCustomerHit(r.company)));
+  const mineCount = [...hits.values()].filter(Boolean).length;
+
+  const rows = marketView.onlyMine ? rows0.filter(r => hits.get(r.company)) : rows0;
+  const totalWan = rows.reduce((s,r) => s + r.amount, 0);
+  const totalPkg = rows.reduce((s,r) => s + r.packages, 0);
+  const maxAmt = rows.length ? rows[0].amount : 0;
+
+  // 状态条
+  const badge = marketStatus === 'ok'
+    ? `<span style="background:#e8f1ff;color:#1756a9;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700">已联网获取最新</span>`
+    : `<span style="background:#fff7d6;color:#66571b;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700">离线 · 使用内置快照</span>`;
+  st.className = marketStatus === 'ok' ? 'mktStatus' : 'mktStatus warn';
+  st.innerHTML = `<div class="stxt"><b>${esc(marketData.goods || '')}</b> · 数据日期 ${esc(marketData.updatedAt || '—')} · 覆盖 ${(marketData.items||[]).length} 期 · ${badge}`
+    + (data.length ? `<br>客户库联动：命中你的客户 <b>${mineCount}</b> 家` : `<br>客户库为空，联动暂不可用`)
+    + `</div><button class="secondary small" onclick="loadMarket(true)">检查更新</button>`;
+
+  // 期次筛选
+  let chips = `<button class="mktChip ${marketView.period==='ALL'?'active':''}" onclick="setMarketPeriod('ALL')">全年</button>`;
+  (marketData.items||[]).forEach(it => {
+    chips += `<button class="mktChip ${marketView.period===it.period?'active':''}" onclick="setMarketPeriod('${esc(it.period)}')">${esc(it.period)}</button>`;
+  });
+  chips += `<button class="mktChip mine ${marketView.onlyMine?'active':''}" onclick="toggleMarketMine()">${marketView.onlyMine?'✓ ':''}只看我的客户</button>`;
+  fEl.innerHTML = chips;
+
+  // KPI
+  const scopeLabel = marketView.period === 'ALL' ? '全年' : marketView.period;
+  kEl.innerHTML =
+      `<div class="mktKpi"><span>${scopeLabel}中标金额</span><b>${(totalWan/10000).toFixed(2)}</b><small>亿元</small></div>`
+    + `<div class="mktKpi"><span>中标包数</span><b>${totalPkg.toLocaleString('en-US')}</b><small>包</small></div>`
+    + `<div class="mktKpi"><span>中标企业</span><b>${rows.length}</b><small>家</small></div>`;
+
+  // 排名列表
+  if(!rows.length){
+    bEl.innerHTML = `<div class="mktEmpty">${marketView.onlyMine
+      ? '在当前口径下没有命中你客户库的企业。'
+      : '暂无数据。'}</div>`;
+  }else{
+    bEl.innerHTML = rows.map((r,i) => {
+      const hit = hits.get(r.company);
+      const pct = totalWan > 0 ? r.amount / totalWan * 100 : 0;
+      const w = maxAmt > 0 ? Math.max(r.amount / maxAmt * 100, 1.5) : 0;
+      const click = hit ? ` onclick="openMarketCustomer('${esc(r.company)}')"` : '';
+      return `<div class="mktRow${hit?' mine':''}"${click}>`
+        + `<div class="mktRank">${i+1}</div>`
+        + `<div class="mktMain">`
+        +   `<div class="mktName">${esc(r.company)}${hit?`<span class="mktTag">📍 ${esc(hit.name)}</span>`:''}</div>`
+        +   `<div class="mktBarWrap"><i style="width:${w.toFixed(1)}%"></i></div>`
+        +   `<div class="mktMeta">${r.packages} 包 · 中标 ${r.periods} 期${marketView.period==='ALL'&&r.best<99?` · 单期最高第 ${r.best} 名`:''}</div>`
+        + `</div>`
+        + `<div class="mktAmt">${pct.toFixed(2)}%<small>${r.amount.toLocaleString('en-US')} 万</small></div>`
+        + `</div>`;
+    }).join('');
+  }
+
+  // 底部说明
+  const src = (marketData.sources||[]).map(s => esc(s.period)).join('、');
+  nEl.innerHTML = `<b>口径</b>：仅统计国家电网「输变电项目变电设备（含电缆）公开招标采购」序列中的组合电器；`
+    + `不含特高压 1000kV 组合电器，不含开关柜。<br>`
+    + `<b>期次</b>：采用电能革新公众号的归并口径（第 N 次变电设备招标），与国网官方采购批次号并非一一对应。<br>`
+    + `<b>来源</b>：${esc(marketData.source || '')}${src ? '（已收录：'+src+'）' : ''}<br>`
+    + `<b>提示</b>：带 📍 标记的企业已出现在你的客户库里，点击可直接打开该客户详情。`
+    + `${marketView.onlyMine ? '' : '<br><b>注意</b>：各企业金额逐条相加与公告合计存在 ≤1 万元取整尾差，占比以榜单合计为分母。'}`;
 }
 
 

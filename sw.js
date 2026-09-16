@@ -1,4 +1,4 @@
-const CACHE = 'crm-pwa-v5.12.3-contact-choice-fix';
+const CACHE = 'crm-pwa-v5.13.0-market';
 const APP_SHELL = [
   './', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'
 ];
