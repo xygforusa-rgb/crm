@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1d9e75">
+<meta name="description" content="N5–N1 日语词汇间隔重复记忆：声调升降线、音读词族、自他动词成对、例句朗读。纯本地运行，进度存在浏览器里。">
+<title>日语词汇 · 间隔重复</title>
+<link rel="manifest" href="manifest.json">
+<!-- iOS 加到主屏幕后全屏运行（本地 file:// 打开时这几行会被忽略，无副作用） -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="日语词汇">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">日语词汇<span class="sub">N5–N1 · 8334</span></div>
+  <div class="streak" id="streakBox"></div>
+</header>
+
+<main>
+  <!-- 首页 -->
+  <section id="view-home" class="view">
+    <div class="hello hidden" id="hello"></div>
+    <div class="metrics" id="metrics"><div class="metric"><div class="l">词库加载中…</div></div></div>
+    <button class="primary big" id="btnStart" disabled>准备中…</button>
+
+    <div class="panel hidden" id="welcome">
+      <h2>第一次来，先花 20 秒</h2>
+      <p class="note">
+        这个页面的核心只有一件事：<b>先自己回忆，再看答案</b>。<br>
+        卡片正面故意只给日语，就是想让你先挣扎一下——挣扎过的记忆才留得住。<br><br>
+        记不住是正常的。点「重来」不会有任何惩罚，系统只会把它安排到更近的某天再来找你，
+        忘几次它就出现几次，直到记住为止。<br><br>
+        默认一天 20 个新词。别贪多，20 个能坚持一个月，比一天 200 个坚持三天强得多。
+      </p>
+      <div class="foot" style="justify-content:flex-start">
+        <button class="mini" id="btnWelcomeOk">知道了，开始吧</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>学习范围</h2>
+      <div class="levels" id="levelPick"></div>
+      <h2 class="mt">练习方向</h2>
+      <div class="levels" id="modePick"></div>
+      <h2 class="mt">自动朗读</h2>
+      <div class="levels" id="speakPick"></div>
+      <label class="field">
+        <span>每日新词上限</span>
+        <input type="number" id="newPerDay" min="0" max="100" step="5" value="20">
+      </label>
+      <label class="field">
+        <span>目标保留率</span>
+        <input type="range" id="retention" min="80" max="97" step="1" value="90">
+        <em id="retentionVal">90%</em>
+      </label>
+      <div class="search">
+        <input type="search" id="homeSearch" placeholder="查词：输入日语汉字或假名">
+        <button class="mini" id="btnSearch">打开</button>
+      </div>
+      <p class="note">卡片顺序按“先复习、后新词”，新词从低等级开始。<br>
+        产出练习比认读更费劲、记得更牢，但会拖慢进度——建议混着用。<br>
+        认读时选「出现就读」会把读音提前告诉你，想练“见汉字想读音”就留着「翻面后读」。</p>
+    </div>
+
+    <div class="panel">
+      <h2>掌握度分布</h2>
+      <div class="bars" id="mastery"></div>
+    </div>
+  </section>
+
+  <!-- 学习 -->
+  <section id="view-study" class="view hidden">
+    <div class="studybar">
+      <div class="pill" id="queueInfo"></div>
+      <div class="pill ghost" id="cardState"></div>
+    </div>
+    <div class="prog"><i id="progFill"></i></div>
+
+    <div class="card" id="card">
+      <div class="card-top">
+        <span class="tag" id="cLevel"></span>
+        <button class="mini" id="btnSpeak">朗读</button>
+      </div>
+      <div class="word" id="cWord"></div>
+      <div class="kana" id="cKana"></div>
+      <div class="pitch" id="cPitch"></div>
+      <div class="hint" id="cHint">先在脑中说出中文意思</div>
+    </div>
+
+    <div id="answer" class="answer hidden">
+      <div class="zh" id="cZh"></div>
+      <div class="chips" id="cPos"></div>
+      <div class="block hidden" id="bFam">
+        <h3>音读词族</h3>
+        <div id="cFam"></div>
+      </div>
+      <div class="block hidden" id="bPair">
+        <h3>自他动词</h3>
+        <div id="cPair"></div>
+      </div>
+      <div class="block hidden" id="bEx">
+        <h3>例句</h3>
+        <div class="ex-ja" id="cExJa"></div>
+        <div class="ex-zh" id="cExZh"></div>
+        <button class="mini" id="btnSpeakEx">朗读例句</button>
+      </div>
+      <div class="block hidden" id="bEn">
+        <h3>英文释义</h3>
+        <div id="cEn"></div>
+      </div>
+    </div>
+
+    <div class="actions" id="actions">
+      <button class="primary" id="btnShow">显示答案</button>
+    </div>
+    <div class="ratings hidden" id="ratings"></div>
+    <div class="foot">
+      <button class="mini" id="btnUndo">撤销上一步</button>
+      <button class="mini ghost" id="btnBur">暂停此卡</button>
+      <button class="mini ghost" id="btnSkip">跳过</button>
+      <button class="mini ghost" id="btnStop">今天就到这儿</button>
+    </div>
+  </section>
+
+  <!-- 词族 -->
+  <section id="view-fam" class="view hidden">
+    <div class="panel tight">
+      <input type="search" id="famSearch" placeholder="搜索汉字，如 経 / 気">
+      <div class="filter" id="famFilter"></div>
+    </div>
+    <div id="famList" class="list"></div>
+  </section>
+
+  <!-- 自他动词 -->
+  <section id="view-pairs" class="view hidden">
+    <div class="panel tight">
+      <input type="search" id="pairSearch" placeholder="搜索动词，如 上がる">
+    </div>
+    <p class="note">自动词表示“自然发生”，他动词表示“有人去做”，成对记一次记两个。</p>
+    <div id="pairList" class="list"></div>
+  </section>
+
+  <!-- 统计 -->
+  <section id="view-stats" class="view hidden">
+    <div class="panel">
+      <h2>复习热力图（近 16 周）</h2>
+      <div class="heat" id="heat"></div>
+    </div>
+    <div class="panel">
+      <h2>累计</h2>
+      <div class="metrics" id="statsMetrics"></div>
+    </div>
+    <div class="panel">
+      <h2>未来 7 天要复习的量</h2>
+      <div class="fc" id="forecast"></div>
+      <p class="note" id="fcNote"></p>
+    </div>
+    <div class="panel">
+      <h2>最难记住的词</h2>
+      <p class="note" style="margin:0 0 10px">按「遗忘次数 + 记忆难度」排出来的，点一个直接开始练。</p>
+      <div class="leech" id="leech"></div>
+    </div>
+    <div class="panel">
+      <h2>数据</h2>
+      <p class="note" id="srcNote"></p>
+      <div class="foot" style="justify-content:flex-start">
+        <button class="mini" id="btnExport">导出进度</button>
+        <button class="mini" id="btnImport">导入进度</button>
+        <button class="mini ghost" id="btnReset">清空学习进度</button>
+      </div>
+      <input type="file" id="fileImport" accept="application/json,.json" class="hidden">
+      <p class="note">进度只存在这台浏览器里。清缓存会丢，建议每隔一阵导出一份。</p>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar">
+  <button data-v="home" class="on">首页</button>
+  <button data-v="study">学习</button>
+  <button data-v="fam">词族</button>
+  <button data-v="pairs">动词</button>
+  <button data-v="stats">统计</button>
+</nav>
+
+<div id="toast" class="toast hidden"></div>
+<script src="js/fsrs.js" charset="utf-8"></script>
+<script src="js/app.js" charset="utf-8"></script>
+<script>
+/* Service Worker：仅网页版注册（file:// 下会抛错，这里按协议过滤掉）。
+   它只做离线缓存，注册失败也不影响应用本身。 */
+if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+  addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>

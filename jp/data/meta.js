@@ -1,0 +1,1 @@
+window.JV=window.JV||{};JV["meta"]={"levels":[{"k":"N5","n":662},{"k":"N4","n":632},{"k":"N3","n":1784},{"k":"N2","n":1793},{"k":"N1","n":3463}],"total":8334,"families":1026,"pairs":159};
