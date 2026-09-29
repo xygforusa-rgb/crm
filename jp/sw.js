@@ -1,7 +1,7 @@
 /* 日语词汇 · Service Worker
    策略：网络优先，失败回落缓存 —— 在线总能拿到最新版，断网也能继续背。
-   改了应用代码后不用动这个文件（网络优先会自动更新缓存）。 */
-const CACHE = "jpvocab-v1";
+   预缓存清单变了就升一下 CACHE 版本号，让旧缓存被清掉。 */
+const CACHE = "jpvocab-v2";
 
 const CORE = [
   "./",
@@ -16,6 +16,8 @@ const CORE = [
   "data/vocab-n3.js",
   "data/vocab-n2.js",
   "data/vocab-n1.js",
+  "data/biaori.js",
+  "data/biaori-extra.js",
   "data/families.js",
   "data/pairs.js",
   "icons/icon-192.png",

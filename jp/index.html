@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1d9e75">
-<meta name="description" content="N5–N1 日语词汇间隔重复记忆：声调升降线、音读词族、自他动词成对、例句朗读。纯本地运行，进度存在浏览器里。">
+<meta name="description" content="日语词汇间隔重复记忆，按 JLPT N5–N1 或新标日教材分册：声调升降线、音读词族、自他动词成对、例句朗读。纯本地运行，进度存在浏览器里。">
 <title>日语词汇 · 间隔重复</title>
 <link rel="manifest" href="manifest.json">
 <!-- iOS 加到主屏幕后全屏运行（本地 file:// 打开时这几行会被忽略，无副作用） -->
@@ -18,7 +18,7 @@
 <body>
 
 <header class="topbar">
-  <div class="brand">日语词汇<span class="sub">N5–N1 · 8334</span></div>
+  <div class="brand">日语词汇<span class="sub">JLPT · 新标日 · 12611</span></div>
   <div class="streak" id="streakBox"></div>
 </header>
 
@@ -44,8 +44,11 @@
     </div>
 
     <div class="panel">
-      <h2>学习范围</h2>
+      <h2>分级方式</h2>
+      <div class="levels" id="gradingPick"></div>
+      <h2 class="mt">学习范围</h2>
       <div class="levels" id="levelPick"></div>
+      <p class="note" id="poolNote"></p>
       <h2 class="mt">练习方向</h2>
       <div class="levels" id="modePick"></div>
       <h2 class="mt">自动朗读</h2>
@@ -63,7 +66,7 @@
         <input type="search" id="homeSearch" placeholder="查词：输入日语汉字或假名">
         <button class="mini" id="btnSearch">打开</button>
       </div>
-      <p class="note">卡片顺序按“先复习、后新词”，新词从低等级开始。<br>
+      <p class="note">卡片顺序按“先复习、后新词”。<br>
         产出练习比认读更费劲、记得更牢，但会拖慢进度——建议混着用。<br>
         认读时选「出现就读」会把读音提前告诉你，想练“见汉字想读音”就留着「翻面后读」。</p>
     </div>

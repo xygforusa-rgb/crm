@@ -123,9 +123,14 @@ const Store = {
 
 /* ============================ 数据（classic script 按需注入，替代 fetch） ============================ */
 const LEVELS = ["N5", "N4", "N3", "N2", "N1"];
-let WORDS = [], FAM = [], PAIRS = [], META = null;
+// 分级方式：JLPT 等级 / 新标准日本语教材（初级上~高级下共 6 册、104 课）
+const GRADINGS = [["jlpt", "JLPT 等级"], ["biaori", "新标日教材"]];
+let WORDS = [], FAM = [], PAIRS = [], META = null, BR = null;
 let famByKanji = new Map(), pairByWord = new Map();
-let settings = { levels: ["N5", "N4", "N3", "N2", "N1"], newPerDay: 20, retention: 0.9, day: "", newDone: 0, mode: "recog", autoSpeak: "answer" };
+let settings = {
+  levels: ["N5", "N4", "N3", "N2", "N1"], vols: [0, 1, 2, 3, 4, 5], grading: "jlpt",
+  newPerDay: 20, retention: 0.9, day: "", newDone: 0, mode: "recog", autoSpeak: "answer"
+};
 let OV = {};      // 用户自己改过的释义，覆盖词库默认值
 const MODES = [["recog", "认读（日→中）"], ["listen", "听力（听→中）"], ["prod", "产出（中→日）"]];
 // 自动朗读时机：认读时卡片一出现就读，等于把读音提前告诉你了，所以默认「翻面后读」
@@ -149,14 +154,44 @@ function loadDataFile(name) {
 }
 
 async function loadData() {
-  META = await loadDataFile("meta");
-  const parts = await Promise.all(settings.levels.map(l => loadDataFile("vocab-" + l.toLowerCase())));
+  // 两种分级方式共用同一份词库，所以一次性全加载（经典脚本注入，本地无请求开销）：
+  // 5 个 JLPT 等级 + 教材数据（课号映射 + 词库缺、按教材补出来的词）+ 词族/动词对
+  const [meta, br, extra, fam, pairs, ...parts] = await Promise.all([
+    loadDataFile("meta"), loadDataFile("biaori"), loadDataFile("biaori-extra"),
+    loadDataFile("families"), loadDataFile("pairs"),
+    ...LEVELS.map(l => loadDataFile("vocab-" + l.toLowerCase())),
+  ]);
+  META = meta; BR = br; FAM = fam; PAIRS = pairs;
   WORDS = [];
   for (const p of parts) WORDS.push(...p);
-  FAM = await loadDataFile("families");
-  PAIRS = await loadDataFile("pairs");
+  WORDS.push(...extra);      // 教材补词排在最后；教材模式会按课号重排，JLPT 模式不选它们
   famByKanji = new Map(FAM.map(f => [f.c, f]));
   for (const p of PAIRS) { pairByWord.set(p.vi, p); pairByWord.set(p.vt, p); }
+}
+
+/* ---------- 分级 / 教材范围 ---------- */
+const grading = () => settings.grading === "biaori" ? "biaori" : "jlpt";
+// 教材补词（JLPT 词库里没有、按新标日词表补进来的）id 统一带 br- 前缀
+const isExtra = w => w.id.slice(0, 3) === "br-";
+// 全书 104 课 → 第几册（vols 里是 [册名, 首课, 末课]）
+function volIndexOf(lesson) {
+  for (let i = 0; i < BR.vols.length; i++) if (lesson <= BR.vols[i][2]) return i;
+  return BR.vols.length - 1;
+}
+// 卡片角标：教材模式显示「初级上·第5课」，JLPT 模式显示 N5
+function lessonLabel(id) {
+  const L = BR.m[id];
+  if (!L) return "";
+  const vi = volIndexOf(L);
+  return BR.vols[vi][0] + "·第" + (L - BR.vols[vi][1] + 1) + "课";
+}
+// 当前词是否在本次学习范围内
+function inPool(w) {
+  if (grading() === "biaori") {
+    const L = BR.m[w.id];
+    return !!L && settings.vols.includes(volIndexOf(L));
+  }
+  return !isExtra(w) && settings.levels.includes(w.lv);
 }
 
 /* ============================ FSRS ============================ */
@@ -253,12 +288,15 @@ function buildQueue() {
   const now = new Date();
   const due = [], fresh = [];
   for (const w of WORDS) {
+    if (!inPool(w)) continue;
     const c = cards.get(w.id);
     if (!c) { fresh.push(w); continue; }
     if (c.state === State.New) { fresh.push(w); continue; }
     if (new Date(c.due) <= now) due.push({ w, due: new Date(c.due) });
   }
   due.sort((a, b) => a.due - b.due);
+  // 教材模式：新词按课文顺序出（第1课→第104课），跟着教材走
+  if (grading() === "biaori") fresh.sort((a, b) => (BR.m[a.id] || 9999) - (BR.m[b.id] || 9999));
   const budget = Math.max(0, settings.newPerDay - (settings.day === today() ? settings.newDone : 0));
   queue = [...due.map(x => ({ w: x.w, isNew: false })), ...fresh.slice(0, budget).map(w => ({ w, isNew: true }))];
   qi = 0;
@@ -315,7 +353,8 @@ function paintCard() {
   const w = cur.w;
   const mode = effMode(w);
   const wordEl = $("cWord");
-  $("cLevel").textContent = w.lv + (cur.isNew ? " · 新词" : " · 复习") + " · " +
+  const lvTag = grading() === "biaori" ? (lessonLabel(w.id) || w.lv) : w.lv;
+  $("cLevel").textContent = lvTag + (cur.isNew ? " · 新词" : " · 复习") + " · " +
     (MODES.find(m => m[0] === mode) || MODES[0])[1].replace(/（.*/, "");
 
   if (mode === "prod") {
@@ -494,6 +533,7 @@ async function renderEmpty() {
   const now = Date.now();
   let next = Infinity, freshLeft = 0;
   for (const w of WORDS) {
+    if (!inPool(w)) continue;
     const c = cards.get(w.id);
     if (!c || c.state === State.New) { freshLeft++; continue; }
     const t = new Date(c.due).getTime();
@@ -628,9 +668,12 @@ async function renderHome() {
   const s = await stats();
   $("streakBox").textContent = s.streak > 0 ? `连续 ${s.streak} 天` : "";
   const now = new Date();
-  let due = 0, freshAvail = 0;
+  let due = 0, freshAvail = 0, started = 0, poolSize = 0;
   for (const w of WORDS) {
+    if (!inPool(w)) continue;
+    poolSize++;
     const c = cards.get(w.id);
+    if (c) started++;
     if (!c || c.state === State.New) { freshAvail++; continue; }
     if (new Date(c.due) <= now) due++;
   }
@@ -663,17 +706,18 @@ async function renderHome() {
   $("metrics").innerHTML = `
     <div class="metric hl"><div class="n">${due}</div><div class="l">待复习</div></div>
     <div class="metric"><div class="n">${fresh}</div><div class="l">可学新词</div></div>
-    <div class="metric"><div class="n">${cards.size}</div><div class="l">已开始</div></div>
+    <div class="metric"><div class="n">${started}</div><div class="l">已开始</div></div>
     <div class="metric"><div class="n">${s.streak}</div><div class="l">连续天数</div></div>`;
-  // 掌握度
+  // 掌握度（只统计当前学习范围，和上面的数字口径一致）
   const b = { un: 0, learn: 0, short: 0, solid: 0 };
   for (const w of WORDS) {
+    if (!inPool(w)) continue;
     const c = cards.get(w.id);
     if (!c || c.state === State.New) { b.un++; continue; }
     if (c.state === State.Learning || c.state === State.Relearning) { b.learn++; continue; }
     (c.scheduled_days >= 21 ? b.solid++ : b.short++);
   }
-  const tot = WORDS.length || 1;
+  const tot = poolSize || 1;
   const rows = [["未学", b.un, "var(--line2)"], ["学习中", b.learn, "var(--warn)"], ["短期 <21天", b.short, "var(--info)"], ["稳固 ≥21天", b.solid, "var(--accent)"]];
   $("mastery").innerHTML = rows.map(([l, n, c]) =>
     `<div class="bar"><div class="bl">${l}</div><div class="bt"><div class="bf" style="width:${(100 * n / tot).toFixed(1)}%;background:${c}"></div></div><div class="bv">${n}</div></div>`).join("");
@@ -747,9 +791,9 @@ async function renderStats() {
   for (const b of $("leech").querySelectorAll(".lk")) b.onclick = () => { pin = b.dataset.w; show("study"); };
 
   const md = await ensureStore();
-  $("srcNote").innerHTML = `词库 ${META.total} 词 · 词族 ${META.families} · 自他动词 ${META.pairs} 对。<br>
+  $("srcNote").innerHTML = `词库 ${WORDS.length} 词（JLPT ${META.total} + 新标日补 ${WORDS.length - META.total}）· 词族 ${META.families} · 自他动词 ${META.pairs} 对。<br>
     运行环境：${location.protocol === "file:" ? "本地文件直开" : "网页服务"}　·　进度存于本机 ${md === "idb" ? "IndexedDB" : "localStorage"}，不上传服务器。<br>
-    来源：OpenJLPT（CC BY-SA 4.0）、JMdict/EDRDG、kanjium 声调库、Japanese-Chinese-thesaurus。`;
+    来源：OpenJLPT（CC BY-SA 4.0）、JMdict/EDRDG、kanjium 声调库、Japanese-Chinese-thesaurus、新标日词表 smartsl/biaori（MIT）。`;
 }
 
 /* ============================ 词族 / 动词对 ============================ */
@@ -898,22 +942,51 @@ function syncSettingsUI() {
   $("newPerDay").value = settings.newPerDay;
   $("retention").value = Math.round(settings.retention * 100);
   $("retentionVal").textContent = Math.round(settings.retention * 100) + "%";
+  renderGradingPick();
   renderLevelPick();
   renderModePick();
   renderSpeakPick();
 }
 
-function renderLevelPick() {
-  $("levelPick").innerHTML = LEVELS.map(l =>
-    `<button class="chip ${settings.levels.includes(l) ? "on" : ""}" data-l="${l}">${l}</button>`).join("");
-  for (const b of $("levelPick").querySelectorAll("button")) b.onclick = async () => {
-    const l = b.dataset.l;
-    const i = settings.levels.indexOf(l);
-    if (i >= 0) { if (settings.levels.length === 1) return toast("至少保留一个等级"); settings.levels.splice(i, 1); }
-    else settings.levels.push(l);
-    settings.levels.sort((a, c) => LEVELS.indexOf(a) - LEVELS.indexOf(c));
-    await saveSettings(); renderLevelPick(); await loadData(); renderHome();
+function renderGradingPick() {
+  $("gradingPick").innerHTML = GRADINGS.map(([k, l]) =>
+    `<button class="chip ${grading() === k ? "on" : ""}" data-g="${k}">${esc(l)}</button>`).join("");
+  for (const b of $("gradingPick").querySelectorAll("button")) b.onclick = async () => {
+    if (grading() === b.dataset.g) return;
+    settings.grading = b.dataset.g; await saveSettings();
+    renderGradingPick(); renderLevelPick(); renderHome();
   };
+}
+
+function renderLevelPick() {
+  const box = $("levelPick");
+  if (grading() === "biaori") {
+    box.innerHTML = BR.vols.map((v, i) =>
+      `<button class="chip ${settings.vols.includes(i) ? "on" : ""}" data-v="${i}">${esc(v[0])}</button>`).join("");
+    for (const b of box.querySelectorAll("button")) b.onclick = async () => {
+      const i = +b.dataset.v, k = settings.vols.indexOf(i);
+      if (k >= 0) { if (settings.vols.length === 1) return toast("至少保留一册"); settings.vols.splice(k, 1); }
+      else { settings.vols.push(i); settings.vols.sort((a, c) => a - c); }
+      await saveSettings(); renderLevelPick(); renderHome();
+    };
+  } else {
+    box.innerHTML = LEVELS.map(l =>
+      `<button class="chip ${settings.levels.includes(l) ? "on" : ""}" data-l="${l}">${l}</button>`).join("");
+    for (const b of box.querySelectorAll("button")) b.onclick = async () => {
+      const l = b.dataset.l;
+      const i = settings.levels.indexOf(l);
+      if (i >= 0) { if (settings.levels.length === 1) return toast("至少保留一个等级"); settings.levels.splice(i, 1); }
+      else settings.levels.push(l);
+      settings.levels.sort((a, c) => LEVELS.indexOf(a) - LEVELS.indexOf(c));
+      await saveSettings(); renderLevelPick(); renderHome();
+    };
+  }
+  // 范围下一行小字：让人立刻看到这次到底圈了多少词
+  let n = 0;
+  for (const w of WORDS) if (inPool(w)) n++;
+  $("poolNote").textContent = grading() === "biaori"
+    ? `已选 ${settings.vols.length} 册：共 ${n} 词，新词按课次顺序（第 1 课 → 第 104 课）出。学过的词两种分级通用，进度不丢。`
+    : `已选 ${settings.levels.length} 个等级：共 ${n} 词，新词从低等级开始出。`;
 }
 
 async function main() {
