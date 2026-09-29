@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>客户管理助手 V5.15.0</title>
+<title>客户管理助手 V5.17.0</title>
 <meta name="theme-color" content="#172033">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -176,12 +176,15 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
 .dashProjActs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .dashProjActs button{padding:8px 12px;font-size:13px}
 .projMoreWrap{margin:10px 0 0}
+/* V5.17.0：让「＋ 新建项目」和「当前选中」在视觉上彻底分开（原来两个都是实心蓝） */
+.contactChoiceBtns button.newProjBtn{border-style:dashed;border-color:#8fb0dd;color:#1f4fa3;background:#fff}
+.contactChoiceBtns button.newProjBtn:hover{background:#eef3fa;border-color:#1f4fa3}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>客户管理助手</h1>
-  <div class="sub">PWA V5.15.0 · 客户项目库 · 国网组合电器中标行情 · 客户整理工作台 · 灵活延期与等待客户提醒 · 首页拜访可点击详情 · 语音页面生命周期 · 保存后选择 · 可交互跟进看板 · 个性语音学习 · 本地智能识别 · 分层客户视图 · 本机附件 · 旧数据库兼容</div>
+  <div class="sub">PWA V5.17.0 · 语音录入也能关联项目 · 附件零泄漏与存储自检 · 客户项目库 · 国网组合电器中标行情 · 客户整理工作台 · 灵活延期与等待客户提醒 · 首页拜访可点击详情 · 语音页面生命周期 · 保存后选择 · 可交互跟进看板 · 个性语音学习 · 本地智能识别 · 分层客户视图 · 本机附件 · 旧数据库兼容</div>
 
   <div class="tabs">
     <button class="tab active" id="tabDash" onclick="showTab('dash')">看板</button>
@@ -272,6 +275,7 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
       <button class="secondary small backupStrong" onclick="exportFullBackup()">完整备份（含附件）</button>
       <button class="secondary small" onclick="document.getElementById('importFullFile').click()">恢复完整备份</button>
       <button class="secondary small dangerLite" onclick="openCleanup()">待整理</button>
+      <button class="secondary small" onclick="checkStorageHealth()">存储自检</button>
       <input id="importFile" type="file" accept=".json" class="hidden" onchange="importJSON(event)">
       <input id="importFullFile" type="file" accept=".json" class="hidden" onchange="importFullBackup(event.target.files[0]);event.target.value=''">
     </div>
@@ -308,11 +312,11 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
     <div class="veGrid">
       <div class="veField"><label>拜访日期</label><input id="veDate" type="date"></div>
       <div class="veField"><label>联系人（优先点选，也可直接输入）</label><div class="contactChoiceBtns" id="veContactBtns"></div><input id="veContact" list="veContactList" placeholder="没有合适联系人时再输入新名字"><datalist id="veContactList"></datalist></div>
+      <div class="veField full"><label>关联项目</label><div class="contactChoiceBtns" id="veProjectBtns"></div><input id="veProject" type="hidden" value=""></div>
       <div class="veField"><label>办公地</label><input id="veOffice" placeholder="可留空"></div>
       <div class="veField"><label>跟进时间</label><input id="veFollow" type="datetime-local"></div>
       <div class="veField full"><label>沟通内容</label><textarea id="veContent"></textarea></div>
       <div class="veField full"><label>待办 / 下一步</label><textarea id="veTodo"></textarea></div>
-      <div class="veField full"><label>关联项目</label><div class="contactChoiceBtns" id="veProjectBtns"></div><input id="veProject" type="hidden" value=""></div>
       <div class="veField full"><label>重要程度</label><div class="segBtns" id="vePriorityBtns"></div><input id="vePriority" type="hidden" value="B"></div>
       <div class="veField full"><label>状态</label><div class="segBtns" id="veStatusBtns"></div><input id="veStatus" type="hidden" value="待跟进"></div>
     </div>
@@ -649,7 +653,7 @@ function prevStep() { capture(); if(step>0){step--;renderStep();} }
 function commit() {
   let c=getCustomer(answers.customer);
   if(!c) {
-    c={name:answers.customer,contacts:[],history:[],defaultOffice:answers.office||''};
+    c={name:answers.customer,contacts:[],history:[],projects:[],defaultOffice:answers.office||''};
     data.push(c);
   } else {
     // 归入已有客户后，统一使用数据库里的标准客户名称
@@ -677,6 +681,8 @@ function commit() {
     priority:answers.priority||'B',
     status:answers.status||'待跟进',
     completedAt:'',
+    /* 项目 id 必须属于这个客户，否则存成跨客户的脏关联 */
+    projectId:(answers.projectId&&(c.projects||[]).some(p=>p&&p.id===answers.projectId))?answers.projectId:'',
     attachments:answers.attachments||[]
   });
   saveStore();
@@ -977,11 +983,13 @@ function editCustomer(ci){
   alert(`已修改客户：${oldName} → ${c.name}`);
 }
 
-function deleteCustomer(ci){
+async function deleteCustomer(ci){
   const c=data[ci]; if(!c)return;
-  if(!confirm(`确定删除客户“${c.name}”吗？\n\n这会同时删除该客户的联系人和全部拜访记录。`))return;
+  if(!confirm(`确定删除客户“${c.name}”吗？\n\n这会同时删除该客户的联系人和全部拜访记录，以及记录里的附件文件。`))return;
+  const orphan=blobIdsOfCustomer(c);            // 先取出附件 id 再删数据，否则就丢了线索
   data.splice(ci,1);
   saveStore(); renderDB(); renderDashboard();
+  await deleteLocalFiles(orphan);               // 同步回收本机附件库里的文件
 }
 
 function editContact(ci,xi){
@@ -1034,11 +1042,14 @@ function editHistory(ci,hi){
   saveStore(); renderDB(); renderDashboard();
 }
 
-function deleteHistory(ci,hi){
+async function deleteHistory(ci,hi){
   const c=data[ci], h=c?.history?.[hi]; if(!h)return;
-  if(!confirm(`确定删除这条拜访记录吗？\n\n${h.date||''} ${h.contact||''}\n${h.content||''}`))return;
+  const orphan=localIdsIn(h.attachments);
+  const extra=orphan.length ? ('\n\n这条记录里的 '+orphan.length+' 个附件会一起移除。') : '';
+  if(!confirm(`确定删除这条拜访记录吗？\n\n${h.date||''} ${h.contact||''}\n${h.content||''}${extra}`))return;
   c.history.splice(hi,1);
   saveStore(); renderDB(); renderDashboard();
+  await deleteLocalFiles(orphan);
 }
 
 
@@ -1858,6 +1869,7 @@ function renderVoiceConfirm(customers=window.voiceCustomerCandidates||[],contact
   <div class="confirmitem ${d.customer?'':'warn'}"><b>客户</b><div>${esc(d.customer||'未确定')}</div>${candidateButtons(customers,'customer','c')}</div>
   <div class="confirmitem ${d.contact?'':'warn'}"><b>联系人</b><div>${esc(d.contact||'未确定')}</div>${candidateButtons(contacts,'contact','ct')}</div>
   <div class="confirmitem"><b>拜访日期</b><input id="vcDate" type="date" value="${esc(d.date)}"></div>
+  <div class="confirmitem"><b>关联项目</b><div class="meta" id="vcProjectHint">可选。挂到项目后，项目详情里就能看到这条拜访。</div><div class="contactChoiceBtns" id="vcProjectBtns"></div><input id="vcProject" type="hidden" value=""></div>
   <div class="confirmitem"><b>沟通内容</b><textarea id="vcContent">${esc(d.content)}</textarea></div>
   <div class="confirmitem"><b>待办</b><textarea id="vcTodo" placeholder="例如：发送报价、确认样品">${esc(d.todo)}</textarea></div>
   <div class="confirmitem ${d.followUpAt?'':'warn'}"><b>跟进时间</b><input id="vcFollow" type="datetime-local" value="${esc(d.followUpAt)}"></div>
@@ -1874,6 +1886,7 @@ function renderVoiceConfirm(customers=window.voiceCustomerCandidates||[],contact
     <div id="voiceAttachments"></div>
   </div>
   </div><div class="row save-actions"><button class="secondary" onclick="saveVoiceDraft(false)">仅保存</button><button class="primary" onclick="saveVoiceDraft(true)">保存并导出数据</button></div><div class="meta" style="margin-top:8px">仅保存：写入本机浏览器，不生成文件。保存并导出：先保存本次拜访，再生成完整 JSON 备份，并在手机支持时调出系统分享/存储界面。</div>`;
+  renderVoiceProjectChoices();
   setTimeout(renderVoiceAttachments,0);
 }
 function learnCustomerAlias(value){
@@ -1882,13 +1895,46 @@ function learnCustomerAlias(value){
     learnedAliases[phrase]=value; localStorage.setItem(ALIAS_KEY,JSON.stringify(learnedAliases));
   }
 }
+/* 语音确认卡上的编辑先落回草稿：点候选按钮会整张卡重绘，
+   不先收一遍的话，用户刚手打的沟通内容 / 待办会被草稿里的旧值盖掉（数据丢失）。 */
+function captureVoiceEdits(){
+  const d=window.voiceDraft;if(!d)return;
+  const g=id=>document.getElementById(id);
+  const c=g('vcContent'),t=g('vcTodo'),dt=g('vcDate'),fl=g('vcFollow'),pr=g('vcPri'),st=g('vcStatus');
+  if(c)d.content=c.value;
+  if(t)d.todo=t.value;
+  if(dt&&dt.value)d.date=dt.value;
+  if(fl)d.followUpAt=fl.value;
+  if(pr&&pr.value)d.priority=pr.value;
+  if(st&&st.value)d.status=st.value;
+}
+/* 语音确认卡的「关联项目」：与拜访编辑器共用 renderProjectChoices，行为保持一致 */
+function renderVoiceProjectChoices(){
+  const d=window.voiceDraft;if(!d)return;
+  const box=document.getElementById('vcProjectBtns');if(!box)return;
+  const hint=document.getElementById('vcProjectHint');
+  const el=document.getElementById('vcProject');
+  const c=getCustomer(d.customer||'');
+  if(!c){
+    box.innerHTML='';if(el)el.value='';d.projectId='';
+    if(hint)hint.textContent='先在上面确认客户（客户名要能在库里找到），才能关联这个客户名下的项目。';
+    return;
+  }
+  /* 客户被换掉以后，原先选的项目可能不属于这个客户 → 先清掉 */
+  if(d.projectId&&!projectsOf(c).some(p=>p&&p.id===d.projectId))d.projectId='';
+  if(el)el.value=d.projectId||'';
+  if(hint)hint.textContent='可选。挂到项目后，项目详情里就能看到这条拜访。';
+  renderProjectChoices('vcProjectBtns','vcProject',c,d.projectId||'',function(v){d.projectId=v;});
+}
 function voicePick(field,val){
+  captureVoiceEdits();
   const value=decodeURIComponent(val);const oldValue=window.voiceDraft?.[field]||'';window.voiceDraft[field]=value;
   if(field==='customer'){learnCustomerAlias(value);const c=getCustomer(value);window.voiceContactCandidates=contactSpeechCandidates(c,voiceText.value.trim());window.voiceDraft.contact=window.voiceContactCandidates[0]?.score>=.58?window.voiceContactCandidates[0].ct.name:(window.voiceDraft.contact||'');}
   if(field==='contact'&&window.voiceDraft?.customer) rememberContactAlias(window.voiceDraft.customer,window.voiceDraft._spokenContact||oldValue,value);
   renderVoiceConfirm();
 }
 function voiceManual(field){
+  captureVoiceEdits();
   const oldValue=window.voiceDraft?.[field]||'';
   const v=prompt('请输入'+(field==='customer'?'客户全称':'联系人'),oldValue);
   if(v){window.voiceDraft[field]=v;if(field==='customer'){learnCustomerAlias(v);window.voiceContactCandidates=contactSpeechCandidates(getCustomer(v),voiceText.value.trim());}if(field==='contact'&&window.voiceDraft?.customer)rememberContactAlias(window.voiceDraft.customer,window.voiceDraft._spokenContact||oldValue,v);renderVoiceConfirm();}
@@ -1921,6 +1967,83 @@ async function deleteLocalFile(id){
   await new Promise((resolve,reject)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});
   db.close();
 }
+
+/* ==================== V5.16.0 附件引用回收 · 存储自检 ====================
+   本机附件（kind:'local'）的真身存在 IndexedDB（crm_attachments_v1/files），
+   拜访记录 / 项目里只放 {id,kind:'local',...} 这条引用。
+   因此任何「删数据」的地方都必须同时删掉引用指向的 blob，否则文件会永远留在
+   手机上占空间、又没有任何入口能看到它（孤儿附件）。
+   下面这几个函数是所有删除路径的唯一出口。 */
+function localIdsIn(list){
+  return (Array.isArray(list)?list:[]).filter(a=>a&&a.kind==='local'&&a.id).map(a=>a.id);
+}
+function blobIdsOfCustomer(c){
+  const ids=[];
+  (c&&c.history||[]).forEach(h=>ids.push(...localIdsIn(h&&h.attachments)));
+  (c&&c.projects||[]).forEach(p=>ids.push(...localIdsIn(p&&p.attachments)));
+  return ids;
+}
+function allReferencedBlobIds(){
+  const set=new Set();
+  (Array.isArray(data)?data:[]).forEach(c=>blobIdsOfCustomer(c).forEach(id=>set.add(id)));
+  return set;
+}
+async function deleteLocalFiles(ids){
+  let n=0;
+  for(const id of (ids||[])){ try{ await deleteLocalFile(id); n++; }catch(e){} }
+  return n;
+}
+async function readAllAttachmentRecords(){
+  const db=await openAttachDB();
+  const files=await new Promise((resolve,reject)=>{
+    const r=db.transaction('files').objectStore('files').getAll();
+    r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error);
+  });
+  db.close(); return files;
+}
+function fmtBytes(n){
+  n=Number(n)||0;
+  if(n<1024)return n+' B';
+  if(n<1024*1024)return (n/1024).toFixed(1)+' KB';
+  if(n<1024*1024*1024)return (n/1024/1024).toFixed(2)+' MB';
+  return (n/1024/1024/1024).toFixed(2)+' GB';
+}
+/* 只读体检：不点「清理」就绝不会删任何东西 */
+async function checkStorageHealth(){
+  let files=[];
+  try{ files=await readAllAttachmentRecords(); }
+  catch(e){ return alert('读取本机附件库失败：'+(e&&e.message||e)); }
+  const used=allReferencedBlobIds();
+  const have=new Set(files.map(f=>f.id));
+  const orphans=files.filter(f=>!used.has(f.id));
+  const orphanBytes=orphans.reduce((s,f)=>s+(f.size||0),0);
+  const allBytes=files.reduce((s,f)=>s+(f.size||0),0);
+  let missing=0; used.forEach(id=>{ if(!have.has(id))missing++; });
+  let quotaLine='';
+  try{
+    if(navigator.storage&&navigator.storage.estimate){
+      const est=await navigator.storage.estimate();
+      if(est&&est.quota) quotaLine='浏览器给本站的额度：'+fmtBytes(est.quota)+'，当前已用 '+fmtBytes(est.usage||0)+'。';
+    }
+  }catch(e){}
+  const visits=(Array.isArray(data)?data:[]).reduce((n,c)=>n+((c&&c.history||[]).length),0);
+  const projects=(Array.isArray(data)?data:[]).reduce((n,c)=>n+((c&&c.projects||[]).length),0);
+  const lines=[
+    '客户 '+data.length+' 个 · 拜访 '+visits+' 条 · 项目 '+projects+' 个',
+    '记录引用的本地附件：'+used.size+' 个',
+    '本机附件库实际文件：'+files.length+' 个，共 '+fmtBytes(allBytes),
+    orphans.length
+      ? ('其中 '+orphans.length+' 个已无任何记录引用（'+fmtBytes(orphanBytes)+'），建议清理。')
+      : '没有发现多余的附件文件，很干净。',
+    missing ? ('另有 '+missing+' 个附件引用在本机找不到文件（换过设备、或恢复备份时没带附件）。') : '',
+    quotaLine
+  ].filter(Boolean).join('\n');
+  if(!orphans.length) return alert('存储自检\n\n'+lines);
+  if(!confirm('存储自检\n\n'+lines+'\n\n现在清理这 '+orphans.length+' 个多余文件吗？\n只删除已经没有任何拜访 / 项目引用的附件，不影响你的数据。'))return;
+  const n=await deleteLocalFiles(orphans.map(f=>f.id));
+  alert('已清理 '+n+' 个多余附件，释放约 '+fmtBytes(orphanBytes)+'。');
+}
+
 async function addVoiceFiles(files){
   if(!window.voiceDraft)return;
   window.voiceDraft.attachments=window.voiceDraft.attachments||[];
@@ -2020,11 +2143,14 @@ async function saveVoiceDraft(withExport=false){
   if(d._initialTodo!==undefined&&editedTodo!==d._initialTodo) learnSmallVoiceEdit(d._initialTodo,editedTodo);
   d.date=vcDate.value;d.content=applyVoiceLearning(editedContent);d.todo=applyVoiceLearning(editedTodo);d.followUpAt=vcFollow.value;d.priority=vcPri.value;d.status=vcStatus.value;
   if(!d.customer||!d.contact||!d.content)return alert('客户、联系人和沟通内容需要确认');
-  answers={customer:d.customer,contact:d.contact,phone:'',office:'',date:d.date,content:d.content,todo:d.todo,followUpAt:d.followUpAt,priority:d.priority,status:d.status,attachments:d.attachments||[]};
+  answers={customer:d.customer,contact:d.contact,phone:'',office:'',date:d.date,content:d.content,todo:d.todo,followUpAt:d.followUpAt,priority:d.priority,status:d.status,projectId:d.projectId||'',attachments:d.attachments||[]};
   commit();
+  d._committed=true;   // 附件 blob 已被新的拜访记录引用，之后清空草稿时不能再回收
   const ci=data.findIndex(c=>normalizeName(c.name)===normalizeName(answers.customer));
   const hi=ci>=0?(data[ci].history||[]).length-1:-1;
-  window.lastVoiceSaved={ci,hi,customer:answers.customer,contact:answers.contact,date:answers.date};
+  const savedCust=ci>=0?data[ci]:null;
+  const savedProj=(savedCust&&hi>=0)?getProject(savedCust,(savedCust.history||[])[hi]?.projectId):null;
+  window.lastVoiceSaved={ci,hi,customer:answers.customer,contact:answers.contact,date:answers.date,project:savedProj?savedProj.name:''};
   await requestPersistentStorage();
   if(withExport) await exportJSON(false);
   finishVoiceSave();
@@ -2034,12 +2160,23 @@ function clearVoiceSession(){
   voiceBaseText='';voiceFinalText='';voiceCycleFinal='';voiceAutoText='';
   if(typeof voiceText!=='undefined'&&voiceText) voiceText.value='';
   if(typeof voiceConfirm!=='undefined'&&voiceConfirm) voiceConfirm.innerHTML='';
+  const d=window.voiceDraft;
+  if(d&&!d._committed){
+    // 草稿没有保存成拜访记录就被丢弃（例如点了「开始新的拜访」）→ 附件无人引用，回收
+    const orphan=localIdsIn(d.attachments);
+    if(orphan.length) deleteLocalFiles(orphan);
+  }
   window.voiceDraft=null;window.voiceCustomerCandidates=[];window.voiceContactCandidates=[];
 }
 function finishVoiceSave(){
   clearVoiceSession();
   const card=document.getElementById('voiceDoneCard'),txt=document.getElementById('voiceDoneText');
-  if(txt&&window.lastVoiceSaved) txt.innerHTML=`${esc(window.lastVoiceSaved.customer)} · ${esc(window.lastVoiceSaved.contact)} · ${esc(window.lastVoiceSaved.date)}<br>语音识别内容已清空，监听已停止。请选择下一步。`;
+  if(txt&&window.lastVoiceSaved){
+    const ls=window.lastVoiceSaved;
+    txt.innerHTML=`${esc(ls.customer)} · ${esc(ls.contact)} · ${esc(ls.date)}<br>`
+      +(ls.project?('已关联项目：<b>'+esc(ls.project)+'</b>'):'未关联项目（可在拜访详情里补关联）')
+      +'<br>语音识别内容已清空，监听已停止。请选择下一步。';
+  }
   card?.classList.remove('hidden');
   document.getElementById('voicePanel')?.classList.remove('hidden');
   document.getElementById('dashPanel')?.classList.add('hidden');
@@ -2107,6 +2244,12 @@ function newProject(ci){
   const c=data?.[ci];if(!c)return null;
   const name=prompt('项目名称（必填）','');if(name===null)return null;
   const n=name.trim();if(!n){alert('项目名称不能为空。');return null;}
+  /* 同名去重：用户以为"没反应"时容易连点两次，结果建出两个一模一样的项目 */
+  const dup=projectsOf(c).find(p=>p&&normalizeName(p.name)===normalizeName(n));
+  if(dup){
+    if(!confirm('“'+dup.name+'”这个项目已经有了。\n\n要直接用它吗？（点“取消”就返回，不会新建重复项目）'))return null;
+    return dup;
+  }
   const code=prompt('项目编号 / 备注名（可以不填）','');if(code===null)return null;
   const p={id:newId(),name:n,code:code.trim(),status:'跟进中',note:'',
            attachments:[],createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
@@ -2133,14 +2276,16 @@ function clearProjectField(ci,pi,key){
   if(!confirm('确定清空这一项吗？'))return;
   p[key]='';p.updatedAt=new Date().toISOString();saveStore();renderDB();
 }
-function deleteProject(ci,pi){
+async function deleteProject(ci,pi){
   const c=data?.[ci],p=c?.projects?.[pi];if(!p)return;
   const linked=projectVisits(c,p.id).length;
   const extra=linked?('有 '+linked+' 条拜访关联着它，删除后这些拜访会变成“未关联项目”。\n\n'):'';
-  if(!confirm('确定删除项目“'+p.name+'”吗？\n\n'+extra+'项目里的 '+(p.attachments||[]).length+' 个附件记录会一起移除。'))return;
+  if(!confirm('确定删除项目“'+p.name+'”吗？\n\n'+extra+'项目里的 '+(p.attachments||[]).length+' 个附件会一起移除。'))return;
+  const orphan=localIdsIn(p.attachments);       // 先取 id，再删项目
   (c.history||[]).forEach(h=>{if(h.projectId===p.id)h.projectId='';});
   c.projects.splice(pi,1);
   saveStore();renderDB();renderDashboard();
+  await deleteLocalFiles(orphan);
 }
 
 /* ---- 项目附件（与拜访附件共用 IndexedDB） ---- */
@@ -2188,26 +2333,44 @@ async function removeProjectAttachment(ci,pi,ai){
 }
 
 /* ---- 拜访 ↔ 项目 关联 ---- */
+/* 通用「关联项目」按钮组：拜访编辑器与语音确认卡共用，行为保持一致。
+   - 只有「当前选中」那一个会是实心蓝（active）；「＋ 新建项目」用虚线描边，
+     不会再出现"两个都是实心蓝、看不出哪个才是选中的"。
+   - onChange(v) 把选择结果同步回各自的草稿（veProject 输入框 / voiceDraft.projectId）。 */
+function renderProjectChoices(boxId,inputId,c,current,onChange){
+  const box=document.getElementById(boxId);if(!box)return;
+  if(!c){box.innerHTML='';return;}
+  function draw(cur){
+    const ps=projectsOf(c);          // 每次都重读，避免持有过期数组
+    box.innerHTML='';
+    const setVal=(v,b,fire)=>{
+      const el=document.getElementById(inputId);if(el)el.value=v;
+      box.querySelectorAll('button').forEach(x=>{if(x.dataset&&x.dataset.value!==undefined)x.classList.toggle('active',x===b);});
+      if(fire&&onChange)onChange(v);
+    };
+    const mk=(label,value,active)=>{
+      const b=document.createElement('button');b.type='button';b.className='secondary';b.textContent=label;b.dataset.value=value;
+      if(active)b.classList.add('active');
+      b.onclick=()=>setVal(value,b,true);
+      box.appendChild(b);
+    };
+    mk('不关联','',!(cur||''));
+    ps.forEach(p=>mk(p.name+(p.status&&p.status!=='跟进中'?'（'+p.status+'）':''),p.id,cur===p.id));
+    const nb=document.createElement('button');nb.type='button';nb.className='secondary newProjBtn';nb.textContent='＋ 新建项目';
+    nb.onclick=()=>{
+      const created=newProject(data.indexOf(c));
+      if(!created)return;
+      const el=document.getElementById(inputId);if(el)el.value=created.id;
+      if(onChange)onChange(created.id);
+      draw(created.id);            // 重绘一版，新项目（或已存在的同名项目）就在列表里且是选中态
+    };
+    box.appendChild(nb);
+    if(!ps.length){const tip=document.createElement('span');tip.className='meta';tip.textContent='这个客户还没有项目，点右边新建。';box.appendChild(tip);}
+  }
+  draw(current);
+}
 function renderVisitProjectChoices(c,current){
-  const box=document.getElementById('veProjectBtns');if(!box)return;
-  const ps=projectsOf(c);
-  box.innerHTML='';
-  const setVal=(v,b)=>{const el=document.getElementById('veProject');if(el)el.value=v;
-    box.querySelectorAll('button').forEach(x=>{if(x.dataset.value!==undefined)x.classList.toggle('active',x===b);});};
-  const mk=(label,value,active)=>{const b=document.createElement('button');b.type='button';b.className='secondary';b.textContent=label;b.dataset.value=value;
-    if(active)b.classList.add('active');b.onclick=()=>setVal(value,b);box.appendChild(b);};
-  mk('不关联','',!(current||''));
-  ps.forEach(p=>mk(p.name+(p.status&&p.status!=='跟进中'?'（'+p.status+'）':''),p.id,current===p.id));
-  const nb=document.createElement('button');nb.type='button';nb.className='primary';nb.textContent='＋ 新建项目';
-  nb.dataset.value='';
-  nb.onclick=()=>{
-    const created=newProject(data.indexOf(c));
-    if(!created)return;
-    const el=document.getElementById('veProject');if(el)el.value=created.id;
-    renderVisitProjectChoices(c,created.id);
-  };
-  box.appendChild(nb);
-  if(!ps.length){const tip=document.createElement('span');tip.className='meta';tip.textContent='这个客户还没有项目，点右边新建。';box.appendChild(tip);}
+  renderProjectChoices('veProjectBtns','veProject',c,current,null);
 }
 function linkExistingVisit(ci,pi){
   const c=data?.[ci],p=c?.projects?.[pi];if(!p)return;

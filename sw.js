@@ -1,4 +1,4 @@
-const CACHE = 'crm-pwa-v5.15.0-dash-projects';
+const CACHE = 'crm-pwa-v5.17.0-voice-project-link';
 const APP_SHELL = [
   './', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'
 ];
