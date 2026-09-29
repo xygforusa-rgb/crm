@@ -1,4 +1,4 @@
-const CACHE = 'crm-pwa-v5.17.0-voice-project-link';
+const CACHE = 'crm-pwa-v5.19.0-dup-customer-merge';
 const APP_SHELL = [
   './', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'
 ];

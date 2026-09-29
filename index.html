@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>客户管理助手 V5.17.0</title>
+<title>客户管理助手 V5.19.0</title>
 <meta name="theme-color" content="#172033">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -179,12 +179,19 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
 /* V5.17.0：让「＋ 新建项目」和「当前选中」在视觉上彻底分开（原来两个都是实心蓝） */
 .contactChoiceBtns button.newProjBtn{border-style:dashed;border-color:#8fb0dd;color:#1f4fa3;background:#fff}
 .contactChoiceBtns button.newProjBtn:hover{background:#eef3fa;border-color:#1f4fa3}
+.mergeCard{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:12px}
+.mergeReason{font-size:12px;color:var(--muted);margin-bottom:8px}
+.mergeSide{padding:8px 10px;background:#f5f7fb;border-radius:10px;margin-top:6px}
+.mergeSideTag{display:inline-block;font-size:11px;font-weight:800;color:#fff;background:#8a97ad;border-radius:6px;padding:1px 6px;letter-spacing:1px}
+.mergeSideName{font-size:15px;font-weight:800;margin:4px 0 2px;word-break:break-all}
+.mergeHint{font-size:12px;color:#1f4fa3;background:#eef3fa;border-radius:8px;padding:6px 8px;margin-top:8px}
+.mergeCard .choicebar button{flex:1 1 auto}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>客户管理助手</h1>
-  <div class="sub">PWA V5.17.0 · 语音录入也能关联项目 · 附件零泄漏与存储自检 · 客户项目库 · 国网组合电器中标行情 · 客户整理工作台 · 灵活延期与等待客户提醒 · 首页拜访可点击详情 · 语音页面生命周期 · 保存后选择 · 可交互跟进看板 · 个性语音学习 · 本地智能识别 · 分层客户视图 · 本机附件 · 旧数据库兼容</div>
+  <div class="sub">PWA V5.19.0 · 重复客户查重合并 · 附件零泄漏与存储自检 · 客户项目库 · 国网组合电器中标行情 · 客户整理工作台 · 灵活延期与等待客户提醒 · 首页拜访可点击详情 · 语音页面生命周期 · 保存后选择 · 可交互跟进看板 · 个性语音学习 · 本地智能识别 · 分层客户视图 · 本机附件 · 旧数据库兼容</div>
 
   <div class="tabs">
     <button class="tab active" id="tabDash" onclick="showTab('dash')">看板</button>
@@ -276,6 +283,7 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
       <button class="secondary small" onclick="document.getElementById('importFullFile').click()">恢复完整备份</button>
       <button class="secondary small dangerLite" onclick="openCleanup()">待整理</button>
       <button class="secondary small" onclick="checkStorageHealth()">存储自检</button>
+      <button class="secondary small" onclick="openMerge()">查重合并</button>
       <input id="importFile" type="file" accept=".json" class="hidden" onchange="importJSON(event)">
       <input id="importFullFile" type="file" accept=".json" class="hidden" onchange="importFullBackup(event.target.files[0]);event.target.value=''">
     </div>
@@ -729,7 +737,7 @@ let dbView={type:'search',ci:null,xi:null,hi:null};
 let dbReturnToTaskFilter=false;
 let dbReturnToDashboard=false;
 function dbBack(){
-  if(dbView.type==='cleanup'){dbView={type:'search',ci:null};return renderDB();}
+  if(dbView.type==='cleanup'||dbView.type==='merge'){dbView={type:'search',ci:null};return renderDB();}
   if(dbReturnToDashboard && (dbView.type==='visit'||dbView.type==='project')){dbReturnToDashboard=false;showTab('dash');window.scrollTo({top:0,behavior:'smooth'});return;}
   if(dbReturnToTaskFilter && dbView.type==='visit'){dbReturnToTaskFilter=false;document.getElementById('dbPanel')?.classList.add('hidden');document.getElementById('taskFilterPanel')?.classList.remove('hidden');renderTaskFilter();return;}
   if(dbView.type==='visit') dbView=dbView.from==='project'?{type:'project',ci:dbView.ci,pi:dbView.pi}:{type:'customer',ci:dbView.ci};
@@ -740,6 +748,7 @@ function dbBack(){
   else if(dbView.type==='customer') dbView={type:'search',ci:null};
   renderDB();
 }
+function openMerge(){stopVoiceListening();dbView={type:'merge',ci:null};showTab('db');renderDB();}
 function openCustomer(ci){dbView={type:'customer',ci};renderDB();}
 function openContacts(ci){dbView={type:'contacts',ci};renderDB();}
 function openContact(ci,xi){dbView={type:'contact',ci,xi};renderDB();}
@@ -783,12 +792,30 @@ function renderDB() {
       contacts.forEach((ct,xi)=>{const n=hist.filter(h=>visitMatchesContact(h,ct.name)).length;if(n===0)lonelyContacts.push({c,ci,ct,xi});});
       hist.forEach((h,hi)=>{const ok=h.contact && contacts.some(ct=>visitMatchesContact(h,ct.name));if(!ok)orphanVisits.push({c,ci,h,hi});});
     });
-    list.innerHTML=`<div class="dbnav"><button class="secondary small" onclick="dbBack()">← 返回客户库</button><div class="dbcrumb">待整理</div></div>
+    list.innerHTML=`<div class="dbnav"><button class="secondary small" onclick="dbBack()">← 返回客户库</button><div class="dbcrumb">待整理</div><button class="secondary small" onclick="openMerge()">查重合并</button></div>
       <div class="notice"><b>待整理数据：</b>这里专门找“联系人没有关联拜访”和“拜访没有关联到有效联系人”的历史数据。</div>
       <div class="detailTitle">未关联联系人拜访（${orphanVisits.length}）</div>`+
       (orphanVisits.map(x=>`<div class="cleanupCard"><div class="cleanupTitle">${esc(x.c.name)} · ${esc(x.h.date||'日期未填')}</div><div class="cleanupWarn">当前联系人：${esc(x.h.contact||'未关联')}</div><div class="miniContent">${esc(x.h.content||'暂无内容')}</div><div class="choicebar"><button class="primary" onclick="openVisitEditor(${x.ci},${x.hi},'edit')">选择 / 补联系人</button><button class="secondary" onclick="openVisit(${x.ci},${x.hi})">查看详情</button></div></div>`).join('')||'<div class="meta">没有未关联的拜访。</div>')+
       `<div class="detailTitle" style="margin-top:18px">只有联系人、暂无关联拜访（${lonelyContacts.length}）</div>`+
       (lonelyContacts.map(x=>`<div class="cleanupCard"><div class="cleanupTitle">${esc(x.c.name)} · ${esc(x.ct.name)}</div><div class="meta">${esc(x.ct.phone||'无电话')} ${x.ct.note?'· '+esc(x.ct.note):''}</div><div class="choicebar"><button class="primary" onclick="openVisitEditor(${x.ci},-1,'new',${x.xi})">在此联系人下新建拜访</button><button class="secondary" onclick="openContact(${x.ci},${x.xi})">打开联系人</button></div></div>`).join('')||'<div class="meta">没有这类联系人。</div>');
+    return;
+  }
+  if(dbView.type==='merge'){
+    const pairs=dupPairs();
+    const head='<div class="dbnav"><button class="secondary small" onclick="dbBack()">← 返回客户库</button>'
+      +'<div class="dbcrumb">查重合并</div></div>'
+      +'<div class="notice"><b>这里只给建议，不会自动改你的数据。</b>同一家公司被记成两条（一条全称、一条简称，'
+      +'或者识别错了一个字），可以在下面合并成一条：联系人、项目、拜访、附件都会搬到保留的那一条下面。'
+      +'也可以只删掉多余的那一条。</div>';
+    if(!pairs.length){
+      list.innerHTML=head+'<div class="detailTitle">没有发现疑似重复的客户</div>'
+        +'<div class="meta">当前共 '+data.length+' 个客户。名字差得比较远的（比如简称和全称差很多）这里认不出来，'
+        +'可以直接在客户里改名，或者把那条拜访改挂到正确的客户上。</div>';
+      return;
+    }
+    list.innerHTML=head+'<div class="detailTitle">疑似重复（'+pairs.length+' 组）</div>'
+      +'<div class="meta" style="margin-bottom:10px">按相似度从高到低排。每组自己挑保留哪一条 —— 先看哪边的记录多。</div>'
+      +pairs.map(x=>dupPairCard(x)).join('');
     return;
   }
   const ci=dbView.ci,c=data[ci];
@@ -992,6 +1019,192 @@ async function deleteCustomer(ci){
   await deleteLocalFiles(orphan);               // 同步回收本机附件库里的文件
 }
 
+/* ==================== V5.19.0 重复客户查重与合并 ====================
+   语音识别出错、手打简称，都很容易把同一家公司记成两条。
+   这里给一个入口：列出疑似重复的客户对，由用户自己决定「合并」还是「只删一条」。
+
+   合并为什么是安全的：附件（kind:'local'）的真身在 IndexedDB，业务记录里
+   只是一条引用，且引用**只挂在拜访和项目下面**（客户级没有附件）。
+   所以合并 = 把要丢掉的那条的 contacts / history / projects 整条搬到保留的那条里，
+   IndexedDB 一个字节都不用动。
+   ⇒ 也正因为如此，合并路径**绝对不能再回收附件**，否则会把刚搬过来的文件删掉。
+     （见 mergeCustomers 第 7 步的注释和 __verify 里的断言。） */
+const DUP_PAIR_MIN_SCORE=0.6;
+
+/* 归一化后过短的（行业词被剥光、只剩"西安"这种地名）很容易把同城的不同公司错配。
+   这里单独降权 —— 只作用于"查重建议"，不动 similarity() 本身，
+   免得改坏语音自动匹配已经跑通的行为。 */
+function dupPairScore(a,b){
+  const na=normalizeName(a&&a.name), nb=normalizeName(b&&b.name);
+  if(!na||!nb)return 0;
+  if(na===nb)return 1;
+  const s=similarity(a&&a.name,b&&b.name);
+  if(Math.min(na.length,nb.length)<3)return s*0.5;
+  return s;
+}
+function dupPairReason(a,b){
+  const na=normalizeName(a&&a.name), nb=normalizeName(b&&b.name);
+  if(na&&na===nb)return '去掉行业词后名字完全一样';
+  if(na&&nb&&(na.includes(nb)||nb.includes(na)))return '一个名字包含另一个（多半是全称和简称）';
+  return '名字高度重合';
+}
+function countOfCustomer(c){
+  c=c||{};
+  return {contacts:(c.contacts||[]).length,projects:(c.projects||[]).length,
+          visits:(c.history||[]).length,attachments:blobIdsOfCustomer(c).length};
+}
+function dupPairs(){
+  const out=[], arr=Array.isArray(data)?data:[];
+  for(let i=0;i<arr.length;i++){
+    for(let j=i+1;j<arr.length;j++){
+      if(!arr[i]||!arr[j]||typeof arr[i]!=='object'||typeof arr[j]!=='object')continue;
+      const s=dupPairScore(arr[i],arr[j]);
+      if(s>=DUP_PAIR_MIN_SCORE)out.push({ci:i,di:j,score:s,reason:dupPairReason(arr[i],arr[j])});
+    }
+  }
+  return out.sort((a,b)=>b.score-a.score);
+}
+function dupPairSide(c,tag){
+  const n=countOfCustomer(c);
+  return '<div class="mergeSide"><span class="mergeSideTag">'+tag+'</span>'
+    +'<div class="mergeSideName">'+esc((c&&c.name)||'（未命名）')+'</div>'
+    +'<div class="meta">'+n.contacts+' 联系人 · '+n.projects+' 项目 · '+n.visits+' 条拜访'
+    +(n.attachments?(' · '+n.attachments+' 个附件'):'')+'</div></div>';
+}
+function dupPairCard(x){
+  const a=data[x.ci], b=data[x.di];
+  if(!a||!b)return '';
+  const ca=countOfCustomer(a), cb=countOfCustomer(b);
+  const wa=ca.visits+ca.projects+ca.contacts, wb=cb.visits+cb.projects+cb.contacts;
+  let hint='', keepFirst=true;
+  if(wa!==wb){
+    keepFirst=wa>wb;
+    hint='<div class="mergeHint">建议保留 '+(keepFirst?'A':'B')+'（「'+esc((keepFirst?a:b).name||'')+'」）—— 它的记录更多。</div>';
+  }
+  const btnA='<button class="primary" onclick="mergeCustomers('+x.ci+','+x.di+')">合并：保留 A</button>';
+  const btnB='<button class="primary" onclick="mergeCustomers('+x.di+','+x.ci+')">合并：保留 B</button>';
+  return '<div class="mergeCard">'
+    +'<div class="mergeReason">'+esc(x.reason)+' · 相似度 '+Math.round(x.score*100)+'%</div>'
+    +dupPairSide(a,'A')+dupPairSide(b,'B')+hint
+    +'<div class="choicebar">'+(keepFirst?btnA+btnB:btnB+btnA)+'</div>'
+    +'<div class="choicebar">'
+    +'<button class="secondary dangerLite" onclick="deleteCustomer('+x.di+')">只删除 B</button>'
+    +'<button class="secondary dangerLite" onclick="deleteCustomer('+x.ci+')">只删除 A</button>'
+    +'</div></div>';
+}
+/* 合并后，旧名字要能继续认出来：改写已有别名/纠错词的指向，并把旧名字记成新名字的小名 */
+function rewriteCustomerAliases(oldName,newName){
+  oldName=String(oldName||'').trim(); newName=String(newName||'').trim();
+  if(!oldName||!newName||oldName===newName)return 0;
+  let n=0;
+  Object.keys(learnedAliases||{}).forEach(k=>{
+    if(learnedAliases[k]===oldName){learnedAliases[k]=newName;n++;}
+  });
+  const ok=normalizeForSpeech(oldName);
+  if(ok && normalizeForSpeech(newName)!==ok && !learnedAliases[oldName]){learnedAliases[oldName]=newName;n++;}
+  Object.keys(voiceLearning.corrections||{}).forEach(k=>{
+    const c=voiceLearning.corrections[k];
+    if(!c)return;
+    if(typeof c==='string'){if(c===oldName){voiceLearning.corrections[k]=newName;n++;}}
+    else if(c.to===oldName){c.to=newName;n++;}
+  });
+  Object.keys(voiceLearning.contactAliases||{}).forEach(k=>{
+    if(!ok||k.indexOf(ok+'::')!==0)return;      /* 联系人别名按 客户名::别名 做 key */
+    const rest=k.slice(ok.length);
+    const v=voiceLearning.contactAliases[k];
+    delete voiceLearning.contactAliases[k];
+    voiceLearning.contactAliases[normalizeForSpeech(newName)+rest]=v;n++;
+  });
+  if(n){
+    localStorage.setItem(ALIAS_KEY,JSON.stringify(learnedAliases));
+    localStorage.setItem(VOICE_LEARN_KEY,JSON.stringify(voiceLearning));
+  }
+  return n;
+}
+async function mergeCustomers(keepCi,dropCi){
+  const keep=data?.[keepCi], drop=data?.[dropCi];
+  if(!keep||!drop){alert('客户已经不在了（可能刚被别处改过），请返回客户库重进。');return;}
+  if(keep===drop)return;
+  const kc=countOfCustomer(keep), dc=countOfCustomer(drop);
+  if(!confirm([
+    '把「'+drop.name+'」并进「'+keep.name+'」吗？','',
+    '保留「'+keep.name+'」：现在 '+kc.contacts+' 联系人 · '+kc.projects+' 项目 · '+kc.visits+' 条拜访',
+    '并入「'+drop.name+'」：'+dc.contacts+' 联系人 · '+dc.projects+' 项目 · '+dc.visits+' 条拜访',
+    '',
+    '合并后联系人 '+(kc.contacts+dc.contacts)+'（同名会自动并成一条）、项目 '+(kc.projects+dc.projects)+'、拜访 '+(kc.visits+dc.visits)+'。',
+    '附件跟着拜访和项目一起搬过去，不会丢。',
+    '',
+    '「'+drop.name+'」这条客户会被删除 —— 这一步不能撤销。'
+  ].join('\n')))return;
+
+  /* 0. 保留方自己的项目也要先补有效 id —— 只补被合并方是不够的：
+       保留方若有空 id 的项目，合并后照样点不进项目详情（getProject 是 pid?找:null）。
+       同一客户里 id 撞车时只保第一个，多余的换新 id（指向它的拜访保持指向第一个）。 */
+  const keepIds=new Set();
+  projectsOf(keep).forEach(p=>{
+    if(!p||typeof p!=='object')return;
+    if(!p.id||keepIds.has(p.id)){let nid;do{nid=newId();}while(keepIds.has(nid));p.id=nid;}
+    keepIds.add(p.id);
+  });
+
+  /* 1. 被合并方的项目：id 撞车就换新 id（并记下映射，下面要改指向它的拜访） */
+  const idMap={};
+  projectsOf(drop).forEach(p=>{
+    if(!p||typeof p!=='object')return;
+    const old=p.id;
+    let nid=old;
+    if(!nid||keepIds.has(nid)){do{nid=newId();}while(keepIds.has(nid));}
+    keepIds.add(nid);
+    if(old&&old!==nid)idMap[old]=nid;
+    p.id=nid;
+  });
+
+  /* 2. 拜访：整条搬过去，顺手把 projectId 换成新 id */
+  (Array.isArray(drop.history)?drop.history:[]).forEach(h=>{
+    if(!h||typeof h!=='object')return;
+    if(h.projectId&&idMap[h.projectId])h.projectId=idMap[h.projectId];
+    if(typeof h.projectId!=='string')h.projectId='';
+    if(!Array.isArray(h.attachments))h.attachments=[];
+    keep.history=keep.history||[];keep.history.push(h);
+  });
+
+  /* 3. 项目：整条搬过去 */
+  (Array.isArray(drop.projects)?drop.projects:[]).forEach(p=>{
+    if(!p||typeof p!=='object')return;
+    if(!Array.isArray(p.attachments))p.attachments=[];
+    keep.projects=keep.projects||[];keep.projects.push(p);
+  });
+
+  /* 4. 联系人：同名并成一条（空字段互相补齐），不同名追加 */
+  let mergedContacts=0;
+  (Array.isArray(drop.contacts)?drop.contacts:[]).forEach(ct=>{
+    if(!ct||!ct.name)return;
+    const ex=(keep.contacts||[]).find(x=>x&&normalizeName(x.name)===normalizeName(ct.name));
+    if(ex){['phone','office','note'].forEach(k=>{if(!ex[k]&&ct[k])ex[k]=ct[k];});mergedContacts++;}
+    else{keep.contacts=keep.contacts||[];keep.contacts.push(ct);}
+  });
+
+  /* 5. 客户级字段：保留的那条为空时，用被合并的那条补齐 */
+  if(!keep.defaultOffice&&drop.defaultOffice)keep.defaultOffice=drop.defaultOffice;
+
+  /* 6. 别名学习：以后提到旧名字，直接归到这里 */
+  const learned=rewriteCustomerAliases(drop.name,keep.name);
+
+  /* 7. 删除 drop。
+        !! 这里**不调用 deleteLocalFiles** —— 它的附件已经在第 2/3 步搬进 keep 了，
+           再回收一次等于把刚搬过来的文件删掉（附件孤儿修复的反面陷阱）。 */
+  data.splice(dropCi,1);
+  saveStore();renderDashboard();
+
+  /* 8. 直接打开合并结果，让用户马上核对 */
+  const ci=data.indexOf(keep);
+  dbView=(ci>=0)?{type:'customer',ci}:{type:'search',ci:null};
+  renderDB();
+  alert('已合并到「'+keep.name+'」。\n\n现在：'+(keep.contacts||[]).length+' 个联系人 · '
+    +projectsOf(keep).length+' 个项目 · '+(keep.history||[]).length+' 条拜访。'
+    +(mergedContacts?('\n其中 '+mergedContacts+' 个同名联系人并成了一条。'):'')
+    +(learned?('\n\n已把「'+drop.name+'」记成它的叫法，以后语音提到会直接归到这里。'):''));
+}
 function editContact(ci,xi){
   const c=data[ci], ct=c?.contacts?.[xi]; if(!ct)return;
   const oldName=ct.name;
@@ -1866,7 +2079,7 @@ function candidateButtons(arr,field,key){
 function renderVoiceConfirm(customers=window.voiceCustomerCandidates||[],contacts=window.voiceContactCandidates||[]){
   const d=window.voiceDraft;
   voiceConfirm.innerHTML=`<div class="confirmgrid">
-  <div class="confirmitem ${d.customer?'':'warn'}"><b>客户</b><div>${esc(d.customer||'未确定')}</div>${candidateButtons(customers,'customer','c')}</div>
+  <div class="confirmitem ${d.customer?'':'warn'}"><b>客户</b><div>${esc(d.customer||'未确定')}</div><div class="meta" id="vcCustomerHint"></div>${candidateButtons(customers,'customer','c')}</div>
   <div class="confirmitem ${d.contact?'':'warn'}"><b>联系人</b><div>${esc(d.contact||'未确定')}</div>${candidateButtons(contacts,'contact','ct')}</div>
   <div class="confirmitem"><b>拜访日期</b><input id="vcDate" type="date" value="${esc(d.date)}"></div>
   <div class="confirmitem"><b>关联项目</b><div class="meta" id="vcProjectHint">可选。挂到项目后，项目详情里就能看到这条拜访。</div><div class="contactChoiceBtns" id="vcProjectBtns"></div><input id="vcProject" type="hidden" value=""></div>
@@ -1886,6 +2099,7 @@ function renderVoiceConfirm(customers=window.voiceCustomerCandidates||[],contact
     <div id="voiceAttachments"></div>
   </div>
   </div><div class="row save-actions"><button class="secondary" onclick="saveVoiceDraft(false)">仅保存</button><button class="primary" onclick="saveVoiceDraft(true)">保存并导出数据</button></div><div class="meta" style="margin-top:8px">仅保存：写入本机浏览器，不生成文件。保存并导出：先保存本次拜访，再生成完整 JSON 备份，并在手机支持时调出系统分享/存储界面。</div>`;
+  renderVoiceCustomerHint();
   renderVoiceProjectChoices();
   setTimeout(renderVoiceAttachments,0);
 }
@@ -1933,11 +2147,67 @@ function voicePick(field,val){
   if(field==='contact'&&window.voiceDraft?.customer) rememberContactAlias(window.voiceDraft.customer,window.voiceDraft._spokenContact||oldValue,value);
   renderVoiceConfirm();
 }
+/* 手输的往往不是全称（只记得简称 / 少打几个字 / 打错一个字）。
+   先跟库里已有的对一遍：能对上就用标准全称，否则同一个小区的客户会被记成好几条。 */
+/* 保存前就让用户知道这一条会归到已有客户、还是会新建 —— 免得保存完才发现建重复了 */
+function renderVoiceCustomerHint(){
+  const d=window.voiceDraft;if(!d)return;
+  const el=document.getElementById('vcCustomerHint');if(!el)return;
+  const name=(d.customer||'').trim();
+  if(!name){el.textContent='还没定客户：可以点下面的语音候选，或点「手动输入」。';return;}
+  const c=getCustomer(name);
+  if(c){
+    const n=(c.history||[]).length;
+    el.textContent='已对到库里已有的客户'+(n?('（已有 '+n+' 条拜访记录）'):'（还没有拜访记录）')+'。';
+    return;
+  }
+  const list=customerMatches(name);
+  el.textContent='库里没有「'+name+'」这个客户，保存会新建。'
+    +(list.length?('相近的有：'+list.slice(0,3).map(x=>x.c.name).join('、')+'。点「手动输入」可以改成它。'):'');
+}
+function resolveCustomerName(input){
+  const raw=String(input==null?'':input).trim();
+  if(!raw)return raw;
+  const exact=getCustomer(raw);          /* 精确 / 归一化后相等 → 静默用库里的标准名 */
+  if(exact)return exact.name;
+  const list=customerMatches(raw);       /* 相似候选（阈值 0.45） */
+  if(!list.length)return raw;            /* 库里确实没有相近的 → 就该新建 */
+  const top=list[0];
+  const shown=list.slice(0,4).map((x,i)=>(i+1)+'. '+x.c.name).join('\n');
+  return confirm('库里已有相近的客户：\n\n'+shown+'\n\n确定 = 归到「'+top.c.name+'」\n取消 = 仍按「'+raw+'」记（会新建客户）')
+    ? top.c.name : raw;
+}
+/* 联系人同理：手打的可能是个叫法，先跟这个客户下面已有的对一遍 */
+function resolveContactName(customer,input){
+  const raw=String(input==null?'':input).trim();
+  if(!raw)return raw;
+  const exact=getContact(customer,raw);
+  if(exact)return exact.name;
+  const list=contactMatches(customer,raw);
+  if(!list.length)return raw;
+  const top=list[0];
+  const shown=list.slice(0,4).map((x,i)=>(i+1)+'. '+x.ct.name).join('\n');
+  return confirm('这个客户下面已有相近的联系人：\n\n'+shown+'\n\n确定 = 用「'+top.ct.name+'」\n取消 = 仍按「'+raw+'」记（会新建联系人）')
+    ? top.ct.name : raw;
+}
 function voiceManual(field){
   captureVoiceEdits();
   const oldValue=window.voiceDraft?.[field]||'';
-  const v=prompt('请输入'+(field==='customer'?'客户全称':'联系人'),oldValue);
-  if(v){window.voiceDraft[field]=v;if(field==='customer'){learnCustomerAlias(v);window.voiceContactCandidates=contactSpeechCandidates(getCustomer(v),voiceText.value.trim());}if(field==='contact'&&window.voiceDraft?.customer)rememberContactAlias(window.voiceDraft.customer,window.voiceDraft._spokenContact||oldValue,v);renderVoiceConfirm();}
+  const v=prompt(field==='customer'
+    ?'客户名称（写简称也行，会先跟库里已有的对一遍）'
+    :'联系人',oldValue);
+  if(v===null||v===undefined)return;
+  let value=String(v).trim();
+  if(!value)return;
+  if(field==='customer')value=resolveCustomerName(value);
+  else if(field==='contact')value=resolveContactName(getCustomer(window.voiceDraft?.customer||''),value);
+  window.voiceDraft[field]=value;
+  if(field==='customer'){
+    learnCustomerAlias(value);
+    window.voiceContactCandidates=contactSpeechCandidates(getCustomer(value),voiceText.value.trim());
+  }
+  if(field==='contact'&&window.voiceDraft?.customer)rememberContactAlias(window.voiceDraft.customer,window.voiceDraft._spokenContact||oldValue,value);
+  renderVoiceConfirm();
 }
 
 function newId(){return 'a_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);}
