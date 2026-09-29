@@ -1,0 +1,63 @@
+客户管理助手 PWA —— 上传这 4 个文件就到 V5.15.0
+================================================
+
+目标仓库：https://github.com/xygforusa-rgb/crm
+上传位置：仓库【根目录】（和现有的 index.html、sw.js 放在同一层，不要放进子文件夹）
+
+要上传的文件（就这 4 个）
+------------------------
+  index.html    163268 字节   从 V5.13.0 → V5.15.0（项目库 + 项目进看板 + 两处 bug 修复）
+  sw.js           1250 字节   缓存名升级，部署后自动清理旧缓存
+  app.js           194 字节   只改了版本号注释
+  README.txt      8069 字节   变更说明
+
+不用传的（线上已经和本地一致，一个字都没变）：
+  market.json、manifest.webmanifest、icon-192.png、icon-512.png
+
+
+怎么上传
+--------
+1. 打开 https://github.com/xygforusa-rgb/crm
+2. 点右上 "Add file" → "Upload files"
+3. 把上面 4 个文件一起拖进去（可以一次全选）
+4. 提交信息随便写，比如 "V5.15.0 项目库 + 项目进看板"
+5. 点 "Commit changes"
+6. 等 1~2 分钟，GitHub Pages 会自动重新部署
+
+
+上传后怎么核对（可选）
+--------------------
+在本机跑这条命令，四行都显示"相同"就对了：
+
+  C:\Users\Administrator\.workbuddy\binaries\python\versions\3.13.12\python.exe ^
+    "C:\Users\Administrator\WorkBuddy\2026-09-16-12-01-32\.live-check\check_live.py"
+
+或者直接打开 https://xygforusa-rgb.github.io/crm/ ，看页面最上面那行
+是不是写着 "PWA V5.15.0"。
+
+文件指纹（把你上传的拖进计算器也能对）：
+  index.html   sha256 2f3ce663bc2258bf6bbb9a02...
+  sw.js        sha256 f648f416638d7dec2bd3e677...
+  app.js       sha256 d0e31fecfbcd613bb8ad40b5...
+  README.txt   sha256 010fac134d335c5312ec5276...
+
+
+⚠️ 手机上还是旧版怎么办
+----------------------
+1. **先把 PWA 完全关掉再重新打开**（不是切后台，是从任务列表划掉）。
+   因为 sw.js 换了缓存名，重开时它会自动删掉旧缓存、拉新的。
+2. 如果还不行，在浏览器里打开站点后**下拉刷新 / 强制刷新**。
+3. **千万不要点"清除站点数据 / 清除缓存和 Cookie"** ——
+   那会把你手机里存的客户、联系人、拜访记录和附件全部删掉！
+   真遇到顽固缓存，先在 PC 上确认新版正常，再在手机上关掉重开试。
+
+（如果确实需要清站点数据，请务必先在旧版里点
+ 「完整备份（含附件）」导出 JSON，清完之后用「恢复完整备份」导入。）
+
+
+另一个更省事的办法
+------------------
+给我一个能写这个仓库的 GitHub Personal Access Token，
+我直接用 GitHub API 把这 4 个文件提交上去，并当场核对线上版本。
+（在 GitHub → Settings → Developer settings → Personal access tokens 里生成，
+ 勾选 repo 权限即可。用完你可以立刻把它删掉。）

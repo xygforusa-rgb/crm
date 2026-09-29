@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>客户管理助手 V5.13.0</title>
+<title>客户管理助手 V5.15.0</title>
 <meta name="theme-color" content="#172033">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -147,12 +147,41 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
 .mktEmpty{background:#fff;border:1px dashed var(--border);border-radius:14px;padding:22px 14px;text-align:center;color:var(--muted);font-size:14px;line-height:1.7}
 .mktNote{margin-top:14px;font-size:12px;color:var(--muted);line-height:1.75;background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px}
 .mktNote b{color:#33415c}
+
+/* ===== 项目 ===== */
+.countRow3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0}
+.projCard{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0;cursor:pointer}
+.projCard:active{transform:scale(.995)}
+.projTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.projName{font-size:16px;font-weight:800;line-height:1.35;word-break:break-all}
+.projCode{font-size:12px;color:var(--muted);margin-top:3px;word-break:break-all}
+.projMetaRow{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:9px;padding-top:8px;border-top:1px dashed var(--border)}
+.projStat{display:inline-block;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;color:#fff;white-space:nowrap}
+.projStatBtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.projStatBtns button{padding:9px 12px;font-size:14px}
+.toolbar .backupStrong{background:#0f766e;color:#fff;border:1px solid #0d9488}
+.projLinkRow{font-size:12px;color:var(--muted);margin-top:6px}
+/* ---- V5.15.0 看板 · 项目区 ---- */
+.projKpis{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
+.projKpis button{flex:0 0 auto;padding:9px 12px;font-size:14px}
+.projKpis button.active{background:#172033;color:#fff}
+.projKpis button.warn{color:#9a3412;background:#fff7ed;border-color:#fca5a5}
+.projKpis button.warn.active{background:#9a3412;color:#fff;border-color:#9a3412}
+.dashProj{background:#fff;border:1px solid var(--border);border-radius:14px;padding:13px;margin:10px 0;cursor:pointer}
+.dashProjTop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.dashProjName{font-weight:800;font-size:16px;line-height:1.35}
+.dashProjCust{font-size:13px;color:#64748b;margin-top:3px;word-break:break-all}
+.dashProjMeta{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:#6d7890;margin-top:8px}
+.dashProjStale{color:#9a3412;font-weight:700}
+.dashProjActs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.dashProjActs button{padding:8px 12px;font-size:13px}
+.projMoreWrap{margin:10px 0 0}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>客户管理助手</h1>
-  <div class="sub">PWA V5.13.0 · 国网组合电器中标行情 · 客户整理工作台 · 灵活延期与等待客户提醒 · 首页拜访可点击详情 · 语音页面生命周期 · 保存后选择 · 可交互跟进看板 · 个性语音学习 · 本地智能识别 · 分层客户视图 · 本机附件 · 旧数据库兼容</div>
+  <div class="sub">PWA V5.15.0 · 客户项目库 · 国网组合电器中标行情 · 客户整理工作台 · 灵活延期与等待客户提醒 · 首页拜访可点击详情 · 语音页面生命周期 · 保存后选择 · 可交互跟进看板 · 个性语音学习 · 本地智能识别 · 分层客户视图 · 本机附件 · 旧数据库兼容</div>
 
   <div class="tabs">
     <button class="tab active" id="tabDash" onclick="showTab('dash')">看板</button>
@@ -170,6 +199,9 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
     </div>
     <div class="sectiontitle">今天最该处理</div>
     <div id="taskList"></div>
+    <div class="sectiontitle">项目 <span class="meta" id="projSectionMeta"></span></div>
+    <div class="projKpis" id="projKpis"></div>
+    <div id="dashProjList"></div>
   </section>
 
   <section id="taskFilterPanel" class="hidden">
@@ -237,8 +269,11 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
       <button class="primary small" onclick="saveAndExportData()">备份当前数据库</button>
       <button class="secondary small" onclick="document.getElementById('importFile').click()">导入主数据 JSON</button>
       <button class="secondary small" onclick="exportCSV()">导出 CSV 查看</button>
+      <button class="secondary small backupStrong" onclick="exportFullBackup()">完整备份（含附件）</button>
+      <button class="secondary small" onclick="document.getElementById('importFullFile').click()">恢复完整备份</button>
       <button class="secondary small dangerLite" onclick="openCleanup()">待整理</button>
       <input id="importFile" type="file" accept=".json" class="hidden" onchange="importJSON(event)">
+      <input id="importFullFile" type="file" accept=".json" class="hidden" onchange="importFullBackup(event.target.files[0]);event.target.value=''">
     </div>
     <input id="search" placeholder="搜索客户 / 联系人 / 电话" oninput="renderDB()" style="margin:8px 0 12px">
     <div id="dbList"></div>
@@ -277,6 +312,7 @@ button{border:0;border-radius:12px;padding:14px 16px;font-size:17px;font-weight:
       <div class="veField"><label>跟进时间</label><input id="veFollow" type="datetime-local"></div>
       <div class="veField full"><label>沟通内容</label><textarea id="veContent"></textarea></div>
       <div class="veField full"><label>待办 / 下一步</label><textarea id="veTodo"></textarea></div>
+      <div class="veField full"><label>关联项目</label><div class="contactChoiceBtns" id="veProjectBtns"></div><input id="veProject" type="hidden" value=""></div>
       <div class="veField full"><label>重要程度</label><div class="segBtns" id="vePriorityBtns"></div><input id="vePriority" type="hidden" value="B"></div>
       <div class="veField full"><label>状态</label><div class="segBtns" id="veStatusBtns"></div><input id="veStatus" type="hidden" value="待跟进"></div>
     </div>
@@ -663,10 +699,10 @@ function resetForm() {
 function showTab(t) {
   if(t!=='voice') stopVoiceListening();
   if(t==='voice') document.getElementById('voiceDoneCard')?.classList.add('hidden');
+  const TAB_ID={dash:'tabDash',voice:'tabVoice',db:'tabDB',mkt:'tabMkt'};
   ['dash','voice','db','mkt'].forEach(x=>{
     document.getElementById(x+'Panel')?.classList.toggle('hidden',x!==t);
-    const id='tab'+x.charAt(0).toUpperCase()+x.slice(1);
-    document.getElementById(id)?.classList.toggle('active',x===t);
+    document.getElementById(TAB_ID[x])?.classList.toggle('active',x===t);
   });
   document.getElementById('formPanel')?.classList.add('hidden');
   document.getElementById('taskFilterPanel')?.classList.add('hidden');
@@ -688,11 +724,13 @@ let dbReturnToTaskFilter=false;
 let dbReturnToDashboard=false;
 function dbBack(){
   if(dbView.type==='cleanup'){dbView={type:'search',ci:null};return renderDB();}
-  if(dbReturnToDashboard && dbView.type==='visit'){dbReturnToDashboard=false;showTab('dash');window.scrollTo({top:0,behavior:'smooth'});return;}
+  if(dbReturnToDashboard && (dbView.type==='visit'||dbView.type==='project')){dbReturnToDashboard=false;showTab('dash');window.scrollTo({top:0,behavior:'smooth'});return;}
   if(dbReturnToTaskFilter && dbView.type==='visit'){dbReturnToTaskFilter=false;document.getElementById('dbPanel')?.classList.add('hidden');document.getElementById('taskFilterPanel')?.classList.remove('hidden');renderTaskFilter();return;}
-  if(dbView.type==='visit') dbView={type:'customer',ci:dbView.ci};
+  if(dbView.type==='visit') dbView=dbView.from==='project'?{type:'project',ci:dbView.ci,pi:dbView.pi}:{type:'customer',ci:dbView.ci};
   else if(dbView.type==='contact') dbView={type:'contacts',ci:dbView.ci};
+  else if(dbView.type==='project') dbView={type:'projects',ci:dbView.ci};
   else if(dbView.type==='reports'||dbView.type==='contacts') dbView={type:'customer',ci:dbView.ci};
+  else if(dbView.type==='projects') dbView={type:'customer',ci:dbView.ci};
   else if(dbView.type==='customer') dbView={type:'search',ci:null};
   renderDB();
 }
@@ -716,7 +754,7 @@ function reportSummary(ci,item){
 }
 function customerSummaryCard(c,ci){
   const ordered=historyOrder(c),recent=ordered.slice(0,3);
-  return `<div class="customerSummary"><div class="entityTop"><div><h3>${esc(c.name)}</h3><div class="meta">${esc(c.defaultOffice||'办公地未填写')}</div></div><button class="primary small" onclick="openCustomer(${ci})">打开客户</button></div><div class="countRow"><div class="countBox">联系人<b>${(c.contacts||[]).length}</b></div><div class="countBox">拜访报告<b>${(c.history||[]).length}</b></div></div><div class="recentTitle">最近 ${Math.min(3,recent.length)} 条报告</div>${recent.map(x=>`<div class="miniReport"><div class="miniDate">${esc(x.h.date||'日期未填写')} · ${esc(x.h.contact||'联系人未填写')}</div><div class="miniContent">${esc(x.h.content||'暂无沟通内容')}</div></div>`).join('')||'<div class="meta">暂无拜访报告</div>'}</div>`;
+  return `<div class="customerSummary"><div class="entityTop"><div><h3>${esc(c.name)}</h3><div class="meta">${esc(c.defaultOffice||'办公地未填写')}</div></div><button class="primary small" onclick="openCustomer(${ci})">打开客户</button></div><div class="countRow3"><div class="countBox">联系人<b>${(c.contacts||[]).length}</b></div><div class="countBox">项目<b>${(c.projects||[]).length}</b></div><div class="countBox">拜访报告<b>${(c.history||[]).length}</b></div></div><div class="recentTitle">最近 ${Math.min(3,recent.length)} 条报告</div>${recent.map(x=>`<div class="miniReport"><div class="miniDate">${esc(x.h.date||'日期未填写')} · ${esc(x.h.contact||'联系人未填写')}</div><div class="miniContent">${esc(x.h.content||'暂无沟通内容')}</div></div>`).join('')||'<div class="meta">暂无拜访报告</div>'}</div>`;
 }
 function renderDB() {
   const list=document.getElementById('dbList'); if(!list)return;
@@ -725,7 +763,7 @@ function renderDB() {
   if(dbView.type==='search'){
     if(search)search.style.display='block';
     const filtered=data.filter(c=>{
-      const blob=[c.name,...(c.contacts||[]).flatMap(x=>[x.name,x.phone,x.office,x.note]),...(c.history||[]).flatMap(h=>[h.content,h.todo,h.contact,h.office])].join(' ').toLowerCase();
+      const blob=[c.name,...(c.contacts||[]).flatMap(x=>[x.name,x.phone,x.office,x.note]),...(c.history||[]).flatMap(h=>[h.content,h.todo,h.contact,h.office]),...(c.projects||[]).flatMap(p=>[p.name,p.code,p.note,p.status])].join(' ').toLowerCase();
       return !q || blob.includes(q);
     });
     list.innerHTML=(q?'<div class="dbcrumb">搜索结果：'+filtered.length+' 个客户</div>':'<div class="dbcrumb">先搜索客户，再逐层查看联系人和拜访报告。</div>')+filtered.map(c=>customerSummaryCard(c,data.indexOf(c))).join('') || '<div class="meta">没有找到结果</div>';
@@ -752,7 +790,56 @@ function renderDB() {
   const nav=`<div class="dbnav"><button class="secondary small" onclick="dbBack()">← 返回</button><div class="dbcrumb">${esc(c.name)}</div></div>`;
   if(dbView.type==='customer'){
     const recent=historyOrder(c).slice(0,3);
-    list.innerHTML=nav+`<div class="customer"><div class="detailTitle">${esc(c.name)}</div>${fieldLine('客户名称',c.name,`editCustomerField(${ci},'name')`,'',false)}${fieldLine('默认办公地',c.defaultOffice||'',`editCustomerField(${ci},'defaultOffice')`,`clearCustomerField(${ci},'defaultOffice')`)}<div class="countRow"><button class="countBox" onclick="openContacts(${ci})">联系人<b>${(c.contacts||[]).length}</b></button><button class="countBox" onclick="openReports(${ci})">拜访报告<b>${(c.history||[]).length}</b></button></div><div class="recentTitle">最近 3 条报告</div>${recent.map(x=>reportSummary(ci,x)).join('')||'<div class="meta">暂无拜访报告</div>'}<div class="dbactions"><button class="primary" onclick="newContact(${ci})">＋ 新建联系人</button><button class="primary" onclick="openVisitEditor(${ci},-1,'new')">＋ 新建拜访</button><button class="secondary" onclick="openReports(${ci})">查看全部报告</button><button class="secondary" onclick="openContacts(${ci})">按联系人查看</button><button class="delbtn" onclick="deleteCustomer(${ci})">删除整个客户</button></div></div>`;
+    list.innerHTML=nav+`<div class="customer"><div class="detailTitle">${esc(c.name)}</div>${fieldLine('客户名称',c.name,`editCustomerField(${ci},'name')`,'',false)}${fieldLine('默认办公地',c.defaultOffice||'',`editCustomerField(${ci},'defaultOffice')`,`clearCustomerField(${ci},'defaultOffice')`)}<div class="countRow3"><button class="countBox" onclick="openContacts(${ci})">联系人<b>${(c.contacts||[]).length}</b></button><button class="countBox" onclick="openProjects(${ci})">项目<b>${(c.projects||[]).length}</b></button><button class="countBox" onclick="openReports(${ci})">拜访报告<b>${(c.history||[]).length}</b></button></div><div class="recentTitle">最近 3 条报告</div>${recent.map(x=>reportSummary(ci,x)).join('')||'<div class="meta">暂无拜访报告</div>'}<div class="dbactions"><button class="primary" onclick="newContact(${ci})">＋ 新建联系人</button><button class="primary" onclick="newProject(${ci})">＋ 新建项目</button><button class="primary" onclick="openVisitEditor(${ci},-1,'new')">＋ 新建拜访</button><button class="secondary" onclick="openProjects(${ci})">查看项目</button><button class="secondary" onclick="openReports(${ci})">查看全部报告</button><button class="secondary" onclick="openContacts(${ci})">按联系人查看</button><button class="delbtn" onclick="deleteCustomer(${ci})">删除整个客户</button></div></div>`;
+    return;
+  }
+  if(dbView.type==='projects'){
+    const ps=projectsOf(c);
+    list.innerHTML=nav+'<div class="choicebar"><button class="primary" onclick="newProject('+ci+')">＋ 新建项目</button>'
+      +'<button class="secondary" onclick="openCustomer('+ci+')">返回客户</button></div>'
+      +'<div class="detailTitle">项目（'+ps.length+'）</div>'
+      +(ps.map((p,pi)=>projectCard(c,ci,pi)).join('')
+        ||'<div class="meta">这个客户还没有项目。新建一个之后，就可以把拜访、图纸、照片都挂到它名下。</div>');
+    return;
+  }
+  if(dbView.type==='project'){
+    const pi=dbView.pi,p=c.projects?.[pi];
+    if(!p){dbView={type:'projects',ci};return renderDB();}
+    const vs=projectVisits(c,p.id);
+    const ordered=vs.slice().sort((a,b)=>String(b.h.date||'').localeCompare(String(a.h.date||'')));
+    const atts=(p.attachments||[]).map((a,ai)=>
+      '<div class="attachitem"><div class="attachmeta"><div class="attachname">'+esc(a.name||'附件')+'</div>'
+      +'<div class="meta">'+(a.kind==='link'?'链接':'本地文件')+(a.size?' · '+Math.round(a.size/1024)+' KB':'')+'</div></div>'
+      +'<button class="editbtn" onclick="openProjectAttachment('+ci+','+pi+','+ai+')">打开</button>'
+      +'<button class="delbtn" onclick="removeProjectAttachment('+ci+','+pi+','+ai+')">删除</button></div>'
+    ).join('')||'<div class="meta">还没有附件。图纸、照片、招标文件都可以加，也可以加网盘链接。</div>';
+    const statusBtns=PROJECT_STATUS.map(s=>
+      '<button type="button" class="secondary'+(p.status===s?' active':'')+'"'
+      +(p.status===s?(' style="background:'+(PROJECT_STATUS_STYLE[s]||'#6d7890')+';color:#fff"'):'')
+      +' onclick="setProjectStatus('+ci+','+pi+',\''+s+'\')">'+s+'</button>').join('');
+    const visitList=ordered.map(x=>
+      '<div class="reportCard"><div class="reportTop"><div><div class="miniDate">'+esc(x.h.date||'日期未填写')+' · '+esc(x.h.contact||'联系人未填写')+'</div>'
+      +'<div class="miniContent">'+esc(x.h.content||'暂无沟通内容')+'</div></div>'
+      +'<span class="pill">'+esc(x.h.status||'待跟进')+'</span></div>'
+      +'<div class="choicebar"><button class="secondary small" onclick="openVisitAtProject('+ci+','+pi+','+x.hi+')">查看详情</button>'
+      +'<button class="delbtn" onclick="unlinkVisitFromProject('+ci+','+x.hi+')">解除关联</button></div></div>'
+    ).join('')||'<div class="meta">还没有拜访关联到这个项目。</div>';
+    const fid='pf_'+ci+'_'+pi;
+
+    list.innerHTML=nav+'<div class="customer"><div class="detailTitle">'+esc(p.name)+'</div>'
+      +fieldLine('项目名称',p.name,'editProjectField('+ci+','+pi+',\'name\')','',false)
+      +fieldLine('项目编号 / 备注名',p.code||'','editProjectField('+ci+','+pi+',\'code\')','clearProjectField('+ci+','+pi+',\'code\')')
+      +fieldLine('备注 / 说明',p.note||'','editProjectField('+ci+','+pi+',\'note\')','clearProjectField('+ci+','+pi+',\'note\')')
+      +'<div class="recentTitle">项目状态</div><div class="projStatBtns">'+statusBtns+'</div>'
+      +'<div class="attachbox"><b>附件 / 图纸 / 照片</b>'+atts
+      +'<div class="choicebar"><button class="secondary" onclick="document.getElementById(\''+fid+'\').click()">添加文件/照片</button>'
+      +'<button class="secondary" onclick="addProjectLink('+ci+','+pi+')">添加链接</button>'
+      +'<input id="'+fid+'" type="file" multiple style="display:none" onchange="addProjectFiles('+ci+','+pi+',this.files);this.value=\'\'"></div></div>'
+      +'<div class="recentTitle">关联的拜访（'+vs.length+'）</div>'+visitList
+      +'<div class="choicebar" style="margin-top:12px">'
+      +'<button class="primary" onclick="openVisitEditor('+ci+',-1,\'new\',null,'+pi+')">＋ 新建拜访并关联本项目</button>'
+      +'<button class="secondary" onclick="linkExistingVisit('+ci+','+pi+')">关联已有拜访</button></div>'
+      +'<div class="dbactions"><button class="delbtn" onclick="deleteProject('+ci+','+pi+')">删除这个项目</button></div></div>';
     return;
   }
   if(dbView.type==='contacts'){
@@ -772,12 +859,13 @@ function renderDB() {
   }
   if(dbView.type==='visit'){
     const hi=dbView.hi,h=c.history?.[hi];if(!h){dbView={type:'customer',ci};return renderDB();}
-    list.innerHTML=nav+`<div class="customer"><div class="detailTitle">拜访详情</div>${fieldLine('拜访日期',h.date||'',`editHistoryField(${ci},${hi},'date')`,`clearHistoryField(${ci},${hi},'date')`)}${fieldLine('联系人',h.contact||'',`editHistoryField(${ci},${hi},'contact')`,`clearHistoryField(${ci},${hi},'contact')`)}${fieldLine('办公地',h.office||'',`editHistoryField(${ci},${hi},'office')`,`clearHistoryField(${ci},${hi},'office')`)}${fieldLine('沟通内容',h.content||'',`editHistoryField(${ci},${hi},'content')`,`clearHistoryField(${ci},${hi},'content')`)}${fieldLine('待办',h.todo||'',`editHistoryField(${ci},${hi},'todo')`,`clearHistoryField(${ci},${hi},'todo')`)}${fieldLine('跟进时间',h.followUpAt?String(h.followUpAt).replace('T',' '):'',`editHistoryField(${ci},${hi},'followUpAt')`,`clearHistoryField(${ci},${hi},'followUpAt')`)}${fieldLine('重要程度',h.priority||'B',`editHistoryField(${ci},${hi},'priority')`,'',false)}${fieldLine('状态',h.status||'待跟进',`editHistoryField(${ci},${hi},'status')`,'',false)}<div class="choicebar"><button class="primary" onclick="openVisitEditor(${ci},${hi},'edit')">编辑整条拜访</button><button class="secondary" onclick="openVisitEditor(${ci},${hi},'edit','focusContact')">关联 / 更换联系人</button></div><div class="attachbox"><b>附件 / 链接</b>${(h.attachments||[]).map((a,ai)=>`<div class="attachitem"><div class="attachmeta"><div class="attachname">${esc(a.name||'附件')}</div><div class="meta">${a.kind==='link'?'链接':'本地文件'}</div></div><button class="editbtn" onclick="openAttachment(${ci},${hi},${ai})">打开</button><button class="delbtn" onclick="removeHistoryAttachment(${ci},${hi},${ai})">删除</button></div>`).join('')||'<div class="meta">暂无附件</div>'}<div class="choicebar"><button class="secondary" onclick="document.getElementById('hf_${ci}_${hi}').click()">添加文件/照片</button><button class="secondary" onclick="addHistoryLink(${ci},${hi})">添加链接</button><input id="hf_${ci}_${hi}" type="file" multiple style="display:none" onchange="addHistoryFiles(${ci},${hi},this.files)"></div></div><div class="histactions"><button class="delbtn" onclick="deleteHistory(${ci},${hi})">删除整条拜访记录</button></div></div>`;
+    list.innerHTML=nav+`<div class="customer"><div class="detailTitle">拜访详情</div>${fieldLine('拜访日期',h.date||'',`editHistoryField(${ci},${hi},'date')`,`clearHistoryField(${ci},${hi},'date')`)}${fieldLine('联系人',h.contact||'',`editHistoryField(${ci},${hi},'contact')`,`clearHistoryField(${ci},${hi},'contact')`)}${fieldLine('办公地',h.office||'',`editHistoryField(${ci},${hi},'office')`,`clearHistoryField(${ci},${hi},'office')`)}${projectLineForVisit(ci,hi,h)}${fieldLine('沟通内容',h.content||'',`editHistoryField(${ci},${hi},'content')`,`clearHistoryField(${ci},${hi},'content')`)}${fieldLine('待办',h.todo||'',`editHistoryField(${ci},${hi},'todo')`,`clearHistoryField(${ci},${hi},'todo')`)}${fieldLine('跟进时间',h.followUpAt?String(h.followUpAt).replace('T',' '):'',`editHistoryField(${ci},${hi},'followUpAt')`,`clearHistoryField(${ci},${hi},'followUpAt')`)}${fieldLine('重要程度',h.priority||'B',`editHistoryField(${ci},${hi},'priority')`,'',false)}${fieldLine('状态',h.status||'待跟进',`editHistoryField(${ci},${hi},'status')`,'',false)}<div class="choicebar"><button class="primary" onclick="openVisitEditor(${ci},${hi},'edit')">编辑整条拜访</button><button class="secondary" onclick="openVisitEditor(${ci},${hi},'edit','focusContact')">关联 / 更换联系人</button></div><div class="attachbox"><b>附件 / 链接</b>${(h.attachments||[]).map((a,ai)=>`<div class="attachitem"><div class="attachmeta"><div class="attachname">${esc(a.name||'附件')}</div><div class="meta">${a.kind==='link'?'链接':'本地文件'}</div></div><button class="editbtn" onclick="openAttachment(${ci},${hi},${ai})">打开</button><button class="delbtn" onclick="removeHistoryAttachment(${ci},${hi},${ai})">删除</button></div>`).join('')||'<div class="meta">暂无附件</div>'}<div class="choicebar"><button class="secondary" onclick="document.getElementById('hf_${ci}_${hi}').click()">添加文件/照片</button><button class="secondary" onclick="addHistoryLink(${ci},${hi})">添加链接</button><input id="hf_${ci}_${hi}" type="file" multiple style="display:none" onchange="addHistoryFiles(${ci},${hi},this.files)"></div></div><div class="histactions"><button class="delbtn" onclick="deleteHistory(${ci},${hi})">删除整条拜访记录</button></div></div>`;
   }
 }
 
 
 let visitEditorState=null;
+let visitEditorReturnToDash=false;
 function setSegmentValue(inputId,boxId,value){
   const input=document.getElementById(inputId);if(input)input.value=value;
   document.querySelectorAll('#'+boxId+' button').forEach(b=>b.classList.toggle('active',b.dataset.value===value));
@@ -811,21 +899,21 @@ function focusVisitEditorField(hint){
   if(hint==='focusStatus'){document.querySelector('#veStatusBtns button.active')?.focus();return;}
   veContent?.focus();
 }
-function openVisitEditor(ci,hi,mode='edit',contactHint){
+function openVisitEditor(ci,hi,mode='edit',contactHint,projectHint){
   const c=data?.[ci];if(!c)return;
   let h=hi>=0?c.history?.[hi]:null;
   visitEditorState={ci,hi,mode};
   const ctList=document.getElementById('veContactList');ctList.innerHTML=(c.contacts||[]).map(ct=>`<option value="${esc(ct.name)}"></option>`).join('');
   let preset='';
   if(Number.isInteger(contactHint) && contactHint>=0)preset=c.contacts?.[contactHint]?.name||'';
-  const base=h||{date:new Date().toISOString().slice(0,10),contact:preset,office:(c.contacts?.[contactHint]?.office||c.defaultOffice||''),content:'',todo:'',followUpAt:'',priority:'B',status:'待跟进'};
+  const base=h||{date:new Date().toISOString().slice(0,10),contact:preset,office:(c.contacts?.[contactHint]?.office||c.defaultOffice||''),content:'',todo:'',followUpAt:'',priority:'B',status:'待跟进',projectId:''};
   document.getElementById('visitEditTitle').textContent=h?'编辑拜访':'新建拜访';
-  veDate.value=base.date||new Date().toISOString().slice(0,10);veContact.value=base.contact||preset||'';veOffice.value=base.office||'';veContent.value=base.content||'';veTodo.value=base.todo||'';veFollow.value=String(base.followUpAt||'').slice(0,16);renderVisitSegments(base.priority||'B',base.status||'待跟进');renderVisitContactChoices(c,veContact.value);
+  veDate.value=base.date||new Date().toISOString().slice(0,10);veContact.value=base.contact||preset||'';veOffice.value=base.office||'';veContent.value=base.content||'';veTodo.value=base.todo||'';veFollow.value=String(base.followUpAt||'').slice(0,16);renderVisitSegments(base.priority||'B',base.status||'待跟进');renderVisitContactChoices(c,veContact.value);const pid0=(Number.isInteger(projectHint)&&c.projects?.[projectHint])?c.projects[projectHint].id:(base.projectId||'');const pidEl=document.getElementById('veProject');if(pidEl)pidEl.value=pid0;renderVisitProjectChoices(c,pid0);
   veContact.oninput=()=>{document.querySelectorAll('#veContactBtns button').forEach(b=>b.classList.toggle('active',normalizeName(b.dataset.value||'')===normalizeName(veContact.value||'')));};
   visitEditOverlay.classList.remove('hidden');
   setTimeout(()=>focusVisitEditorField(contactHint),50);
 }
-function closeVisitEditor(){document.getElementById('visitEditOverlay')?.classList.add('hidden');visitEditorState=null;}
+function closeVisitEditor(){document.getElementById('visitEditOverlay')?.classList.add('hidden');visitEditorState=null;visitEditorReturnToDash=false;}
 function saveVisitEditor(){
   const st=visitEditorState;if(!st)return;const c=data?.[st.ci];if(!c)return;
   const contact=veContact.value.trim(),date=veDate.value,office=veOffice.value.trim(),content=veContent.value.trim(),todo=veTodo.value.trim(),follow=veFollow.value,priority=vePriority.value||'B',status=veStatus.value||'待跟进';
@@ -833,10 +921,12 @@ function saveVisitEditor(){
   if(contact && !(c.contacts||[]).some(ct=>normalizeName(ct.name)===normalizeName(contact))){
     if(confirm(`“${contact}”还不在这个客户的联系人列表里。\n\n是否同时新建这个联系人？`)){c.contacts=c.contacts||[];c.contacts.push({name:contact,phone:'',office:office||'',note:''});}
   }
-  const payload={date,contact,office,content,todo,followUpAt:follow,priority,status};
+  const payload={date,contact,office,content,todo,followUpAt:follow,priority,status,projectId:(document.getElementById('veProject')?.value||'')};
   if(st.hi>=0){const h=c.history?.[st.hi];if(!h)return;Object.assign(h,payload);if(status==='已完成'&&!h.completedAt)h.completedAt=nowText();if(status!=='已完成')h.completedAt='';}
   else{c.history=c.history||[];c.history.push({...payload,attachments:[],createdAt:new Date().toISOString(),completedAt:status==='已完成'?nowText():''});st.hi=c.history.length-1;}
+  const backToDash=visitEditorReturnToDash;visitEditorReturnToDash=false;
   saveStore();renderDashboard();closeVisitEditor();
+  if(backToDash){showTab('dash');window.scrollTo({top:0,behavior:'smooth'});return;}
   if(dbView.type==='cleanup')return renderDB();
   dbView={type:'visit',ci:st.ci,hi:st.hi};renderDB();
 }
@@ -982,7 +1072,7 @@ async function importFullBackup(file){
       }
       tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
     });db.close();
-    data=x.data;saveStore();renderDB();renderDashboard();updateDataStatus();alert('完整备份恢复完成');
+    data=x.data;migrateData();saveStore();renderDB();renderDashboard();updateDataStatus();alert('完整备份恢复完成');
   }catch(e){alert('恢复失败：'+e.message);}
 }
 function download(name, text, type) {
@@ -1001,7 +1091,7 @@ async function requestPersistentStorage(){
 }
 async function saveAndExportData() {
   saveStore();
-  await requestPersistentStorage();
+  requestPersistentStorage();   // 不能 await：会消耗掉用户手势，iOS 上系统分享面板会被拒
   await exportJSON(false);
 }
 
@@ -1010,7 +1100,7 @@ async function exportJSON(auto=false) {
   meta.exportedAt=nowText();
   meta.source='JSON主数据 / 浏览器临时副本同步';
   saveStore();
-  await requestPersistentStorage();
+  requestPersistentStorage();   // 同上：必须同步调用，后面的 navigator.share 才不会被系统拒
   const text=JSON.stringify(data,null,2);
   const file=new File([text],filename,{type:'application/json'});
   let method='download';
@@ -1084,7 +1174,26 @@ function normalizeImportedCustomer(c) {
       followUpAt:String(h.followUpAt ?? h.followUp ?? h.nextFollowUp ?? '').trim(),
       priority:String(h.priority ?? 'B').trim() || 'B',
       status:String(h.status ?? '待跟进').trim() || '待跟进',
-      attachments:Array.isArray(h.attachments) ? h.attachments : []
+      attachments:Array.isArray(h.attachments) ? h.attachments : [],
+      projectId:String(h.projectId ?? h.project ?? '').trim()
+    };
+  }).filter(Boolean);
+
+  let projects=Array.isArray(c.projects) ? c.projects : [];
+  projects=projects.map(p=>{
+    if(typeof p==='string') return {id:newId(),name:p.trim(),code:'',status:'跟进中',note:'',attachments:[],createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+    if(!p || typeof p!=='object') return null;
+    const pn=String(p.name ?? p.projectName ?? p.title ?? '').trim();
+    if(!pn) return null;
+    return {
+      id:String(p.id || newId()),
+      name:pn,
+      code:String(p.code ?? p.no ?? p.number ?? '').trim(),
+      status:PROJECT_STATUS.includes(p.status) ? p.status : '跟进中',
+      note:String(p.note ?? p.remark ?? p.desc ?? '').trim(),
+      attachments:Array.isArray(p.attachments) ? p.attachments : [],
+      createdAt:String(p.createdAt || new Date().toISOString()),
+      updatedAt:new Date().toISOString()
     };
   }).filter(Boolean);
 
@@ -1092,6 +1201,7 @@ function normalizeImportedCustomer(c) {
     name,
     contacts,
     history,
+    projects,
     defaultOffice:String(c.defaultOffice ?? c.office ?? c.location ?? '').trim()
   };
 }
@@ -1128,6 +1238,7 @@ function importJSON(e) {
       if(!ok) { e.target.value=''; return; }
 
       data=migrated;
+      migrateData();
       meta={source:'JSON主数据（已兼容迁移）',fileName:file.name,importedAt:nowText(),exportedAt:meta.exportedAt||''};
       saveStore();
       renderDB();
@@ -1157,6 +1268,133 @@ function taskScore(t){
   const now=Date.now(), due=new Date(t.h.followUpAt).getTime(), diff=due-now;
   return base+(diff<0?260:diff<=86400000?180:diff<=7*86400000?80:0);
 }
+/* ==================== V5.15.0 看板 · 项目区 ==================== */
+const DASH_PROJ_FILTERS=[
+  {key:'all',   label:'全部'},
+  {key:'跟进中', label:'跟进中'},
+  {key:'已投标', label:'已投标'},
+  {key:'已中标', label:'已中标'},
+  {key:'stale', label:'需要关注'}
+];
+const DASH_PROJ_STALE_DAYS=30;
+let dashProjFilter='all';
+let dashProjExpand=false;
+
+function dashDayDiff(iso){
+  if(!iso)return null;
+  const t=new Date(iso).getTime();
+  if(!isFinite(t))return null;
+  return Math.floor((Date.now()-t)/86400000);
+}
+/* 把所有客户名下的项目摊平，并算出「最近一次关联拜访」与停滞天数 */
+function dashProjects(){
+  const out=[];
+  data.forEach((c,ci)=>{
+    (c.projects||[]).forEach((p,pi)=>{
+      const vs=(c.history||[]).filter(h=>h&&h.projectId&&h.projectId===p.id);
+      const last=vs.map(h=>h.date||'').filter(Boolean).sort().pop()||'';
+      out.push({c,ci,p,pi,visitCount:vs.length,last,days:dashDayDiff(last),attCount:(p.attachments||[]).length});
+    });
+  });
+  return out;
+}
+/* 在跟 / 已投标 且（从未拜访 或 超过阈值没动静）= 需要关注 */
+function dashProjNeedsAttention(x){
+  if(x.p.status!=='跟进中' && x.p.status!=='已投标')return false;
+  return x.days===null ? true : x.days>=DASH_PROJ_STALE_DAYS;
+}
+function dashProjSort(a,b){
+  const na=dashProjNeedsAttention(a)?0:1, nb=dashProjNeedsAttention(b)?0:1;
+  if(na!==nb)return na-nb;
+  const w={'已投标':0,'跟进中':1,'已中标':2,'暂停':3,'已丢单':4};
+  const wa=(w[a.p.status]===undefined?9:w[a.p.status]), wb=(w[b.p.status]===undefined?9:w[b.p.status]);
+  if(wa!==wb)return wa-wb;
+  const da=(a.days===null?99999:a.days), db=(b.days===null?99999:b.days);
+  if(da!==db)return db-da;                       /* 越久没动越靠前 */
+  return String(a.p.name).localeCompare(String(b.p.name),'zh');
+}
+function setDashProjFilter(k){dashProjFilter=k;dashProjExpand=false;renderDashProjects();}
+function toggleDashProjExpand(){dashProjExpand=!dashProjExpand;renderDashProjects();}
+
+function renderDashProjects(){
+  const box=document.getElementById('dashProjList');
+  const kbox=document.getElementById('projKpis');
+  const meta=document.getElementById('projSectionMeta');
+  if(!box||!kbox)return;
+  const all=dashProjects();
+  if(!all.length){
+    kbox.innerHTML='';
+    if(meta)meta.textContent='';
+    box.innerHTML='<div class="meta">还没有项目。在任意客户的「项目」里新建一个，这里会自动出现。</div>';
+    return;
+  }
+  const stale=all.filter(dashProjNeedsAttention).length;
+  const counts={all:all.length,stale:stale};
+  ['跟进中','已投标','已中标'].forEach(s=>{counts[s]=all.filter(x=>x.p.status===s).length;});
+  kbox.innerHTML=DASH_PROJ_FILTERS.map(f=>{
+    const n=(counts[f.key]===undefined?0:counts[f.key]);
+    const cls=(f.key===dashProjFilter?'primary active':'secondary');
+    const warn=(f.key==='stale'&&n>0)?' warn':'';
+    return '<button type="button" class="'+cls+warn+'" onclick="setDashProjFilter(\''+f.key+'\')">'+f.label+' '+n+'</button>';
+  }).join('');
+  if(meta)meta.textContent='共 '+all.length+' 个'+(stale?('，其中 '+stale+' 个需要关注'):'');
+
+  let rows=all.slice().sort(dashProjSort);
+  if(dashProjFilter==='stale')rows=rows.filter(dashProjNeedsAttention);
+  else if(dashProjFilter!=='all')rows=rows.filter(x=>x.p.status===dashProjFilter);
+  if(!rows.length){box.innerHTML='<div class="meta">这个筛选下没有项目。</div>';return;}
+
+  const LIMIT=6;
+  const show=dashProjExpand?rows:rows.slice(0,LIMIT);
+  const card=x=>{
+    const st=x.p.status||'跟进中';
+    const color=PROJECT_STATUS_STYLE[st]||'#6d7890';
+    const staleFlag=dashProjNeedsAttention(x);
+    const lastTxt=x.last?('最近 '+x.last):'还没有关联拜访';
+    const act='openDashboardProject('+x.ci+','+x.pi+')';
+    const actVisit='quickVisitFromDashboard('+x.ci+','+x.pi+')';
+    return '<div class="dashProj" role="button" tabindex="0" onclick="'+act+'"'
+      +' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();'+act+'}">'
+      +'<div class="dashProjTop"><div><div class="dashProjName">'+esc(x.p.name)+'</div>'
+      +'<div class="dashProjCust">'+esc(x.c.name)+(x.p.code?' · '+esc(x.p.code):'')+'</div></div>'
+      +'<span class="projStat" style="background:'+color+'">'+esc(st)+'</span></div>'
+      +'<div class="dashProjMeta"><span>附件 '+x.attCount+'</span><span>拜访 '+x.visitCount+'</span>'
+      +'<span>'+esc(lastTxt)+'</span>'
+      +(staleFlag?('<span class="dashProjStale">⚠ '+(x.days===null?'从未拜访':(x.days+' 天没动静'))+'</span>'):'')
+      +'</div>'
+      +'<div class="dashProjActs" onclick="event.stopPropagation()">'
+      +'<button class="secondary" onclick="event.stopPropagation();'+act+'">打开项目</button>'
+      +'<button class="primary" onclick="event.stopPropagation();'+actVisit+'">记一次拜访</button>'
+      +'</div></div>';
+  };
+  box.innerHTML=show.map(card).join('')
+    +(rows.length>LIMIT
+      ?('<div class="projMoreWrap"><button class="secondary small" onclick="toggleDashProjExpand()">'
+        +(dashProjExpand?('收起，只看前 '+LIMIT+' 个'):('展开全部 '+rows.length+' 个'))+'</button></div>')
+      :'');
+}
+function openDashboardProject(ci,pi){
+  stopVoiceListening();
+  dbReturnToTaskFilter=false;
+  dbReturnToDashboard=true;
+  document.getElementById('dashPanel')?.classList.add('hidden');
+  document.getElementById('taskFilterPanel')?.classList.add('hidden');
+  document.getElementById('voicePanel')?.classList.add('hidden');
+  document.getElementById('formPanel')?.classList.add('hidden');
+  document.getElementById('dbPanel')?.classList.remove('hidden');
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  dbView={type:'project',ci,pi};
+  renderDB();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+/* 从看板项目卡直接记一次拜访：编辑器里预选好客户与项目，保存后回看板 */
+function quickVisitFromDashboard(ci,pi){
+  const c=data?.[ci];
+  if(!c || !c.projects?.[pi])return;
+  visitEditorReturnToDash=true;
+  openVisitEditor(ci,-1,'new',null,pi);
+}
+
 function renderDashboard(){
   const now=new Date(), end=new Date(); end.setHours(23,59,59,999);
   const week=Date.now()+7*86400000;
@@ -1183,6 +1421,7 @@ function renderDashboard(){
       </div>
     </div>`;
   }).join('')||'<div class="meta">还没有设置跟进时间的事项。</div>';
+  renderDashProjects();
 }
 let currentTaskFilter='';
 function taskFilterInfo(kind){
@@ -1830,6 +2069,190 @@ function openLastVoiceCustomer(){
 }
 
 
+
+/* ==================== 项目（客户名下的项目） ==================== */
+const PROJECT_STATUS=['跟进中','已投标','已中标','已丢单','暂停'];
+const PROJECT_STATUS_STYLE={'跟进中':'#1f6feb','已投标':'#b45309','已中标':'#15803d','已丢单':'#b91c1c','暂停':'#6d7890'};
+
+/* 向后兼容：老数据没有 projects / projectId 时就地补齐，不改存储键名 */
+function migrateData(){
+  if(!Array.isArray(data)){data=[];return;}
+  data.forEach(c=>{
+    if(!c||typeof c!=='object')return;
+    if(!Array.isArray(c.projects))c.projects=[];
+    c.projects=c.projects.filter(p=>p&&typeof p==='object');
+    c.projects.forEach(p=>{
+      if(!p.id)p.id=newId();
+      if(!p.name)p.name='未命名项目';
+      if(!PROJECT_STATUS.includes(p.status))p.status='跟进中';
+      if(typeof p.code!=='string')p.code='';
+      if(typeof p.note!=='string')p.note='';
+      if(!Array.isArray(p.attachments))p.attachments=[];
+      if(!p.createdAt)p.createdAt=new Date().toISOString();
+    });
+    (c.history||[]).forEach(h=>{if(h&&typeof h.projectId!=='string')h.projectId='';});
+  });
+}
+function projectsOf(c){return (c&&Array.isArray(c.projects))?c.projects:[];}
+function getProject(c,pid){return pid?projectsOf(c).find(p=>p.id===pid)||null:null;}
+function projectVisits(c,pid){
+  if(!pid)return [];
+  return (c&&Array.isArray(c.history)?c.history:[]).map((h,hi)=>({h,hi})).filter(x=>x.h.projectId===pid);
+}
+function openProjects(ci){dbView={type:'projects',ci};renderDB();}
+function openProject(ci,pi){dbView={type:'project',ci,pi};renderDB();}
+function openVisitAtProject(ci,pi,hi){dbView={type:'visit',ci,hi,from:'project',pi};renderDB();}
+
+function newProject(ci){
+  const c=data?.[ci];if(!c)return null;
+  const name=prompt('项目名称（必填）','');if(name===null)return null;
+  const n=name.trim();if(!n){alert('项目名称不能为空。');return null;}
+  const code=prompt('项目编号 / 备注名（可以不填）','');if(code===null)return null;
+  const p={id:newId(),name:n,code:code.trim(),status:'跟进中',note:'',
+           attachments:[],createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+  c.projects=c.projects||[];c.projects.push(p);
+  saveStore();renderDB();renderDashboard();
+  return p;
+}
+function setProjectStatus(ci,pi,st){
+  const p=data?.[ci]?.projects?.[pi];if(!p)return;
+  p.status=st;p.updatedAt=new Date().toISOString();
+  saveStore();renderDB();
+}
+function editProjectField(ci,pi,key){
+  const p=data?.[ci]?.projects?.[pi];if(!p)return;
+  const labels={name:'项目名称',code:'项目编号 / 备注名',note:'备注 / 说明'};
+  const v=prompt('修改：'+(labels[key]||key),p[key]||'');if(v===null)return;
+  const nv=v.trim();
+  if(key==='name'&&!nv)return alert('项目名称不能为空。');
+  p[key]=nv;p.updatedAt=new Date().toISOString();
+  saveStore();renderDB();
+}
+function clearProjectField(ci,pi,key){
+  const p=data?.[ci]?.projects?.[pi];if(!p||key==='name')return;
+  if(!confirm('确定清空这一项吗？'))return;
+  p[key]='';p.updatedAt=new Date().toISOString();saveStore();renderDB();
+}
+function deleteProject(ci,pi){
+  const c=data?.[ci],p=c?.projects?.[pi];if(!p)return;
+  const linked=projectVisits(c,p.id).length;
+  const extra=linked?('有 '+linked+' 条拜访关联着它，删除后这些拜访会变成“未关联项目”。\n\n'):'';
+  if(!confirm('确定删除项目“'+p.name+'”吗？\n\n'+extra+'项目里的 '+(p.attachments||[]).length+' 个附件记录会一起移除。'))return;
+  (c.history||[]).forEach(h=>{if(h.projectId===p.id)h.projectId='';});
+  c.projects.splice(pi,1);
+  saveStore();renderDB();renderDashboard();
+}
+
+/* ---- 项目附件（与拜访附件共用 IndexedDB） ---- */
+async function addProjectFiles(ci,pi,files){
+  const p=data?.[ci]?.projects?.[pi];if(!p)return;
+  const arr=Array.from(files||[]);if(!arr.length)return;
+  p.attachments=p.attachments||[];
+  let ok=0;
+  for(const f of arr){
+    try{p.attachments.push(await putLocalFile(f));ok++;}
+    catch(e){alert('“'+f.name+'”保存失败：'+(e?.message||e));}
+  }
+  if(ok){p.updatedAt=new Date().toISOString();saveStore();}
+  renderDB();
+}
+function addProjectLink(ci,pi){
+  const p=data?.[ci]?.projects?.[pi];if(!p)return;
+  const url=prompt('请输入链接（图纸网盘、招标文件、客户官网等）','https://');if(!url)return;
+  if(!url.trim())return alert('链接地址不能为空。');
+  const name=prompt('给这个链接起个名称','链接')||'链接';
+  p.attachments=p.attachments||[];
+  p.attachments.push({id:newId(),kind:'link',name:name.trim()||url.trim(),url:url.trim(),note:''});
+  p.updatedAt=new Date().toISOString();
+  saveStore();renderDB();
+}
+async function openProjectAttachment(ci,pi,ai){
+  const a=data?.[ci]?.projects?.[pi]?.attachments?.[ai];if(!a)return;
+  if(a.kind==='link'){
+    if(!a.url)return alert('这条链接没有地址。');
+    try{window.open(a.url,'_blank','noopener');}catch(e){alert('链接打开失败');}
+    return;
+  }
+  try{
+    const rec=await getLocalFile(a.id);
+    if(!rec?.blob)return alert('这个本地附件已不在当前设备。请从完整备份恢复，或重新添加。');
+    await showAttachmentPreview(rec);
+  }catch(e){alert('附件打开失败：'+(e?.message||e));}
+}
+async function removeProjectAttachment(ci,pi,ai){
+  const p=data?.[ci]?.projects?.[pi],a=p?.attachments?.[ai];if(!a)return;
+  if(!confirm('确定移除附件“'+(a.name||'附件')+'”吗？'))return;
+  if(a.kind==='local'){try{await deleteLocalFile(a.id);}catch(e){}}
+  p.attachments.splice(ai,1);p.updatedAt=new Date().toISOString();
+  saveStore();renderDB();
+}
+
+/* ---- 拜访 ↔ 项目 关联 ---- */
+function renderVisitProjectChoices(c,current){
+  const box=document.getElementById('veProjectBtns');if(!box)return;
+  const ps=projectsOf(c);
+  box.innerHTML='';
+  const setVal=(v,b)=>{const el=document.getElementById('veProject');if(el)el.value=v;
+    box.querySelectorAll('button').forEach(x=>{if(x.dataset.value!==undefined)x.classList.toggle('active',x===b);});};
+  const mk=(label,value,active)=>{const b=document.createElement('button');b.type='button';b.className='secondary';b.textContent=label;b.dataset.value=value;
+    if(active)b.classList.add('active');b.onclick=()=>setVal(value,b);box.appendChild(b);};
+  mk('不关联','',!(current||''));
+  ps.forEach(p=>mk(p.name+(p.status&&p.status!=='跟进中'?'（'+p.status+'）':''),p.id,current===p.id));
+  const nb=document.createElement('button');nb.type='button';nb.className='primary';nb.textContent='＋ 新建项目';
+  nb.dataset.value='';
+  nb.onclick=()=>{
+    const created=newProject(data.indexOf(c));
+    if(!created)return;
+    const el=document.getElementById('veProject');if(el)el.value=created.id;
+    renderVisitProjectChoices(c,created.id);
+  };
+  box.appendChild(nb);
+  if(!ps.length){const tip=document.createElement('span');tip.className='meta';tip.textContent='这个客户还没有项目，点右边新建。';box.appendChild(tip);}
+}
+function linkExistingVisit(ci,pi){
+  const c=data?.[ci],p=c?.projects?.[pi];if(!p)return;
+  const cands=(c.history||[]).map((h,hi)=>({h,hi})).filter(x=>x.h.projectId!==p.id);
+  if(!cands.length)return alert('这个客户没有可关联的拜访。');
+  const lines=cands.slice(0,40).map((x,i)=>(i+1)+'. '+(x.h.date||'日期未填')+' · '+(x.h.contact||'联系人未填')+' · '+String(x.h.content||'').replace(/\s+/g,' ').slice(0,20)).join('\n');
+  const more=cands.length>40?('\n... 只列出前 40 条，共 '+cands.length+' 条'):'';
+  const ans=prompt('输入要关联的拜访序号（可多选，用逗号分隔，例如 1,3）\n\n'+lines+more);
+  if(ans===null)return;
+  const picked=[...new Set(String(ans).split(/[\s,，]+/).map(s=>parseInt(s,10)).filter(n=>n>=1&&n<=cands.length))];
+  if(!picked.length)return alert('没有识别到有效序号。');
+  picked.forEach(n=>{c.history[cands[n-1].hi].projectId=p.id;});
+  p.updatedAt=new Date().toISOString();
+  saveStore();renderDB();renderDashboard();
+  alert('已关联 '+picked.length+' 条拜访到「'+p.name+'」。');
+}
+function unlinkVisitFromProject(ci,hi){
+  const h=data?.[ci]?.history?.[hi];if(!h)return;
+  if(!confirm('确定把这条拜访从项目里解除关联吗？'))return;
+  h.projectId='';saveStore();renderDB();
+}
+function projectLineForVisit(ci,hi,h){
+  const c=data?.[ci],p=getProject(c,h.projectId);
+  if(!p){
+    return '<div class="fieldline"><div class="fieldmain"><div class="fieldlabel">所属项目</div><div class="fieldvalue">未关联项目</div></div>'
+      +'<div class="fieldactions"><button class="editbtn" onclick="openVisitEditor('+ci+','+hi+',\'edit\')">关联项目</button></div></div>';
+  }
+  const pi=projectsOf(c).indexOf(p);
+  return '<div class="fieldline"><div class="fieldmain"><div class="fieldlabel">所属项目</div><div class="fieldvalue">'+esc(p.name)+(p.status?' · '+esc(p.status):'')+'</div></div>'
+    +'<div class="fieldactions"><button class="editbtn" onclick="openProject('+ci+','+pi+')">打开项目</button>'
+    +'<button class="editbtn" onclick="openVisitEditor('+ci+','+hi+',\'edit\')">更换</button></div></div>';
+}
+function projectCard(c,ci,pi){
+  const p=c.projects[pi];
+  const vs=projectVisits(c,p.id);
+  const last=vs.map(x=>x.h.date||'').filter(Boolean).sort().pop()||'';
+  return '<div class="projCard" onclick="openProject('+ci+','+pi+')">'
+    +'<div class="projTop"><div><div class="projName">'+esc(p.name)+'</div>'
+    +(p.code?'<div class="projCode">'+esc(p.code)+'</div>':'')
+    +'</div><span class="projStat" style="background:'+(PROJECT_STATUS_STYLE[p.status]||'#6d7890')+'">'+esc(p.status||'跟进中')+'</span></div>'
+    +'<div class="projMetaRow"><span>附件 '+(p.attachments||[]).length+'</span><span>拜访 '+vs.length+'</span>'
+    +(last?'<span>最近 '+esc(last)+'</span>':'')
+    +'</div></div>';
+}
+
 /* ==================== 国网中标行情（组合电器） ==================== */
 let marketData = null;
 let marketStatus = 'idle';                 // idle | loading | ok | fallback | error
@@ -2018,6 +2441,7 @@ if('serviceWorker' in navigator && location.protocol!=='file:'){
     .catch(()=>{});
 }
 
+migrateData();
 renderStep();
 renderDB();
 renderDashboard();
