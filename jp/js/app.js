@@ -223,24 +223,24 @@ function moras(kana) {
 function pitchSVG(kana, accent) {
   const ms = moras(kana);
   if (accent < 0 || !ms.length) return "";
-  // 手机端读图为主，步距和假名都放大一档（26→30 / 12→14）
-  const N = ms.length, W = 18 + N * 30 + 30, hi = 12, lo = 34;
+  // 手机端读图为主，步距和假名都放大（30→34 / 14→16）
+  const N = ms.length, W = 20 + N * 34 + 34, hi = 14, lo = 38;
   const isHigh = i => accent === 0 ? i >= 2 : (accent === 1 ? i === 1 : i >= 2 && i <= accent);
   let p = "";
   for (let i = 1; i <= N; i++) {
-    const x = 14 + (i - 1) * 30, y = isHigh(i) ? hi : lo;
+    const x = 16 + (i - 1) * 34, y = isHigh(i) ? hi : lo;
     if (i > 1) {
-      const px = 14 + (i - 2) * 30, py = isHigh(i - 1) ? hi : lo;
-      p += `<line x1="${px}" y1="${py}" x2="${x}" y2="${y}" stroke="#1d9e75" stroke-width="1.8"/>`;
+      const px = 16 + (i - 2) * 34, py = isHigh(i - 1) ? hi : lo;
+      p += `<line x1="${px}" y1="${py}" x2="${x}" y2="${y}" stroke="#1d9e75" stroke-width="2"/>`;
     }
-    p += `<circle cx="${x}" cy="${y}" r="4.5" fill="${isHigh(i) ? "#1d9e75" : "#fff"}" stroke="#1d9e75" stroke-width="1.8"/>`;
-    p += `<text x="${x}" y="${y + 21}" text-anchor="middle" font-size="14" fill="#6b6a65">${ms[i - 1]}</text>`;
+    p += `<circle cx="${x}" cy="${y}" r="5" fill="${isHigh(i) ? "#1d9e75" : "#fff"}" stroke="#1d9e75" stroke-width="2"/>`;
+    p += `<text x="${x}" y="${y + 23}" text-anchor="middle" font-size="16" fill="#6b6a65">${ms[i - 1]}</text>`;
   }
-  const px = 14 + (N - 1) * 30, py = isHigh(N) ? hi : lo;
-  const ax = 14 + N * 30, ay = accent === 0 ? hi : lo;
-  p += `<line x1="${px}" y1="${py}" x2="${ax}" y2="${ay}" stroke="#1d9e75" stroke-width="1.8" stroke-dasharray="3 3"/>`;
-  p += `<circle cx="${ax}" cy="${ay}" r="4.5" fill="none" stroke="#1d9e75" stroke-width="1.8" stroke-dasharray="2 2"/>`;
-  return `<svg viewBox="0 0 ${W} 62" width="${W}" height="62" role="img" aria-label="声调型 ${accent}">${p}</svg>`;
+  const px = 16 + (N - 1) * 34, py = isHigh(N) ? hi : lo;
+  const ax = 16 + N * 34, ay = accent === 0 ? hi : lo;
+  p += `<line x1="${px}" y1="${py}" x2="${ax}" y2="${ay}" stroke="#1d9e75" stroke-width="2" stroke-dasharray="3 3"/>`;
+  p += `<circle cx="${ax}" cy="${ay}" r="5" fill="none" stroke="#1d9e75" stroke-width="2" stroke-dasharray="2 2"/>`;
+  return `<svg viewBox="0 0 ${W} 70" width="${W}" height="70" role="img" aria-label="声调型 ${accent}">${p}</svg>`;
 }
 
 /* ============================ 发音 ============================ */
@@ -357,6 +357,7 @@ function paintCard() {
   const lvTag = grading() === "biaori" ? (lessonLabel(w.id) || w.lv) : w.lv;
   $("cLevel").textContent = lvTag + (cur.isNew ? " · 新词" : " · 复习") + " · " +
     (MODES.find(m => m[0] === mode) || MODES[0])[1].replace(/（.*/, "");
+  $("cHint").classList.remove("hidden");   // showAnswer 里藏过，新卡要恢复
 
   if (mode === "prod") {
     wordEl.classList.add("prod");
@@ -437,6 +438,8 @@ function showAnswer() {
   const mode = effMode(w);
   $("answer").classList.remove("hidden");
   $("actions").classList.add("hidden");
+  // 提示语是翻面前的任务说明，翻面后没用了还占一行 —— 小屏上正是这一行把卡片顶溢出
+  $("cHint").classList.add("hidden");
   // 听力/产出模式正面没给日语，翻面时补回来，否则看完还是不知道长什么样
   if (mode === "prod" || mode === "listen") revealFront(w);
   if (autoSpeak() !== "off") speak(w.w);
