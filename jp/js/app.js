@@ -223,23 +223,24 @@ function moras(kana) {
 function pitchSVG(kana, accent) {
   const ms = moras(kana);
   if (accent < 0 || !ms.length) return "";
-  const N = ms.length, W = 16 + N * 26 + 26, hi = 11, lo = 30;
+  // 手机端读图为主，步距和假名都放大一档（26→30 / 12→14）
+  const N = ms.length, W = 18 + N * 30 + 30, hi = 12, lo = 34;
   const isHigh = i => accent === 0 ? i >= 2 : (accent === 1 ? i === 1 : i >= 2 && i <= accent);
   let p = "";
   for (let i = 1; i <= N; i++) {
-    const x = 12 + (i - 1) * 26, y = isHigh(i) ? hi : lo;
+    const x = 14 + (i - 1) * 30, y = isHigh(i) ? hi : lo;
     if (i > 1) {
-      const px = 12 + (i - 2) * 26, py = isHigh(i - 1) ? hi : lo;
-      p += `<line x1="${px}" y1="${py}" x2="${x}" y2="${y}" stroke="#1d9e75" stroke-width="1.6"/>`;
+      const px = 14 + (i - 2) * 30, py = isHigh(i - 1) ? hi : lo;
+      p += `<line x1="${px}" y1="${py}" x2="${x}" y2="${y}" stroke="#1d9e75" stroke-width="1.8"/>`;
     }
-    p += `<circle cx="${x}" cy="${y}" r="4" fill="${isHigh(i) ? "#1d9e75" : "#fff"}" stroke="#1d9e75" stroke-width="1.6"/>`;
-    p += `<text x="${x}" y="${y + 19}" text-anchor="middle" font-size="12" fill="#6b6a65">${ms[i - 1]}</text>`;
+    p += `<circle cx="${x}" cy="${y}" r="4.5" fill="${isHigh(i) ? "#1d9e75" : "#fff"}" stroke="#1d9e75" stroke-width="1.8"/>`;
+    p += `<text x="${x}" y="${y + 21}" text-anchor="middle" font-size="14" fill="#6b6a65">${ms[i - 1]}</text>`;
   }
-  const px = 12 + (N - 1) * 26, py = isHigh(N) ? hi : lo;
-  const ax = 12 + N * 26, ay = accent === 0 ? hi : lo;
-  p += `<line x1="${px}" y1="${py}" x2="${ax}" y2="${ay}" stroke="#1d9e75" stroke-width="1.6" stroke-dasharray="3 3"/>`;
-  p += `<circle cx="${ax}" cy="${ay}" r="4" fill="none" stroke="#1d9e75" stroke-width="1.6" stroke-dasharray="2 2"/>`;
-  return `<svg viewBox="0 0 ${W} 56" width="${W}" height="56" role="img" aria-label="声调型 ${accent}">${p}</svg>`;
+  const px = 14 + (N - 1) * 30, py = isHigh(N) ? hi : lo;
+  const ax = 14 + N * 30, ay = accent === 0 ? hi : lo;
+  p += `<line x1="${px}" y1="${py}" x2="${ax}" y2="${ay}" stroke="#1d9e75" stroke-width="1.8" stroke-dasharray="3 3"/>`;
+  p += `<circle cx="${ax}" cy="${ay}" r="4.5" fill="none" stroke="#1d9e75" stroke-width="1.8" stroke-dasharray="2 2"/>`;
+  return `<svg viewBox="0 0 ${W} 62" width="${W}" height="62" role="img" aria-label="声调型 ${accent}">${p}</svg>`;
 }
 
 /* ============================ 发音 ============================ */
@@ -939,6 +940,8 @@ function doSearch() {
 }
 
 function syncSettingsUI() {
+  // 桌面宽屏默认展开设置面板；手机屏默认收起，把首页留给状态和开始按钮
+  $("setupPanel").open = window.innerWidth >= 720;
   $("newPerDay").value = settings.newPerDay;
   $("retention").value = Math.round(settings.retention * 100);
   $("retentionVal").textContent = Math.round(settings.retention * 100) + "%";
@@ -987,6 +990,10 @@ function renderLevelPick() {
   $("poolNote").textContent = grading() === "biaori"
     ? `已选 ${settings.vols.length} 册：共 ${n} 词，新词按课次顺序（第 1 课 → 第 104 课）出。学过的词两种分级通用，进度不丢。`
     : `已选 ${settings.levels.length} 个等级：共 ${n} 词，新词从低等级开始出。`;
+  // 折叠条上的摘要：设置收起来时也一眼看到当前圈定的范围
+  $("setupHint").textContent = (grading() === "biaori"
+    ? `新标日 · ${settings.vols.length} 册`
+    : `JLPT · ${settings.levels.length} 级`) + ` · ${n} 词`;
 }
 
 async function main() {
